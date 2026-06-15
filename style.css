@@ -487,29 +487,47 @@ em { font-style: italic; color: #c9a84c; }
 .footer-legal a { font-size: 0.75rem; color: #3a3020; transition: color 0.2s; }
 .footer-legal a:hover { color: #c9a84c; }
 
-/* ===== FLOAT BUTTON ===== */
-.float-call {
+/* ===== FLOAT BUTTONS ===== */
+.float-buttons {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
   z-index: 200;
-  background: #c9a84c;
-  color: #111;
-  padding: 0.9rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+.float-btn {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0.75rem 1.4rem;
   font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.06em;
-  box-shadow: 0 4px 20px rgba(201,168,76,0.3);
-  transition: background 0.2s, transform 0.2s;
+  transition: transform 0.2s, background 0.2s;
+  color: #111;
+  border-radius: 2px;
+}
+.float-btn:hover { transform: translateY(-2px); }
+.float-whatsapp {
+  background: #25D366;
+  animation: pulse-green 3s infinite;
+}
+.float-whatsapp:hover { background: #20ba5a; }
+.float-phone {
+  background: #c9a84c;
   animation: pulse-gold 3s infinite;
 }
-.float-call:hover { background: #d4b660; transform: translateY(-2px); }
+.float-phone:hover { background: #d4b660; }
 @keyframes pulse-gold {
   0%, 100% { box-shadow: 0 4px 20px rgba(201,168,76,0.3); }
-  50% { box-shadow: 0 4px 30px rgba(201,168,76,0.55); }
+  50% { box-shadow: 0 4px 28px rgba(201,168,76,0.55); }
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.3); }
+  50% { box-shadow: 0 4px 28px rgba(37,211,102,0.55); }
 }
 
 /* ===== RESPONSIVE ===== */
@@ -535,8 +553,9 @@ em { font-style: italic; color: #c9a84c; }
   .footer-bottom { flex-direction: column; text-align: center; }
   .stat-divider { display: none; }
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-  .float-call span { display: none; }
-  .float-call { padding: 1rem; border-radius: 50%; width: 56px; height: 56px; justify-content: center; right: 1.5rem; bottom: 1.5rem; }
+  .float-btn span { display: none; }
+  .float-btn { padding: 1rem; border-radius: 50%; width: 52px; height: 52px; justify-content: center; }
+  .float-buttons { right: 1rem; bottom: 1rem; gap: 8px; }
   .container { padding: 0 1.25rem; }
   h1 { font-size: 2.4rem; }
   h2 { font-size: 1.8rem; }

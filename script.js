@@ -50,20 +50,21 @@ document.querySelectorAll('[data-aos], .service-card, .why-card, .temoignage-car
 });
 
 // ===== FLOAT BUTTON (apparait après le hero) =====
-const floatCall = document.getElementById('floatCall');
-floatCall.style.opacity = '0';
-floatCall.style.transform = 'translateY(20px)';
-floatCall.style.transition = 'opacity 0.4s, transform 0.4s';
-
-window.addEventListener('scroll', () => {
-  if (window.scrollY > window.innerHeight * 0.6) {
-    floatCall.style.opacity = '1';
-    floatCall.style.transform = 'translateY(0)';
-  } else {
-    floatCall.style.opacity = '0';
-    floatCall.style.transform = 'translateY(20px)';
-  }
-}, { passive: true });
+const floatBtns = document.getElementById('floatCall');
+if (floatBtns) {
+  floatBtns.style.opacity = '0';
+  floatBtns.style.transform = 'translateY(20px)';
+  floatBtns.style.transition = 'opacity 0.4s, transform 0.4s';
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > window.innerHeight * 0.6) {
+      floatBtns.style.opacity = '1';
+      floatBtns.style.transform = 'translateY(0)';
+    } else {
+      floatBtns.style.opacity = '0';
+      floatBtns.style.transform = 'translateY(20px)';
+    }
+  }, { passive: true });
+}
 
 // ===== FORMULAIRE =====
 async function handleSubmit(e) {
@@ -137,4 +138,68 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 const yearEl = document.querySelector('.footer-bottom p');
 if (yearEl) {
   yearEl.textContent = yearEl.textContent.replace('2025', new Date().getFullYear());
+}
+
+// ===== CARTE LEAFLET FRANCE =====
+function initMap() {
+  const mapEl = document.getElementById('map-france');
+  if (!mapEl || typeof L === 'undefined') return;
+
+  const map = L.map('map-france', {
+    center: [46.5, 2.5],
+    zoom: 5,
+    scrollWheelZoom: false,
+    zoomControl: true,
+    attributionControl: false,
+  });
+
+  // Tuiles sombres CartoDB
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 10,
+    minZoom: 4,
+  }).addTo(map);
+
+  // Icône personnalisée dorée
+  const goldIcon = L.divIcon({
+    className: '',
+    html: '<div style="width:12px;height:12px;background:#c9a84c;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px rgba(201,168,76,0.8);"></div>',
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+  });
+
+  const villes = [
+    { name: 'Paris', lat: 48.8566, lng: 2.3522 },
+    { name: 'Lyon', lat: 45.7640, lng: 4.8357 },
+    { name: 'Marseille', lat: 43.2965, lng: 5.3698 },
+    { name: 'Bordeaux', lat: 44.8378, lng: -0.5792 },
+    { name: 'Toulouse', lat: 43.6047, lng: 1.4442 },
+    { name: 'Nantes', lat: 47.2184, lng: -1.5536 },
+    { name: 'Strasbourg', lat: 48.5734, lng: 7.7521 },
+    { name: 'Lille', lat: 50.6292, lng: 3.0573 },
+    { name: 'Nice', lat: 43.7102, lng: 7.2620 },
+    { name: 'Rennes', lat: 48.1173, lng: -1.6778 },
+    { name: 'Montpellier', lat: 43.6108, lng: 3.8767 },
+    { name: 'Aix-en-Provence', lat: 43.5297, lng: 5.4474 },
+  ];
+
+  villes.forEach(v => {
+    L.marker([v.lat, v.lng], { icon: goldIcon })
+      .addTo(map)
+      .bindPopup(
+        '<div style="font-family:Inter,sans-serif;font-size:13px;color:#111;font-weight:500;">' +
+        '<span style="color:#c9a84c;">✓</span> ' + v.name + '<br>' +
+        '<span style="font-size:11px;color:#666;font-weight:400;">Zone d'intervention</span></div>',
+        { closeButton: false }
+      );
+  });
+
+  // Attribution minimale
+  L.control.attribution({ prefix: '© CartoDB' }).addTo(map);
+}
+
+// Initialiser la carte après chargement
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMap);
+} else {
+  initMap();
 }
