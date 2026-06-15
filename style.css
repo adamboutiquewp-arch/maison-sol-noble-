@@ -583,3 +583,48 @@ em { font-style: italic; color: #c9a84c; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ===== FAQ ===== */
+.faq-section { padding: 7rem 0; background: #111; }
+.faq-grid { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 2px; }
+.faq-item { background: #141414; overflow: hidden; }
+.faq-question {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem 1.8rem; background: none; border: none; cursor: pointer;
+  color: #e0d8cc; font-family: 'Inter', sans-serif; font-size: 0.95rem;
+  font-weight: 400; text-align: left; gap: 1rem; transition: color 0.2s;
+}
+.faq-question:hover { color: #c9a84c; }
+.faq-question svg { flex-shrink: 0; color: #c9a84c; transition: transform 0.3s; }
+.faq-question.open svg { transform: rotate(180deg); }
+.faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.faq-answer.open { max-height: 300px; }
+.faq-answer p {
+  padding: 0 1.8rem 1.4rem; color: #7a7060; font-size: 0.9rem;
+  line-height: 1.8; border-top: 1px solid #1e1e1e;
+  padding-top: 1rem;
+}
+.faq-answer strong { color: #c9a84c; font-weight: 500; }
+
+/* ===== LIENS INTERNES ===== */
+.links-section { padding: 4rem 0; background: #0a0a0a; border-top: 1px solid #1a1a1a; }
+.links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
+.links-col h3 {
+  font-family: 'Inter', sans-serif; font-size: 0.72rem;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: #c9a84c; margin-bottom: 1.2rem; font-weight: 500;
+}
+.links-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+.links-list li a {
+  font-size: 0.82rem; color: #5a5040;
+  transition: color 0.2s; display: block;
+  padding-left: 0.8rem; position: relative;
+}
+.links-list li a::before { content: '→'; position: absolute; left: 0; color: #3a3020; font-size: 0.7rem; }
+.links-list li a:hover { color: #c9a84c; }
+.links-list li a:hover::before { color: #c9a84c; }
+
+@media (max-width: 768px) {
+  .links-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .faq-question { padding: 1.1rem 1.2rem; font-size: 0.88rem; }
+}

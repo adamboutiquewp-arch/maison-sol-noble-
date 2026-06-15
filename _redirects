@@ -1,0 +1,10 @@
+# Redirects Render.com — Maison Sol Noble
+
+# Forcer HTTPS (géré automatiquement par Render mais précisé par sécurité)
+http://maisonsolnoble.com/* https://maisonsolnoble.com/:splat 301
+
+# Rediriger www vers non-www
+https://www.maisonsolnoble.com/* https://maisonsolnoble.com/:splat 301
+
+# Page 404 custom
+/* /index.html 200
