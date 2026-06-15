@@ -188,7 +188,7 @@ function initMap() {
       .bindPopup(
         '<div style="font-family:Inter,sans-serif;font-size:13px;color:#111;font-weight:500;">' +
         '<span style="color:#c9a84c;">✓</span> ' + v.name + '<br>' +
-        '<span style="font-size:11px;color:#666;font-weight:400;">Zone d'intervention</span></div>',
+        '<span style="font-size:11px;color:#666;font-weight:400;">Zone d\'intervention</span></div>',
         { closeButton: false }
       );
   });
@@ -197,9 +197,7 @@ function initMap() {
   L.control.attribution({ prefix: '© CartoDB' }).addTo(map);
 }
 
-// Initialiser la carte après chargement
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initMap);
-} else {
-  initMap();
-}
+// Initialiser la carte après chargement complet
+window.addEventListener('load', function() {
+  setTimeout(initMap, 100);
+});

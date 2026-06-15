@@ -534,7 +534,7 @@ em { font-style: italic; color: #c9a84c; }
 @media (max-width: 1024px) {
   .problem-grid, .zone-grid, .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
   .why-grid { grid-template-columns: 1fr 1fr; }
-  .zone-right { display: none; }
+  .zone-right { display: block; }
   .services-grid { grid-template-columns: 1fr; }
   .stats-grid { gap: 0; }
   .stat-item { padding: 1rem 1.5rem; }
