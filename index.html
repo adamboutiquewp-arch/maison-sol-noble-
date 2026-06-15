@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Maison Sol Noble — Rénovation de sols en pierre naturelle (marbre, travertin, granito) et parquet massif. Intervention partout en France. Devis gratuit.">
+<meta name="keywords" content="rénovation sol marbre, travertin, granito, parquet massif, vitrification parquet, rénovation sols pierre, France">
+<title>Maison Sol Noble — Rénovation de Sols en Pierre & Parquet Massif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- BARRE URGENCE -->
+<div class="urgence-bar">
+  <span>Réponse sous 24h · Devis 100% gratuit · Intervention toute la France</span>
+  <a href="tel:0554542864" class="urgence-tel">05 54 54 28 64</a>
+</div>
+
+<!-- NAVIGATION -->
+<nav class="navbar" id="navbar">
+  <a href="#" class="nav-logo">
+    <span class="logo-maison">Maison</span>
+    <span class="logo-sol">Sol Noble</span>
+  </a>
+  <div class="nav-links">
+    <a href="#services">Nos services</a>
+    <a href="#realisations">Réalisations</a>
+    <a href="#temoignages">Avis clients</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="#contact" class="nav-cta">Devis gratuit</a>
+  <button class="burger" id="burger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MENU MOBILE -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#services" onclick="closeMobile()">Nos services</a>
+  <a href="#realisations" onclick="closeMobile()">Réalisations</a>
+  <a href="#temoignages" onclick="closeMobile()">Avis clients</a>
+  <a href="#contact" onclick="closeMobile()">Contact</a>
+  <a href="tel:0554542864" class="mobile-tel">05 54 54 28 64</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <svg class="hero-floor-svg" viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Sol marbre hero -->
+      <rect width="1200" height="700" fill="#0d0d0d"/>
+      <!-- Dalles marbre grande format -->
+      <g opacity="0.18">
+        <!-- Rangée 1 -->
+        <rect x="0" y="400" width="290" height="200" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+        <rect x="295" y="400" width="290" height="200" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+        <rect x="590" y="400" width="290" height="200" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+        <rect x="885" y="400" width="315" height="200" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+        <!-- Rangée 2 -->
+        <rect x="0" y="550" width="290" height="150" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+        <rect x="295" y="550" width="290" height="150" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+        <rect x="590" y="550" width="290" height="150" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+        <rect x="885" y="550" width="315" height="150" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+      </g>
+      <!-- Veines marbre -->
+      <g opacity="0.07" stroke="#d4b896" stroke-width="1" fill="none">
+        <path d="M0 450 Q200 420 400 460 Q600 490 800 445 Q1000 410 1200 450"/>
+        <path d="M50 520 Q250 500 450 530 Q650 555 850 510 Q1050 480 1200 520"/>
+        <path d="M0 580 Q150 560 350 590 Q550 615 750 575 Q950 545 1200 580"/>
+        <path d="M100 480 Q300 465 500 488 Q700 508 900 470 Q1100 445 1200 475"/>
+        <path d="M0 640 Q200 620 420 645 Q640 668 860 635 Q1080 608 1200 635"/>
+      </g>
+      <!-- Reflet poli -->
+      <rect x="0" y="380" width="1200" height="8" fill="#c9a84c" opacity="0.05"/>
+      <!-- Perspective lumière -->
+      <rect x="400" y="350" width="400" height="350" fill="#ffffff" opacity="0.015"/>
+    </svg>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">Artisans rénovateurs — Toute la France</div>
+    <h1 class="hero-title">
+      Vos sols retrouvent<br>
+      <em>leur éclat d'origine</em>
+    </h1>
+    <p class="hero-sub">Marbre · Travertin · Granito · Parquet massif<br>Rénovation haut de gamme, intervention partout en France</p>
+    <div class="hero-badges">
+      <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Devis gratuit</span>
+      <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Sans engagement</span>
+      <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Réponse 24h</span>
+    </div>
+    <div class="hero-ctas">
+      <a href="#contact" class="btn-primary">Obtenir mon devis gratuit</a>
+      <a href="tel:0554542864" class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+        05 54 54 28 64
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Découvrir</span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+</section>
+
+<!-- CHIFFRES CLÉS -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <span class="stat-number">15+</span>
+      <span class="stat-label">Années d'expertise</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">500+</span>
+      <span class="stat-label">Chantiers réalisés</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">100%</span>
+      <span class="stat-label">France couverte</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">4.9★</span>
+      <span class="stat-label">Satisfaction client</span>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLÈME / SOLUTION -->
+<section class="problem-section">
+  <div class="container">
+    <div class="problem-grid">
+      <div class="problem-left">
+        <span class="section-eyebrow">Le constat</span>
+        <h2>Votre sol mérite mieux que l'abandon</h2>
+        <p>Les sols en pierre naturelle et les parquets massifs sont des matériaux nobles — mais sans entretien spécialisé, ils ternissent, se rayent, se porosent. Beaucoup de propriétaires pensent que le remplacement est la seule solution.</p>
+        <p class="problem-highlight">C'est faux. La rénovation coûte 3 à 5 fois moins cher que le remplacement — et le résultat est souvent supérieur.</p>
+      </div>
+      <div class="problem-right">
+        <div class="solution-card">
+          <div class="solution-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Notre engagement</h3>
+          <p>Redonner vie à vos sols avec des techniques professionnelles, des produits haut de gamme, et un savoir-faire artisanal transmis de génération en génération.</p>
+        </div>
+        <div class="solution-items">
+          <div class="solution-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Diagnostic gratuit sur devis</span>
+          </div>
+          <div class="solution-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Matériaux et machines professionnels</span>
+          </div>
+          <div class="solution-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Résultat garanti ou on revient</span>
+          </div>
+          <div class="solution-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Déplacement partout en France</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services-section" id="services">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Nos expertises</span>
+      <h2>Des solutions pour chaque type de sol</h2>
+    </div>
+
+    <div class="services-grid">
+
+      <!-- Marbre -->
+      <div class="service-card" data-aos>
+        <div class="service-visual">
+          <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="220" fill="#1a1a1a"/>
+            <!-- Avant -->
+            <rect x="0" y="0" width="195" height="220" fill="#2a2520"/>
+            <g fill="none" stroke="#4a4035" stroke-width="0.8" opacity="0.6">
+              <line x1="0" y1="73" x2="195" y2="73"/>
+              <line x1="0" y1="146" x2="195" y2="146"/>
+              <line x1="65" y1="0" x2="65" y2="73"/>
+              <line x1="130" y1="0" x2="130" y2="73"/>
+              <line x1="65" y1="73" x2="65" y2="146"/>
+              <line x1="130" y1="73" x2="130" y2="146"/>
+              <line x1="65" y1="146" x2="65" y2="220"/>
+              <line x1="130" y1="146" x2="130" y2="220"/>
+            </g>
+            <!-- Veines ternes -->
+            <g stroke="#554d42" stroke-width="1" fill="none" opacity="0.5">
+              <path d="M10 30 Q50 45 80 25 Q110 10 140 35 Q170 55 190 40"/>
+              <path d="M5 100 Q40 115 75 95 Q110 80 145 105 Q175 125 195 110"/>
+              <path d="M15 170 Q55 185 90 165 Q125 148 160 172 Q185 188 195 178"/>
+            </g>
+            <!-- Taches et rayures -->
+            <g opacity="0.4">
+              <ellipse cx="45" cy="55" rx="12" ry="8" fill="#3d352a"/>
+              <ellipse cx="120" cy="130" rx="15" ry="10" fill="#3d352a"/>
+              <line x1="30" y1="80" x2="80" y2="95" stroke="#555" stroke-width="1.5"/>
+              <line x1="100" y1="40" x2="140" y2="60" stroke="#555" stroke-width="1"/>
+            </g>
+            <text x="97" y="208" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#888" letter-spacing="2">AVANT</text>
+
+            <!-- Séparateur -->
+            <line x1="197.5" y1="0" x2="197.5" y2="220" stroke="#c9a84c" stroke-width="1"/>
+            <rect x="182" y="100" width="36" height="20" rx="3" fill="#c9a84c"/>
+            <text x="200" y="114" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#111" font-weight="600" letter-spacing="1">→</text>
+
+            <!-- Après -->
+            <rect x="200" y="0" width="200" height="220" fill="#e8e4de"/>
+            <g fill="none" stroke="#c8bfb0" stroke-width="0.6" opacity="0.7">
+              <line x1="200" y1="73" x2="400" y2="73"/>
+              <line x1="200" y1="146" x2="400" y2="146"/>
+              <line x1="267" y1="0" x2="267" y2="73"/>
+              <line x1="334" y1="0" x2="334" y2="73"/>
+              <line x1="267" y1="73" x2="267" y2="146"/>
+              <line x1="334" y1="73" x2="334" y2="146"/>
+              <line x1="267" y1="146" x2="267" y2="220"/>
+              <line x1="334" y1="146" x2="334" y2="220"/>
+            </g>
+            <!-- Veines marbre blanc -->
+            <g stroke="#b8a898" stroke-width="0.8" fill="none" opacity="0.6">
+              <path d="M210 25 Q250 38 280 20 Q310 8 345 30 Q375 48 398 35"/>
+              <path d="M205 95 Q240 108 272 88 Q308 72 342 98 Q372 118 398 105"/>
+              <path d="M212 165 Q252 178 288 158 Q322 142 358 168 Q382 184 398 172"/>
+            </g>
+            <!-- Reflet brillant -->
+            <rect x="220" y="0" width="60" height="220" fill="white" opacity="0.08"/>
+            <text x="300" y="208" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#8a7d6e" letter-spacing="2">APRÈS</text>
+          </svg>
+        </div>
+        <div class="service-content">
+          <div class="service-tag">Pierre naturelle</div>
+          <h3>Marbre</h3>
+          <p>Cristallisation, polissage, bouche-porage et protection. Nous redonnons au marbre sa brillance d'origine, qu'il soit blanc, noir, rosé ou coloré.</p>
+          <ul class="service-list">
+            <li>Polissage et lustrage professionnel</li>
+            <li>Élimination des rayures et taches</li>
+            <li>Traitement imperméabilisant</li>
+            <li>Rebouchage des fissures</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Travertin -->
+      <div class="service-card" data-aos>
+        <div class="service-visual">
+          <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="220" fill="#1a1a1a"/>
+            <!-- Avant travertin -->
+            <rect x="0" y="0" width="195" height="220" fill="#2e2820"/>
+            <g fill="none" stroke="#4a3f2e" stroke-width="0.7" opacity="0.5">
+              <line x1="0" y1="55" x2="195" y2="55"/>
+              <line x1="0" y1="110" x2="195" y2="110"/>
+              <line x1="0" y1="165" x2="195" y2="165"/>
+              <line x1="65" y1="0" x2="65" y2="220"/>
+              <line x1="130" y1="0" x2="130" y2="220"/>
+            </g>
+            <!-- Pores travertin -->
+            <g fill="#1e1810" opacity="0.7">
+              <ellipse cx="25" cy="30" rx="5" ry="3"/>
+              <ellipse cx="80" cy="20" rx="4" ry="2"/>
+              <ellipse cx="50" cy="75" rx="6" ry="3"/>
+              <ellipse cx="140" cy="50" rx="5" ry="3"/>
+              <ellipse cx="30" cy="140" rx="7" ry="4"/>
+              <ellipse cx="110" cy="130" rx="5" ry="3"/>
+              <ellipse cx="170" cy="90" rx="4" ry="2"/>
+              <ellipse cx="60" cy="190" rx="6" ry="3"/>
+              <ellipse cx="150" cy="180" rx="5" ry="3"/>
+            </g>
+            <text x="97" y="208" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#888" letter-spacing="2">AVANT</text>
+
+            <line x1="197.5" y1="0" x2="197.5" y2="220" stroke="#c9a84c" stroke-width="1"/>
+            <rect x="182" y="100" width="36" height="20" rx="3" fill="#c9a84c"/>
+            <text x="200" y="114" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#111" font-weight="600" letter-spacing="1">→</text>
+
+            <!-- Après travertin -->
+            <rect x="200" y="0" width="200" height="220" fill="#d4b896"/>
+            <g fill="none" stroke="#b8976e" stroke-width="0.6" opacity="0.6">
+              <line x1="200" y1="55" x2="400" y2="55"/>
+              <line x1="200" y1="110" x2="400" y2="110"/>
+              <line x1="200" y1="165" x2="400" y2="165"/>
+              <line x1="267" y1="0" x2="267" y2="220"/>
+              <line x1="334" y1="0" x2="334" y2="220"/>
+            </g>
+            <!-- Texture travertin rénové -->
+            <g opacity="0.25">
+              <path d="M210 15 Q240 18 260 12 Q290 8 320 16 Q355 22 395 14" stroke="#c4a070" stroke-width="0.8" fill="none"/>
+              <path d="M210 35 Q235 40 265 33 Q300 28 330 38 Q365 44 395 36" stroke="#c4a070" stroke-width="0.8" fill="none"/>
+              <path d="M210 70 Q245 73 270 67 Q305 62 335 72 Q370 78 395 69" stroke="#c4a070" stroke-width="0.8" fill="none"/>
+            </g>
+            <rect x="220" y="0" width="50" height="220" fill="white" opacity="0.1"/>
+            <text x="300" y="208" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#7a5c38" letter-spacing="2">APRÈS</text>
+          </svg>
+        </div>
+        <div class="service-content">
+          <div class="service-tag">Pierre naturelle</div>
+          <h3>Travertin</h3>
+          <p>Nettoyage en profondeur, bouchage des pores, ponçage et huilage. Le travertin retrouve sa chaleur naturelle et devient imperméable.</p>
+          <ul class="service-list">
+            <li>Bouchage des cavités et pores</li>
+            <li>Ponçage et adoucissage</li>
+            <li>Protection hydrofuge longue durée</li>
+            <li>Ravivage des tons naturels</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Granito -->
+      <div class="service-card" data-aos>
+        <div class="service-visual">
+          <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="220" fill="#1a1a1a"/>
+            <!-- Avant granito -->
+            <rect x="0" y="0" width="195" height="220" fill="#252525"/>
+            <!-- Granulats ternes -->
+            <g opacity="0.4">
+              <circle cx="20" cy="25" r="5" fill="#555"/>
+              <circle cx="45" cy="15" r="4" fill="#4a4035"/>
+              <circle cx="70" cy="35" r="6" fill="#553d2a"/>
+              <circle cx="95" cy="18" r="4" fill="#555"/>
+              <circle cx="120" cy="30" r="5" fill="#4a4035"/>
+              <circle cx="150" cy="12" r="3" fill="#553d2a"/>
+              <circle cx="175" cy="28" r="5" fill="#555"/>
+              <circle cx="30" cy="60" r="4" fill="#4a3820"/>
+              <circle cx="60" cy="75" r="6" fill="#553d2a"/>
+              <circle cx="90" cy="58" r="4" fill="#555"/>
+              <circle cx="115" cy="72" r="5" fill="#4a4035"/>
+              <circle cx="145" cy="55" r="3" fill="#553d2a"/>
+              <circle cx="170" cy="68" r="5" fill="#555"/>
+              <circle cx="15" cy="110" r="5" fill="#553d2a"/>
+              <circle cx="50" cy="120" r="4" fill="#555"/>
+              <circle cx="80" cy="105" r="6" fill="#4a4035"/>
+              <circle cx="110" cy="118" r="4" fill="#553d2a"/>
+              <circle cx="140" cy="100" r="5" fill="#555"/>
+              <circle cx="165" cy="115" r="3" fill="#4a4035"/>
+              <circle cx="25" cy="165" r="4" fill="#555"/>
+              <circle cx="55" cy="155" r="6" fill="#553d2a"/>
+              <circle cx="85" cy="170" r="4" fill="#4a4035"/>
+              <circle cx="115" cy="158" r="5" fill="#555"/>
+              <circle cx="145" cy="172" r="3" fill="#553d2a"/>
+              <circle cx="175" cy="162" r="5" fill="#4a4035"/>
+            </g>
+            <!-- Joints sales -->
+            <g stroke="#333" stroke-width="1" opacity="0.6">
+              <line x1="0" y1="73" x2="195" y2="73"/>
+              <line x1="0" y1="146" x2="195" y2="146"/>
+              <line x1="65" y1="0" x2="65" y2="220"/>
+              <line x1="130" y1="0" x2="130" y2="220"/>
+            </g>
+            <text x="97" y="208" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#888" letter-spacing="2">AVANT</text>
+
+            <line x1="197.5" y1="0" x2="197.5" y2="220" stroke="#c9a84c" stroke-width="1"/>
+            <rect x="182" y="100" width="36" height="20" rx="3" fill="#c9a84c"/>
+            <text x="200" y="114" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#111" font-weight="600" letter-spacing="1">→</text>
+
+            <!-- Après granito -->
+            <rect x="200" y="0" width="200" height="220" fill="#c8c0b4"/>
+            <!-- Granulats polis colorés -->
+            <g opacity="0.75">
+              <circle cx="220" cy="25" r="5" fill="#8B3A3A"/>
+              <circle cx="245" cy="15" r="4" fill="#2E5E4A"/>
+              <circle cx="270" cy="35" r="6" fill="#8B6914"/>
+              <circle cx="295" cy="18" r="4" fill="#3A5C8B"/>
+              <circle cx="320" cy="30" r="5" fill="#8B3A3A"/>
+              <circle cx="350" cy="12" r="3" fill="#2E5E4A"/>
+              <circle cx="375" cy="28" r="5" fill="#8B6914"/>
+              <circle cx="230" cy="60" r="4" fill="#2E5E4A"/>
+              <circle cx="260" cy="75" r="6" fill="#3A5C8B"/>
+              <circle cx="290" cy="58" r="4" fill="#8B3A3A"/>
+              <circle cx="315" cy="72" r="5" fill="#8B6914"/>
+              <circle cx="345" cy="55" r="3" fill="#2E5E4A"/>
+              <circle cx="370" cy="68" r="5" fill="#8B3A3A"/>
+              <circle cx="215" cy="110" r="5" fill="#8B6914"/>
+              <circle cx="250" cy="120" r="4" fill="#8B3A3A"/>
+              <circle cx="280" cy="105" r="6" fill="#2E5E4A"/>
+              <circle cx="310" cy="118" r="4" fill="#3A5C8B"/>
+              <circle cx="340" cy="100" r="5" fill="#8B6914"/>
+              <circle cx="365" cy="115" r="3" fill="#8B3A3A"/>
+              <circle cx="225" cy="165" r="4" fill="#3A5C8B"/>
+              <circle cx="255" cy="155" r="6" fill="#8B6914"/>
+              <circle cx="285" cy="170" r="4" fill="#8B3A3A"/>
+              <circle cx="315" cy="158" r="5" fill="#2E5E4A"/>
+              <circle cx="345" cy="172" r="3" fill="#3A5C8B"/>
+              <circle cx="375" cy="162" r="5" fill="#8B6914"/>
+            </g>
+            <g stroke="#a09080" stroke-width="0.4" opacity="0.5">
+              <line x1="200" y1="73" x2="400" y2="73"/>
+              <line x1="200" y1="146" x2="400" y2="146"/>
+              <line x1="267" y1="0" x2="267" y2="220"/>
+              <line x1="334" y1="0" x2="334" y2="220"/>
+            </g>
+            <rect x="220" y="0" width="45" height="220" fill="white" opacity="0.1"/>
+            <text x="300" y="208" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#5a4e42" letter-spacing="2">APRÈS</text>
+          </svg>
+        </div>
+        <div class="service-content">
+          <div class="service-tag">Pierre naturelle</div>
+          <h3>Granito</h3>
+          <p>Ponçage progressif, cristallisation et mise en brillance. Le granito révèle ses couleurs d'origine et retrouve son aspect mosaïque caractéristique.</p>
+          <ul class="service-list">
+            <li>Ponçage multi-grain progressif</li>
+            <li>Révélation des granulats colorés</li>
+            <li>Cristallisation et brillantage</li>
+            <li>Jointoiement et nettoyage profond</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Parquet -->
+      <div class="service-card" data-aos>
+        <div class="service-visual">
+          <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="220" fill="#1a1a1a"/>
+            <!-- Avant parquet -->
+            <rect x="0" y="0" width="195" height="220" fill="#2a1f14"/>
+            <!-- Lames parquet abîmées -->
+            <g fill="none" stroke="#3a2a1a" stroke-width="0.8">
+              <line x1="0" y1="28" x2="195" y2="28"/>
+              <line x1="0" y1="56" x2="195" y2="56"/>
+              <line x1="0" y1="84" x2="195" y2="84"/>
+              <line x1="0" y1="112" x2="195" y2="112"/>
+              <line x1="0" y1="140" x2="195" y2="140"/>
+              <line x1="0" y1="168" x2="195" y2="168"/>
+              <line x1="0" y1="196" x2="195" y2="196"/>
+            </g>
+            <!-- Lignes courtes lames -->
+            <g stroke="#3a2a1a" stroke-width="0.5" opacity="0.6">
+              <line x1="65" y1="0" x2="65" y2="28"/>
+              <line x1="130" y1="0" x2="130" y2="28"/>
+              <line x1="40" y1="28" x2="40" y2="56"/>
+              <line x1="100" y1="28" x2="100" y2="56"/>
+              <line x1="155" y1="28" x2="155" y2="56"/>
+              <line x1="70" y1="56" x2="70" y2="84"/>
+              <line x1="130" y1="56" x2="130" y2="84"/>
+              <line x1="45" y1="84" x2="45" y2="112"/>
+              <line x1="110" y1="84" x2="110" y2="112"/>
+              <line x1="165" y1="84" x2="165" y2="112"/>
+            </g>
+            <!-- Rayures parquet usé -->
+            <g stroke="#1e1610" stroke-width="1" opacity="0.5">
+              <line x1="10" y1="15" x2="80" y2="20"/>
+              <line x1="100" y1="45" x2="170" y2="50"/>
+              <line x1="20" y1="100" x2="90" y2="108"/>
+              <line x1="50" y1="155" x2="140" y2="162"/>
+            </g>
+            <text x="97" y="208" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#888" letter-spacing="2">AVANT</text>
+
+            <line x1="197.5" y1="0" x2="197.5" y2="220" stroke="#c9a84c" stroke-width="1"/>
+            <rect x="182" y="100" width="36" height="20" rx="3" fill="#c9a84c"/>
+            <text x="200" y="114" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#111" font-weight="600" letter-spacing="1">→</text>
+
+            <!-- Après parquet -->
+            <rect x="200" y="0" width="200" height="220" fill="#b8864e"/>
+            <!-- Lames parquet rénovées -->
+            <g fill="none" stroke="#9a6e38" stroke-width="0.6">
+              <line x1="200" y1="28" x2="400" y2="28"/>
+              <line x1="200" y1="56" x2="400" y2="56"/>
+              <line x1="200" y1="84" x2="400" y2="84"/>
+              <line x1="200" y1="112" x2="400" y2="112"/>
+              <line x1="200" y1="140" x2="400" y2="140"/>
+              <line x1="200" y1="168" x2="400" y2="168"/>
+              <line x1="200" y1="196" x2="400" y2="196"/>
+            </g>
+            <!-- Nuances bois chaud -->
+            <rect x="200" y="0" width="200" height="28" fill="#c49050" opacity="0.3"/>
+            <rect x="200" y="56" width="200" height="28" fill="#a07040" opacity="0.2"/>
+            <rect x="200" y="112" width="200" height="28" fill="#c49050" opacity="0.25"/>
+            <rect x="200" y="168" width="200" height="28" fill="#a07040" opacity="0.2"/>
+            <!-- Fil du bois -->
+            <g stroke="#c8924e" stroke-width="0.5" fill="none" opacity="0.3">
+              <path d="M205 10 Q260 14 310 8 Q355 4 398 12"/>
+              <path d="M205 38 Q255 42 305 36 Q358 31 398 40"/>
+              <path d="M205 70 Q250 74 300 68 Q352 63 398 72"/>
+            </g>
+            <!-- Reflet vitrifié -->
+            <rect x="215" y="0" width="40" height="220" fill="white" opacity="0.09"/>
+            <text x="300" y="208" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#6b4820" letter-spacing="2">APRÈS</text>
+          </svg>
+        </div>
+        <div class="service-content">
+          <div class="service-tag">Parquet massif</div>
+          <h3>Parquet massif</h3>
+          <p>Ponçage, vitrification ou cirage. Nous traitons tous types de parquets massifs pour leur redonner chaleur, brillance et durabilité.</p>
+          <ul class="service-list">
+            <li>Ponçage et rabotage professionnel</li>
+            <li>Vitrification mat, satiné ou brillant</li>
+            <li>Parquet ciré à l'ancienne</li>
+            <li>Rebouchage et remplacement de lames</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ZONE INTERVENTION -->
+<section class="zone-section">
+  <div class="container">
+    <div class="zone-grid">
+      <div class="zone-left">
+        <span class="section-eyebrow">Déplacement inclus</span>
+        <h2>Nous intervenons partout en France</h2>
+        <p>Que vous soyez à Paris, Lyon, Marseille, Bordeaux ou en région rurale — nous nous déplaçons sur tout le territoire français. Le déplacement est inclus dans votre devis, sans surprise.</p>
+        <div class="zone-regions">
+          <div class="region-pill">Île-de-France</div>
+          <div class="region-pill">PACA</div>
+          <div class="region-pill">Auvergne-Rhône-Alpes</div>
+          <div class="region-pill">Nouvelle-Aquitaine</div>
+          <div class="region-pill">Occitanie</div>
+          <div class="region-pill">Bretagne</div>
+          <div class="region-pill">Normandie</div>
+          <div class="region-pill">Grand Est</div>
+          <div class="region-pill">+ toutes régions</div>
+        </div>
+        <a href="#contact" class="btn-primary" style="margin-top:2rem;display:inline-block;">Vérifier ma zone</a>
+      </div>
+      <div class="zone-right">
+        <svg viewBox="0 0 340 420" xmlns="http://www.w3.org/2000/svg" class="france-map">
+          <rect width="340" height="420" fill="#141414" rx="12"/>
+          <!-- Silhouette France simplifiée -->
+          <path d="M120 30 L180 25 L210 45 L230 40 L250 60 L260 90 L280 110 L285 140 L270 165 L290 185 L295 210 L280 235 L285 260 L270 285 L255 300 L240 320 L220 335 L200 345 L185 360 L165 370 L145 365 L125 355 L110 340 L95 320 L80 305 L70 285 L60 265 L55 245 L45 225 L40 200 L50 175 L45 155 L55 130 L65 110 L60 90 L75 70 L90 50 L105 35 Z"
+            fill="#1e1e1e" stroke="#c9a84c" stroke-width="1.5"/>
+          <!-- Points villes -->
+          <circle cx="175" cy="120" r="5" fill="#c9a84c"/>
+          <text x="185" y="124" font-family="Inter,sans-serif" font-size="10" fill="#c9a84c">Paris</text>
+          <circle cx="190" cy="210" r="4" fill="#c9a84c" opacity="0.8"/>
+          <text x="198" y="214" font-family="Inter,sans-serif" font-size="9" fill="#888">Lyon</text>
+          <circle cx="160" cy="295" r="4" fill="#c9a84c" opacity="0.8"/>
+          <text x="168" y="299" font-family="Inter,sans-serif" font-size="9" fill="#888">Marseille</text>
+          <circle cx="100" cy="255" r="4" fill="#c9a84c" opacity="0.8"/>
+          <text x="65" y="259" font-family="Inter,sans-serif" font-size="9" fill="#888">Bordeaux</text>
+          <circle cx="145" cy="230" r="4" fill="#c9a84c" opacity="0.8"/>
+          <text x="108" y="234" font-family="Inter,sans-serif" font-size="9" fill="#888">Toulouse</text>
+          <circle cx="80" cy="155" r="4" fill="#c9a84c" opacity="0.8"/>
+          <text x="50" y="159" font-family="Inter,sans-serif" font-size="9" fill="#888">Nantes</text>
+          <!-- Étoile déco centre -->
+          <circle cx="170" cy="200" r="60" fill="none" stroke="#c9a84c" stroke-width="0.3" opacity="0.3"/>
+          <circle cx="170" cy="200" r="90" fill="none" stroke="#c9a84c" stroke-width="0.2" opacity="0.2"/>
+          <!-- Label -->
+          <text x="170" y="400" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#c9a84c" letter-spacing="3">TOUTE LA FRANCE</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- POURQUOI NOUS -->
+<section class="why-section" id="pourquoi">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Notre différence</span>
+      <h2>Pourquoi choisir Maison Sol Noble ?</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>Rapidité d'exécution</h3>
+        <p>Nos équipes mobilisées rapidement, chantier propre et livraison dans les délais annoncés. Votre quotidien perturbé le moins longtemps possible.</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/></svg>
+        </div>
+        <h3>Matériaux haut de gamme</h3>
+        <p>Produits professionnels italiens et allemands, machines de dernière génération. La qualité de nos fournitures garantit un résultat durable dans le temps.</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Garantie résultat</h3>
+        <p>Nous sommes confiants dans notre travail. Si le résultat ne correspond pas à vos attentes définies ensemble, nous revenons sans frais supplémentaires.</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3>Artisans passionnés</h3>
+        <p>Une équipe de véritables artisans qui aiment leur métier. Chaque chantier est traité avec la même exigence, qu'il s'agisse de 10m² ou de 500m².</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <h3>Déplacement France entière</h3>
+        <p>Nous nous déplaçons sans supplément excessif sur tout le territoire. Un devis clair et transparent, déplacement inclus, dès le premier contact.</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <h3>Tarifs transparents</h3>
+        <p>Pas de mauvaise surprise. Devis détaillé et fixe, sans coût caché. Vous savez exactement ce que vous payez avant que nous commencions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEMOIGNAGES -->
+<section class="temoignages-section" id="temoignages">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Ils nous font confiance</span>
+      <h2>Ce que disent nos clients</h2>
+    </div>
+    <div class="temoignages-grid">
+      <div class="temoignage-card" data-aos>
+        <div class="stars">★★★★★</div>
+        <p class="temoignage-text">« Notre marbre de Carrare était dans un état déplorable après 20 ans. L'équipe de Maison Sol Noble a fait un travail absolument remarquable. On n'aurait jamais cru que c'était le même sol. »</p>
+        <div class="temoignage-author">
+          <div class="author-avatar">SL</div>
+          <div>
+            <p class="author-name">Sophie L.</p>
+            <p class="author-loc">Paris 16ème</p>
+          </div>
+        </div>
+      </div>
+      <div class="temoignage-card" data-aos>
+        <div class="stars">★★★★★</div>
+        <p class="temoignage-text">« Travertin rénové dans toute notre villa. Résultat parfait, équipe professionnelle et ponctuelle. Ils sont venus depuis Bordeaux sans aucun problème. Je recommande à 100%. »</p>
+        <div class="temoignage-author">
+          <div class="author-avatar">PM</div>
+          <div>
+            <p class="author-name">Pierre M.</p>
+            <p class="author-loc">Côte d'Azur</p>
+          </div>
+        </div>
+      </div>
+      <div class="temoignage-card" data-aos>
+        <div class="stars">★★★★★</div>
+        <p class="temoignage-text">« Mon parquet chêne massif avait 80 ans, tout gris et rayé. Après vitrification, il est magnifique. Un vrai savoir-faire artisanal. Le devis était clair et le prix tenu. »</p>
+        <div class="temoignage-author">
+          <div class="author-avatar">MR</div>
+          <div>
+            <p class="author-name">Marie R.</p>
+            <p class="author-loc">Lyon</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FORMULAIRE CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-left">
+        <span class="section-eyebrow">Devis gratuit</span>
+        <h2>Parlez-nous de votre projet</h2>
+        <p>Réponse garantie sous 24h. Notre expert analyse votre situation et vous propose une solution adaptée, sans engagement.</p>
+        <div class="contact-infos">
+          <a href="tel:0554542864" class="contact-info-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+            <span>05 54 54 28 64</span>
+          </a>
+          <a href="mailto:contact@maisonsolnoble.com" class="contact-info-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>contact@maisonsolnoble.com</span>
+          </a>
+          <div class="contact-info-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Réponse sous 24h</span>
+          </div>
+        </div>
+      </div>
+      <div class="contact-right">
+        <form class="contact-form" id="contactForm" onsubmit="handleSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nom">Nom complet *</label>
+              <input type="text" id="nom" name="nom" placeholder="Jean Dupont" required>
+            </div>
+            <div class="form-group">
+              <label for="tel">Téléphone *</label>
+              <input type="tel" id="tel" name="tel" placeholder="06 12 34 56 78" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" placeholder="votre@email.com" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ville">Ville *</label>
+              <input type="text" id="ville" name="ville" placeholder="Paris" required>
+            </div>
+            <div class="form-group">
+              <label for="type">Type de sol *</label>
+              <select id="type" name="type" required>
+                <option value="">Sélectionner</option>
+                <option>Marbre</option>
+                <option>Travertin</option>
+                <option>Granito</option>
+                <option>Parquet massif</option>
+                <option>Autre pierre naturelle</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="surface">Surface approximative (m²)</label>
+            <input type="text" id="surface" name="surface" placeholder="Ex: 50 m²">
+          </div>
+          <div class="form-group">
+            <label for="message">Décrivez votre projet</label>
+            <textarea id="message" name="message" rows="4" placeholder="État actuel du sol, type d'intervention souhaitée, délais..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span id="btnText">Envoyer ma demande de devis</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+          <p class="form-mention">* Champs obligatoires · Vos données sont protégées et ne seront jamais partagées</p>
+          <div id="formSuccess" class="form-success" style="display:none;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <p>Votre demande a bien été envoyée ! Nous vous répondons sous 24h.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="logo-maison">Maison</span>
+          <span class="logo-sol">Sol Noble</span>
+        </div>
+        <p>Artisans rénovateurs de sols en pierre naturelle et parquet massif. Intervention partout en France.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Services</h4>
+        <a href="#services">Rénovation marbre</a>
+        <a href="#services">Rénovation travertin</a>
+        <a href="#services">Rénovation granito</a>
+        <a href="#services">Parquet massif</a>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <a href="tel:0554542864">05 54 54 28 64</a>
+        <a href="mailto:contact@maisonsolnoble.com">contact@maisonsolnoble.com</a>
+        <p>Du lundi au samedi<br>8h – 19h</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Maison Sol Noble · Tous droits réservés</p>
+      <div class="footer-legal">
+        <a href="#">Mentions légales</a>
+        <a href="#">Politique de confidentialité</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- BOUTON FLOTTANT APPEL -->
+<a href="tel:0554542864" class="float-call" id="floatCall" aria-label="Appeler Maison Sol Noble">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+  <span>Appeler</span>
+</a>
+
+<script src="script.js"></script>
+</body>
+</html>
