@@ -138,6 +138,17 @@ function activerCompte(token_activation,pin){
   return comptes[idx];
 }
 
+function setupDirecteurPin(pin){
+  // Setup spécial pour le directeur sans token
+  const comptes=getComptes();
+  const idx=comptes.findIndex(c=>c.role==="directeur");
+  if(idx===-1)throw new Error("Compte directeur introuvable");
+  comptes[idx].pin_hash=hashPin(pin);
+  comptes[idx].token_activation=null;
+  saveComptes(comptes);
+  return comptes[idx];
+}
+
 function getCompteByEmail(email){
   return getComptes().find(c=>c.email.toLowerCase()===email.toLowerCase());
 }
@@ -273,7 +284,7 @@ function renderSetup(){
   card.appendChild(el("div",{style:{textAlign:"center",marginBottom:"1.5rem"}},[
     el("div",{style:{fontSize:"32px",marginBottom:"8px"}},"🔐"),
     el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#f0ece4",fontWeight:"400",marginBottom:"6px"}},"Créez votre PIN"),
-    el("p",{style:{fontSize:"13px",color:"#6a6050"}},"Choisissez un code PIN à 4 chiffres pour accéder au CRM")
+    el("p",{style:{fontSize:"13px",color:"#6a6050"}},S.setupEmail?"Compte : "+S.setupEmail:"Choisissez un code PIN à 4 chiffres")
   ]));
   let pin1="",pin2="",etape=1;
   const titre=el("div",{style:{fontSize:"12px",color:"#c9a84c",textAlign:"center",marginBottom:"10px",letterSpacing:"0.1em",textTransform:"uppercase"}},"Choisissez votre PIN");
@@ -306,11 +317,16 @@ function renderSetup(){
           pin2=current;
           if(pin1===pin2){
             try{
-              const compte=activerCompte(S.setupToken,pin1);
+              let compte;
+              if(S.setupToken==="DIRECTEUR_SETUP"){
+                compte=setupDirecteurPin(pin1);
+              }else{
+                compte=activerCompte(S.setupToken,pin1);
+              }
               msgDiv.textContent="✓ PIN créé ! Redirection...";
               errDiv.textContent="";
               setTimeout(()=>{
-                const session=loginPin(compte.email,pin1);
+                loginPin(compte.email,pin1);
                 const devis=JSON.parse(localStorage.getItem("msn_devis")||"[]");
                 set({page:"crm",session:getSession(),role:compte.role,devis:devis.length?devis:DEMO_DEVIS,loading:false});
               },1000);
@@ -878,6 +894,16 @@ function render(){
     const devis=JSON.parse(localStorage.getItem("msn_devis")||"[]");
     S={...S,page:"crm",session,role:session.role,devis:devis.length?devis:DEMO_DEVIS,loading:false};
   }else{
+    // Vérifier si le directeur n'a pas encore de PIN
+    const comptes=getComptes();
+    const directeur=comptes.find(c=>c.role==="directeur");
+    if(directeur&&!directeur.pin_hash){
+      // Premier lancement - setup du directeur
+      S.page="setup";S.setupMode=true;
+      S.setupToken="DIRECTEUR_SETUP";
+      S.setupEmail=directeur.email;
+      render();return;
+    }
     if(emailParam)S.loginEmail=emailParam;
   }
   render();
