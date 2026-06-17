@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM — Maison Sol Noble</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d0d; color: #e0d8cc; font-family: Inter, sans-serif; }
+  #root { min-height: 100vh; }
+  #loading {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0d0d0d;
+    gap: 1rem;
+  }
+  #loading .logo-maison { font-size: 0.7rem; letter-spacing: 0.25em; color: #c9a84c; text-transform: uppercase; }
+  #loading .logo-sol { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: #f0ece4; font-weight: 300; }
+  #loading .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid #1e1e1e;
+    border-top-color: #c9a84c;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-top: 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="logo-maison">Maison</div>
+  <div class="logo-sol">Sol Noble</div>
+  <div class="spinner"></div>
+</div>
+
+<div id="root" style="display:none;"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18",
+    "react-dom/client": "https://esm.sh/react-dom@18/client",
+    "react/jsx-runtime": "https://esm.sh/react@18/jsx-runtime"
+  }
+}
+</script>
+
+<script type="module">
+  import { createElement } from 'react';
+  import { createRoot } from 'react-dom/client';
+
+  // Charge le CRM
+  const { default: CRM } = await import('./CRM.jsx');
+
+  // Cache le loader, affiche le CRM
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('root').style.display = 'block';
+
+  createRoot(document.getElementById('root')).render(createElement(CRM));
+</script>
+
+</body>
+</html>
