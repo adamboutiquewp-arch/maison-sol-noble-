@@ -86,6 +86,36 @@ async function updateProfile(token,id,patch){
   try{await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${id}`,{method:"PATCH",headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(patch)});}catch{}
 }
 
+async function createUser(token,email,password,nom,role){
+  // Créer le compte via Supabase Admin API
+  const r=await fetch(`${SUPA_URL}/auth/v1/admin/users`,{
+    method:"POST",
+    headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`,"Content-Type":"application/json"},
+    body:JSON.stringify({email,password,email_confirm:true,user_metadata:{nom,role}})
+  });
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.msg||d.message||"Erreur création compte");
+  // Créer/mettre à jour le profil
+  await fetch(`${SUPA_URL}/rest/v1/profiles`,{
+    method:"POST",
+    headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`,"Content-Type":"application/json",Prefer:"return=representation,resolution=merge-duplicates"},
+    body:JSON.stringify({id:d.id,email,nom,role})
+  });
+  return d;
+}
+
+async function resetPasswordEmail(token,email){
+  const r=await fetch(`${SUPA_URL}/auth/v1/admin/users`,{
+    headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`}
+  });
+  // Envoyer email de reset
+  await fetch(`${SUPA_URL}/auth/v1/recover`,{
+    method:"POST",
+    headers:{apikey:SUPA_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({email})
+  });
+}
+
 function genPDF(dv,type="devis"){
   const ht=dv.montant_ht||0,tva=(ht*0.2).toFixed(2),ttc=(ht*1.2).toFixed(2),titre=type==="devis"?"DEVIS":"FACTURE",num=type==="facture"?"FAC-"+dv.numero.replace("MSN-",""):dv.numero;
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:40px;}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #c9a84c;}.lm{font-size:9px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;}.ls{font-size:20px;font-weight:300;}.dt{font-size:26px;font-weight:700;letter-spacing:4px;}.bl{display:flex;justify-content:space-between;margin:25px 0;}.bl h3{font-size:9px;letter-spacing:2px;color:#c9a84c;text-transform:uppercase;margin-bottom:6px;}.bl p{line-height:1.7;}table{width:100%;border-collapse:collapse;margin:20px 0;}th{background:#1a1a1a;color:#fff;padding:9px 12px;text-align:left;font-size:11px;}td{padding:9px 12px;border-bottom:1px solid #eee;}.tot{margin-left:auto;width:260px;margin-top:15px;}.tr{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;}.ttc{border-top:2px solid #1a1a1a;font-size:15px;font-weight:700;padding-top:8px;margin-top:3px;}.gold{color:#c9a84c;font-weight:700;}.ft{margin-top:40px;padding-top:15px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;}.nt{background:#f9f7f3;border-left:3px solid #c9a84c;padding:10px 14px;margin:15px 0;font-size:11px;color:#555;}</style></head><body><div class="hd"><div><div class="lm">Maison</div><div class="ls">Sol Noble</div><div style="font-size:11px;color:#888;margin-top:4px;">${INFO.adresse}, ${INFO.cp} ${INFO.ville}</div><div style="font-size:11px;color:#888;">${INFO.tel} · ${INFO.email}</div></div><div style="text-align:right"><div class="dt">${titre}</div><div style="font-size:12px;color:#888">N° ${num}</div><div style="font-size:11px;color:#888;margin-top:3px">Date : ${new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR")}</div><div style="font-size:11px;color:#888">${type==="devis"?"Valable 30 jours":"Échéance : "+new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR")}</div></div></div><div class="bl"><div><h3>Émetteur</h3><p><strong>${INFO.nom}</strong><br>${INFO.forme}<br>SIRET : ${INFO.siret}<br>TVA : ${INFO.tva}</p></div><div><h3>Client</h3><p><strong>${dv.client_nom}</strong><br>${dv.client_tel||""}<br>${dv.client_email||""}<br>${dv.ville||""}</p></div></div><table><thead><tr><th>Description</th><th>Type de sol</th><th>Surface</th><th>Prix/m²</th><th>Total HT</th></tr></thead><tbody><tr><td>${dv.travaux}</td><td>${TARIFS[dv.type_sol]?.label||dv.type_sol}</td><td>${dv.surface} m²</td><td>${dv.prix_m2} €</td><td><strong>${ht.toFixed(2)} €</strong></td></tr>${dv.description?`<tr><td colspan="5" style="font-size:11px;color:#666;font-style:italic">${dv.description}</td></tr>`:""}</tbody></table><div class="tot"><div class="tr"><span>Montant HT</span><span>${ht.toFixed(2)} €</span></div><div class="tr"><span>TVA 20%</span><span>${tva} €</span></div><div class="tr ttc"><span>TOTAL TTC</span><span class="gold">${ttc} €</span></div></div><div class="nt">${type==="devis"?"<strong>Conditions :</strong> Devis valable 30 jours. Déplacement inclus. Acompte 30% à la commande.":"<strong>Règlement :</strong> Paiement à réception. Pénalités de retard : 3x le taux légal."}</div><div class="ft">${INFO.nom} · SIRET ${INFO.siret} · TVA ${INFO.tva}<br>${INFO.adresse}, ${INFO.cp} ${INFO.ville} · ${INFO.email} · ${INFO.site}</div></body></html>`;
@@ -248,12 +278,13 @@ function renderModal(){
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
   const box=el("div",{style:{background:"#141414",border:"1px solid #2a2a2a",borderRadius:"8px",width:"100%",maxWidth:"640px"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #1e1e1e"}});
-  const titles={nouveau:"Nouveau devis",detail:`Devis ${S.selected?.numero||""}`};
+  const titles={nouveau:"Nouveau devis",detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte employé"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#f0ece4",fontWeight:"400"}},titles[S.modal]||""));
   const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
   if(S.modal==="nouveau")body.appendChild(renderFormDevis());
   else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
+  else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
   box.appendChild(body);ov.appendChild(box);return ov;
 }
 
@@ -380,55 +411,182 @@ function renderClients(){
 
 function renderEmployes(){
   const wrap=el("div",{});
-  wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"20px",fontWeight:"400",marginBottom:"1.5rem"}},"Équipe & rôles"));
-  const rolesGrid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px",marginBottom:"2rem"}});
+  
+  // Header avec bouton créer
+  const bar=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.5rem",flexWrap:"wrap",gap:"0.8rem"}});
+  bar.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"20px",fontWeight:"400"}},"Gestion de l'équipe"));
+  const bn=el("button",{style:BP},"+ Nouveau compte");
+  bn.addEventListener("click",()=>set({modal:"employe_new"}));
+  bar.appendChild(bn);
+  wrap.appendChild(bar);
+
+  // Tableau des comptes
+  const profiles=S.profiles||[];
+  const tbl=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",overflow:"hidden",marginBottom:"2rem"}});
+  const t=el("table",{});
+  const th=el("tr",{style:{borderBottom:"1px solid #1e1e1e"}});
+  ["Nom","Email","Rôle","Statut","Actions"].forEach(h=>th.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",fontWeight:"500"}},h)));
+  t.appendChild(el("thead",{},[th]));
+  const tbody=el("tbody",{});
+  
+  if(!profiles.length){
+    const tr=el("tr",{});
+    tr.appendChild(el("td",{colSpan:"5",style:{padding:"2rem",textAlign:"center",color:"#4a4030",fontSize:"13px"}},"Aucun compte — clique sur "+ Nouveau compte" pour créer le premier."));
+    tbody.appendChild(tr);
+  }
+  
+  profiles.forEach(p=>{
+    const isMe=p.id===S.user?.id;
+    const tr=el("tr",{style:{borderBottom:"1px solid #1a1a1a"}});
+    tr.addEventListener("mouseenter",()=>tr.style.background="#161616");
+    tr.addEventListener("mouseleave",()=>tr.style.background="");
+    
+    // Nom
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#e0d8cc",fontWeight:"500",fontSize:"13px"}},
+      el("div",{style:{display:"flex",alignItems:"center",gap:"8px"}},[
+        el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"12px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(p.nom||p.email||"?").slice(0,2).toUpperCase()),
+        el("span",{},p.nom||"—")
+      ])
+    ));
+    
+    // Email
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#7a7060",fontSize:"12px"}},p.email||"—"));
+    
+    // Rôle — dropdown si directeur et pas soi-même
+    const tdR=el("td",{style:{padding:"0.8rem 1rem"}});
+    if(!isMe){
+      const rs=el("select",{style:{background:"#0d0d0d",border:"1px solid #2a2a2a",color:"#e0d8cc",padding:"4px 8px",fontSize:"12px",borderRadius:"4px",cursor:"pointer"}});
+      Object.entries(ROLES).forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===p.role)o.selected=true;rs.appendChild(o);});
+      rs.addEventListener("change",async e=>{
+        await updateProfile(S.token,p.id,{role:e.target.value});
+        S.profiles=S.profiles.map(x=>x.id===p.id?{...x,role:e.target.value}:x);
+        render();
+      });
+      tdR.appendChild(rs);
+    }else{tdR.appendChild(roleBadge(p.role));}
+    tr.appendChild(tdR);
+    
+    // Statut
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem"}},
+      el("span",{style:{color:p.actif!==false?"#3B6D11":"#A32D2D",fontSize:"12px"}},(p.actif!==false?"● Actif":"○ Inactif"))
+    ));
+    
+    // Actions
+    const tdA=el("td",{style:{padding:"0.8rem 1rem"}});
+    const acts=el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap"}});
+    
+    if(!isMe){
+      // Activer/Désactiver
+      const bT=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:p.actif!==false?"#A32D2D":"#3B6D11",borderColor:p.actif!==false?"#A32D2D44":"#3B6D1144"}},p.actif!==false?"Désactiver":"Activer");
+      bT.addEventListener("click",async()=>{
+        const na=!(p.actif!==false);
+        await updateProfile(S.token,p.id,{actif:na});
+        S.profiles=S.profiles.map(x=>x.id===p.id?{...x,actif:na}:x);
+        render();
+      });
+      acts.appendChild(bT);
+      
+      // Reset mot de passe
+      const bR=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"🔑 Reset MDP");
+      bR.addEventListener("click",async()=>{
+        try{
+          await resetPasswordEmail(S.token,p.email);
+          bR.textContent="✓ Email envoyé";bR.style.color="#3B6D11";
+          setTimeout(()=>{bR.textContent="🔑 Reset MDP";bR.style.color="";},3000);
+        }catch(e){bR.textContent="Erreur";setTimeout(()=>bR.textContent="🔑 Reset MDP",2000);}
+      });
+      acts.appendChild(bR);
+    }else{
+      acts.appendChild(el("span",{style:{color:"#4a4030",fontSize:"12px",padding:"3px 8px"}},"Vous"));
+    }
+    
+    tdA.appendChild(acts);tr.appendChild(tdA);tbody.appendChild(tr);
+  });
+  
+  t.appendChild(tbody);tbl.appendChild(t);wrap.appendChild(tbl);
+
+  // Légende des rôles
+  const legend=el("div",{});
+  legend.appendChild(el("h4",{style:{color:"#c9a84c",fontSize:"12px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem",fontWeight:"500"}},"Accès par rôle"));
+  const rolesGrid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px"}});
   Object.entries(ROLES).forEach(([key,r])=>{
-    const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1rem"}});
-    const top=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"0.6rem"}});
+    const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"0.9rem"}});
+    const top=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"0.5rem"}});
     top.appendChild(el("div",{style:{width:"8px",height:"8px",borderRadius:"50%",background:r.color}}));
     top.appendChild(el("div",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"13px"}},r.label));
     card.appendChild(top);
     r.acces.forEach(a=>card.appendChild(el("div",{style:{fontSize:"11px",color:"#5a5040",padding:"1px 0"}},"✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a])));
     rolesGrid.appendChild(card);
   });
-  wrap.appendChild(rolesGrid);
-  wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"18px",fontWeight:"400",marginBottom:"1rem"}},"Comptes actifs"));
-  const profiles=S.profiles||[];
-  const tbl=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",overflow:"hidden",marginBottom:"1.5rem"}});
-  const t=el("table",{});
-  const th=el("tr",{style:{borderBottom:"1px solid #1e1e1e"}});
-  ["Nom","Email","Rôle","Statut","Actions"].forEach(h=>th.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",fontWeight:"500"}},h)));
-  t.appendChild(el("thead",{},[th]));
-  const tbody=el("tbody",{});
-  if(!profiles.length){const tr=el("tr",{});tr.appendChild(el("td",{colSpan:"5",style:{padding:"2rem",textAlign:"center",color:"#4a4030",fontSize:"13px"}},"Lance le SQL supabase-setup-v2.sql pour voir les profils ici."));tbody.appendChild(tr);}
-  profiles.forEach(p=>{
-    const tr=el("tr",{style:{borderBottom:"1px solid #1a1a1a"}});
-    tr.addEventListener("mouseenter",()=>tr.style.background="#161616");tr.addEventListener("mouseleave",()=>tr.style.background="");
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#e0d8cc",fontWeight:"500",fontSize:"13px"}},p.nom||"—"));
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#7a7060",fontSize:"12px"}},p.email||"—"));
-    const tdR=el("td",{style:{padding:"0.8rem 1rem"}});
-    if(S.role==="directeur"&&p.id!==S.user?.id){
-      const rs=el("select",{style:{background:"#0d0d0d",border:"1px solid #2a2a2a",color:"#e0d8cc",padding:"4px 8px",fontSize:"12px",borderRadius:"4px",cursor:"pointer"}});
-      Object.entries(ROLES).forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===p.role)o.selected=true;rs.appendChild(o);});
-      rs.addEventListener("change",async e=>{await updateProfile(S.token,p.id,{role:e.target.value});S.profiles=S.profiles.map(x=>x.id===p.id?{...x,role:e.target.value}:x);render();});
-      tdR.appendChild(rs);
-    }else{tdR.appendChild(roleBadge(p.role));}
-    tr.appendChild(tdR);
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem"}},el("span",{style:{color:p.actif!==false?"#3B6D11":"#A32D2D",fontSize:"12px"}},(p.actif!==false?"● Actif":"○ Inactif"))));
-    const tdA=el("td",{style:{padding:"0.8rem 1rem"}});
-    if(S.role==="directeur"&&p.id!==S.user?.id){
-      const bT=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:p.actif!==false?"#A32D2D":"#3B6D11",borderColor:p.actif!==false?"#A32D2D44":"#3B6D1144"}},p.actif!==false?"Désactiver":"Activer");
-      bT.addEventListener("click",async()=>{const na=!(p.actif!==false);await updateProfile(S.token,p.id,{actif:na});S.profiles=S.profiles.map(x=>x.id===p.id?{...x,actif:na}:x);render();});
-      tdA.appendChild(bT);
-    }else{tdA.appendChild(el("span",{style:{color:"#4a4030",fontSize:"12px"}},p.id===S.user?.id?"Vous":"—"));}
-    tr.appendChild(tdA);tbody.appendChild(tr);
-  });
-  t.appendChild(tbody);tbl.appendChild(t);wrap.appendChild(tbl);
-  const guide=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1.5rem"}});
-  guide.appendChild(el("h4",{style:{color:"#c9a84c",fontSize:"12px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem",fontWeight:"500"}},"Créer un nouveau compte"));
-  ["1. Supabase → Authentication → Users → Add user","2. Renseigne email et mot de passe","3. User Metadata : {\"role\":\"employe\", \"nom\":\"Prénom Nom\"}","4. Valide — le profil apparaît ici automatiquement","5. Change le rôle depuis ce tableau si besoin"].forEach(s=>guide.appendChild(el("div",{style:{fontSize:"13px",color:"#7a7060",padding:"4px 0",display:"flex",gap:"8px"}},[el("span",{style:{color:"#c9a84c",flexShrink:"0"}},"→"),el("span",{},s)])));
-  wrap.appendChild(guide);return wrap;
+  legend.appendChild(rolesGrid);
+  wrap.appendChild(legend);
+  return wrap;
 }
+
+function renderFormEmploye(){
+  let nomVal="",emailVal="",pwdVal="",roleVal="employe";
+  const wrap=el("div",{});
+  wrap.appendChild(el("p",{style:{color:"#8a8070",fontSize:"13px",marginBottom:"1.5rem"}},"Le compte est créé immédiatement. L'employé peut se connecter sur maisonsolnoble.com/crm avec cet email et ce mot de passe."));
+  const form=el("form",{});
+  
+  function inp2(placeholder,type="text",onInput){const i=el("input",{type,placeholder});i.addEventListener("input",e=>onInput(e.target.value));return i;}
+  
+  form.appendChild(grp("Nom complet *",inp2("Prénom Nom","text",v=>nomVal=v)));
+  form.appendChild(grp("Email *",inp2("employe@email.com","email",v=>emailVal=v)));
+  form.appendChild(grp("Mot de passe *",inp2("Minimum 6 caractères","password",v=>pwdVal=v)));
+  
+  const rg=el("div",{style:{marginBottom:"1rem"}});
+  rg.appendChild(lbl("Rôle *"));
+  const rs=el("select",{});
+  Object.entries(ROLES).filter(([k])=>k!=="directeur").forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===roleVal)o.selected=true;rs.appendChild(o);});
+  rs.addEventListener("change",e=>{roleVal=e.target.value;updateAcces();});
+  rg.appendChild(rs);form.appendChild(rg);
+  
+  // Affichage accès
+  const accBox=el("div",{style:{background:"#0a0a0a",border:"1px solid #2a2a2a",borderRadius:"6px",padding:"0.8rem 1rem",marginBottom:"1.5rem"}});
+  accBox.appendChild(el("div",{style:{fontSize:"11px",color:"#5a5040",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"6px"}},"Accès de ce rôle"));
+  const accDiv=el("div",{style:{fontSize:"12px",color:"#7a7060"}});
+  function updateAcces(){
+    accDiv.innerHTML="";
+    ROLES[roleVal||"employe"].acces.forEach(a=>{
+      const d=document.createElement("div");
+      d.textContent="✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a];
+      accDiv.appendChild(d);
+    });
+  }
+  updateAcces();
+  accBox.appendChild(accDiv);form.appendChild(accBox);
+  
+  // Message résultat
+  const msgDiv=el("div",{style:{display:"none",borderRadius:"6px",padding:"0.7rem 1rem",marginBottom:"1rem",fontSize:"13px"}});
+  form.appendChild(msgDiv);
+  
+  const btns=el("div",{style:{display:"flex",gap:"0.8rem",justifyContent:"flex-end"}});
+  const ba=el("button",{type:"button",style:BS},"Annuler");ba.addEventListener("click",()=>set({modal:null}));btns.appendChild(ba);
+  const bs=el("button",{type:"submit",style:BP},"Créer le compte");btns.appendChild(bs);form.appendChild(btns);
+  
+  form.addEventListener("submit",async e=>{
+    e.preventDefault();
+    if(!emailVal||!pwdVal||!nomVal){msgDiv.style.display="block";msgDiv.style.background="rgba(163,45,45,0.15)";msgDiv.style.border="1px solid rgba(163,45,45,0.3)";msgDiv.style.color="#e07070";msgDiv.textContent="Remplis tous les champs obligatoires.";return;}
+    if(pwdVal.length<6){msgDiv.style.display="block";msgDiv.style.background="rgba(163,45,45,0.15)";msgDiv.style.border="1px solid rgba(163,45,45,0.3)";msgDiv.style.color="#e07070";msgDiv.textContent="Le mot de passe doit faire au moins 6 caractères.";return;}
+    bs.disabled=true;bs.textContent="Création en cours...";
+    try{
+      await createUser(S.token,emailVal,pwdVal,nomVal,roleVal||"employe");
+      // Rafraîchir les profils
+      const profiles=await fetchProfiles(S.token);
+      S.profiles=profiles||S.profiles;
+      msgDiv.style.display="block";msgDiv.style.background="rgba(59,109,17,0.15)";msgDiv.style.border="1px solid rgba(59,109,17,0.3)";msgDiv.style.color="#7acc50";msgDiv.textContent="✓ Compte créé ! "+nomVal+" peut se connecter sur maisonsolnoble.com/crm";
+      bs.textContent="Compte créé ✓";
+      setTimeout(()=>set({modal:null,onglet:"employes"}),2000);
+    }catch(err){
+      msgDiv.style.display="block";msgDiv.style.background="rgba(163,45,45,0.15)";msgDiv.style.border="1px solid rgba(163,45,45,0.3)";msgDiv.style.color="#e07070";msgDiv.textContent="Erreur : "+err.message;
+      bs.disabled=false;bs.textContent="Créer le compte";
+    }
+  });
+  
+  wrap.appendChild(form);return wrap;
+}
+
 
 function renderFiches(){
   const wrap=el("div",{});
