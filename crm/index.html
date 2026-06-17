@@ -22,15 +22,11 @@ table{width:100%;border-collapse:collapse;}
 </style>
 </head>
 <body>
-<div id="app"></div>
-<script>
-// Afficher immédiatement le login si pas de token
-if(!localStorage.getItem("msn_token")){
-  document.getElementById("app").innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;background:#0d0d0d;"><div style="font-size:11px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;font-family:Inter,sans-serif;">Maison</div><div style="font-family:Georgia,serif;font-size:2rem;color:#f0ece4;">Sol Noble</div><div style="width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div></div>';
-}else{
-  document.getElementById("app").innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;background:#0d0d0d;"><div style="font-size:11px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;font-family:Inter,sans-serif;">Maison</div><div style="font-family:Georgia,serif;font-size:2rem;color:#f0ece4;">Sol Noble</div><div style="font-size:12px;color:#5a5040;font-family:Inter,sans-serif;margin-top:8px;">Chargement de votre espace...</div><div style="width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div></div>';
-}
-</script>
+<div id="app" style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;">
+  <div style="font-size:11px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;">Maison</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:#f0ece4;">Sol Noble</div>
+  <div style="width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div>
+</div>
 <script>
 const SUPA_URL="https://gwcrschnztnyqvfsjpdd.supabase.co";
 const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE";
@@ -678,28 +674,28 @@ function render(){
 }
 
 (async function(){
-  // Timeout 8s pour éviter le chargement infini
-  const timeout = new Promise(resolve => setTimeout(() => resolve(null), 8000));
+  const token = localStorage.getItem("msn_token");
+  
+  // Pas de token = afficher login immédiatement
+  if(!token){ render(); return; }
   
   try {
-    const token=localStorage.getItem("msn_token");
-    if(token){
-      const userPromise = authUser(token);
-      const user = await Promise.race([userPromise, timeout]);
-      if(user&&user.id){
-        const role=user.role||user.user_metadata?.role||"employe";
-        const devis = await Promise.race([
-          api("devis?order=created_at.desc",{},token),
-          new Promise(r=>setTimeout(()=>r(DEMO_DEVIS),5000))
-        ]) || DEMO_DEVIS;
-        const profiles = await Promise.race([
-          fetchProfiles(token),
-          new Promise(r=>setTimeout(()=>r([]),5000))
-        ]) || [];
-        S={...S,page:"crm",token,user,role,devis,profiles,loading:false};
-      }else{
-        localStorage.removeItem("msn_token");
-      }
+    // Vérifier le token avec timeout 6s
+    const user = await Promise.race([
+      authUser(token),
+      new Promise(r=>setTimeout(()=>r(null), 6000))
+    ]);
+    
+    if(user && user.id){
+      const role = user.role || user.user_metadata?.role || "employe";
+      // Charger devis et profils en parallèle avec timeout
+      const [devis, profiles] = await Promise.all([
+        Promise.race([api("devis?order=created_at.desc",{},token), new Promise(r=>setTimeout(()=>r(null),5000))]),
+        Promise.race([fetchProfiles(token), new Promise(r=>setTimeout(()=>r([]),5000))])
+      ]);
+      S = {...S, page:"crm", token, user, role, devis:devis||DEMO_DEVIS, profiles:profiles||[], loading:false};
+    } else {
+      localStorage.removeItem("msn_token");
     }
   } catch(e) {
     localStorage.removeItem("msn_token");
