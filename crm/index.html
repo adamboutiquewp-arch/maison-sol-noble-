@@ -22,11 +22,15 @@ table{width:100%;border-collapse:collapse;}
 </style>
 </head>
 <body>
-<div id="app" style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;">
-  <div style="font-size:11px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;font-family:Inter,sans-serif;">Maison</div>
-  <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:#f0ece4;">Sol Noble</div>
-  <div style="width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div>
-</div>
+<div id="app"></div>
+<script>
+// Afficher immédiatement le login si pas de token
+if(!localStorage.getItem("msn_token")){
+  document.getElementById("app").innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;background:#0d0d0d;"><div style="font-size:11px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;font-family:Inter,sans-serif;">Maison</div><div style="font-family:Georgia,serif;font-size:2rem;color:#f0ece4;">Sol Noble</div><div style="width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div></div>';
+}else{
+  document.getElementById("app").innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;background:#0d0d0d;"><div style="font-size:11px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;font-family:Inter,sans-serif;">Maison</div><div style="font-family:Georgia,serif;font-size:2rem;color:#f0ece4;">Sol Noble</div><div style="font-size:12px;color:#5a5040;font-family:Inter,sans-serif;margin-top:8px;">Chargement de votre espace...</div><div style="width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div></div>';
+}
+</script>
 <script>
 const SUPA_URL="https://gwcrschnztnyqvfsjpdd.supabase.co";
 const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE";
@@ -69,11 +73,26 @@ async function authLogout(token){try{await fetch(`${SUPA_URL}/auth/v1/logout`,{m
 
 async function authUser(token){
   try{
-    const r=await fetch(`${SUPA_URL}/auth/v1/user`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`}});
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 6000);
+    const r=await fetch(`${SUPA_URL}/auth/v1/user`,{
+      headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`},
+      signal:controller.signal
+    });
+    clearTimeout(tid);
     if(!r.ok)return null;
     const user=await r.json();
-    const pr=await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${user.id}&select=role,nom,email,actif`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`,Accept:"application/json"}});
-    if(pr.ok){const p=await pr.json();if(p&&p.length>0){user.profile=p[0];user.role=p[0].role||"employe";}}
+    // Fetch profile with timeout
+    try {
+      const c2 = new AbortController();
+      const t2 = setTimeout(()=>c2.abort(), 4000);
+      const pr=await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${user.id}&select=role,nom,email,actif`,{
+        headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`,Accept:"application/json"},
+        signal:c2.signal
+      });
+      clearTimeout(t2);
+      if(pr.ok){const p=await pr.json();if(p&&p.length>0){user.profile=p[0];user.role=p[0].role||"employe";}}
+    } catch{}
     return user;
   }catch{return null;}
 }
@@ -659,15 +678,31 @@ function render(){
 }
 
 (async function(){
-  const token=localStorage.getItem("msn_token");
-  if(token){
-    const user=await authUser(token);
-    if(user){
-      const role=user.role||user.user_metadata?.role||"employe";
-      const devis=await api("devis?order=created_at.desc",{},token)||DEMO_DEVIS;
-      const profiles=await fetchProfiles(token);
-      S={...S,page:"crm",token,user,role,devis,profiles:profiles||[],loading:false};
-    }else{localStorage.removeItem("msn_token");}
+  // Timeout 8s pour éviter le chargement infini
+  const timeout = new Promise(resolve => setTimeout(() => resolve(null), 8000));
+  
+  try {
+    const token=localStorage.getItem("msn_token");
+    if(token){
+      const userPromise = authUser(token);
+      const user = await Promise.race([userPromise, timeout]);
+      if(user&&user.id){
+        const role=user.role||user.user_metadata?.role||"employe";
+        const devis = await Promise.race([
+          api("devis?order=created_at.desc",{},token),
+          new Promise(r=>setTimeout(()=>r(DEMO_DEVIS),5000))
+        ]) || DEMO_DEVIS;
+        const profiles = await Promise.race([
+          fetchProfiles(token),
+          new Promise(r=>setTimeout(()=>r([]),5000))
+        ]) || [];
+        S={...S,page:"crm",token,user,role,devis,profiles,loading:false};
+      }else{
+        localStorage.removeItem("msn_token");
+      }
+    }
+  } catch(e) {
+    localStorage.removeItem("msn_token");
   }
   render();
 })();
