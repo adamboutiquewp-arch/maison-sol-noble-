@@ -159,6 +159,11 @@ function updateCompte(id,patch){
   if(idx!==-1){comptes[idx]={...comptes[idx],...patch};saveComptes(comptes);}
 }
 
+function deleteCompte(id){
+  const comptes=getComptes().filter(c=>c.id!==id);
+  saveComptes(comptes);
+}
+
 // Initialiser compte directeur par défaut si vide
 function initDirecteur(){
   const comptes=getComptes();
@@ -681,6 +686,15 @@ function renderEmployes(){
         setTimeout(()=>{bR.textContent="🔑 Reset PIN";bR.style.color="";},3000);
       });
       acts.appendChild(bR);
+      // Bouton supprimer
+      const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑 Supprimer");
+      bDel.addEventListener("click",()=>{
+        if(confirm("Supprimer le compte de "+p.nom+" ? Cette action est irréversible.")){
+          deleteCompte(p.id);
+          render();
+        }
+      });
+      acts.appendChild(bDel);
     }else{
       acts.appendChild(el("span",{style:{color:"#4a4030",fontSize:"12px",padding:"3px 8px"}},"Vous"));
     }
