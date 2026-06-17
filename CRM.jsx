@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 
 // ─── CONFIG SUPABASE ───────────────────────────────────────────────────────────
 // Remplace ces deux valeurs par tes vraies clés Supabase (voir SETUP.md)
-const SUPABASE_URL = "https://TON_PROJECT_ID.supabase.co";
-const SUPABASE_KEY = "TON_ANON_KEY";
+const SUPABASE_URL = "https://gwcrschnztnyqvfsjpdd.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE";
 
 // Helper Supabase REST
 async function sb(path, opts = {}) {
