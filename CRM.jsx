@@ -5,12 +5,40 @@ import { useState, useEffect, useCallback } from "react";
 const SUPABASE_URL = "https://gwcrschnztnyqvfsjpdd.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE";
 
+
+// ─── AUTH SUPABASE ─────────────────────────────────────────────────────────────
+async function signIn(email, password) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error_description || data.msg || "Erreur de connexion");
+  return data;
+}
+
+async function signOut(token) {
+  await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` },
+  });
+}
+
+async function getUser(token) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return null;
+  return await res.json();
+}
+
 // Helper Supabase REST
-async function sb(path, opts = {}) {
+async function sb(path, opts = {}, token = null) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: {
       apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
+      Authorization: `Bearer ${token || SUPABASE_KEY}`,
       "Content-Type": "application/json",
       Prefer: opts.prefer || "return=representation",
     },
@@ -605,12 +633,45 @@ export default function CRM() {
   const [clientPrefill, setClientPrefill] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem("msn_token") || null);
+  const [user, setUser] = useState(null);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  // Vérifier token existant au démarrage
+  useEffect(() => {
+    (async () => {
+      const token = localStorage.getItem("msn_token");
+      if (token) {
+        const u = await getUser(token);
+        if (u) { setAuthToken(token); setUser(u); }
+        else { localStorage.removeItem("msn_token"); setAuthToken(null); }
+      }
+      setAuthChecking(false);
+    })();
+  }, []);
+
+  function handleLogin(token, u) {
+    localStorage.setItem("msn_token", token);
+    setAuthToken(token);
+    setUser(u);
+  }
+
+  async function handleLogout() {
+    await signOut(authToken);
+    localStorage.removeItem("msn_token");
+    setAuthToken(null);
+    setUser(null);
+  }
+
+  // Afficher login si pas connecté
+  if (authChecking) return <div style={{ minHeight: "100vh", background: "#0d0d0d", display: "flex", alignItems: "center", justifyContent: "center", color: "#5a5040", fontFamily: "Inter,sans-serif" }}>Chargement...</div>;
+  if (!authToken) return <LoginScreen onLogin={handleLogin} />;
 
   // Chargement initial
   useEffect(() => {
     (async () => {
       try {
-        const data = await sb("devis?order=created_at.desc");
+        const data = await sb("devis?order=created_at.desc", {}, authToken);
         setDevis(data || []);
       } catch {
         // Mode démo — données factices
@@ -656,8 +717,10 @@ export default function CRM() {
           ))}
         </nav>
         <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid #1a1a1a" }}>
-          <div style={{ fontSize: 11, color: "#3a3020" }}>contact@maisonsolnoble.com</div>
-          <div style={{ fontSize: 11, color: "#3a3020" }}>05 54 54 28 64</div>
+          <div style={{ fontSize: 11, color: "#5a5040", marginBottom: 4 }}>{user?.email || "contact@maisonsolnoble.com"}</div>
+          <button onClick={handleLogout} style={{ background: "none", border: "none", color: "#5a5040", cursor: "pointer", fontSize: 11, padding: 0, display: "flex", alignItems: "center", gap: 5 }}>
+            <span>⏻</span> Déconnexion
+          </button>
         </div>
       </div>
 
@@ -671,6 +734,7 @@ export default function CRM() {
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
             <span style={{ fontSize: 11, color: "#4a4030" }}>{new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</span>
             <button style={{ ...btnPrimary, padding: "0.5rem 1rem", fontSize: 12 }} onClick={() => { setClientPrefill(null); setOnglet("devis"); }}>+ Devis rapide</button>
+            <button style={{ ...btnSecondary, padding: "0.5rem 1rem", fontSize: 12 }} onClick={handleLogout} title="Se déconnecter">⏻</button>
           </div>
         </div>
 
