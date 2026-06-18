@@ -66,7 +66,10 @@ if (floatBtns) {
   }, { passive: true });
 }
 
-// ===== FORMULAIRE =====
+// ===== FORMULAIRE — envoie dans Supabase comme "lead" =====
+const SUPA_URL = 'https://gwcrschnztnyqvfsjpdd.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE';
+
 async function handleSubmit(e) {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
@@ -77,32 +80,38 @@ async function handleSubmit(e) {
   btn.disabled = true;
   btnText.textContent = 'Envoi en cours...';
 
+  const num = 'LEAD-' + Date.now().toString().slice(-6);
   const formData = {
-    nom: document.getElementById('nom').value,
-    tel: document.getElementById('tel').value,
-    email: document.getElementById('email').value,
+    numero: num,
+    client_nom: document.getElementById('nom').value,
+    client_tel: document.getElementById('tel').value,
+    client_email: document.getElementById('email').value,
     ville: document.getElementById('ville').value,
-    type: document.getElementById('type').value,
-    surface: document.getElementById('surface').value,
-    message: document.getElementById('message').value,
+    type_sol: document.getElementById('type').value.toLowerCase().replace(' massif','').replace('autre pierre naturelle','marbre'),
+    travaux: 'Demande de devis',
+    surface: document.getElementById('surface').value || '0',
+    etat: 'moyen',
+    description: document.getElementById('message').value,
+    prix_m2: 0,
+    montant_ht: 0,
+    statut: 'Nouveau',
+    created_at: new Date().toISOString(),
+    source: 'site_vitrine',
   };
 
-  // Formspree endpoint — remplace YOUR_FORM_ID par ton ID Formspree
-  // Crée un compte gratuit sur formspree.io et remplace la valeur ci-dessous
-  const FORMSPREE_URL = 'https://formspree.io/f/YOUR_FORM_ID';
-
   try {
-    const response = await fetch(FORMSPREE_URL, {
+    const response = await fetch(`${SUPA_URL}/rest/v1/devis`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        ...formData,
-        _subject: `Nouvelle demande de devis — ${formData.type} — ${formData.ville}`,
-        _replyto: formData.email,
-      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Prefer': 'return=representation',
+      },
+      body: JSON.stringify(formData),
     });
 
-    if (response.ok) {
+    if (response.ok || response.status === 201) {
       form.style.display = 'none';
       successDiv.style.display = 'flex';
       successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -110,10 +119,10 @@ async function handleSubmit(e) {
       throw new Error('Erreur réseau');
     }
   } catch (err) {
-    // Fallback : lien mailto si Formspree non configuré
-    const subject = encodeURIComponent(`Demande de devis — ${formData.type} — ${formData.ville}`);
+    // Fallback mailto si Supabase inaccessible
+    const subject = encodeURIComponent(`Demande de devis — ${formData.type_sol} — ${formData.ville}`);
     const body = encodeURIComponent(
-      `Nom: ${formData.nom}\nTéléphone: ${formData.tel}\nEmail: ${formData.email}\nVille: ${formData.ville}\nType de sol: ${formData.type}\nSurface: ${formData.surface}\n\nMessage:\n${formData.message}`
+      `Nom: ${formData.client_nom}\nTéléphone: ${formData.client_tel}\nEmail: ${formData.client_email}\nVille: ${formData.ville}\nType de sol: ${document.getElementById('type').value}\nSurface: ${formData.surface}\n\nMessage:\n${formData.description}`
     );
     window.location.href = `mailto:contact@maisonsolnoble.com?subject=${subject}&body=${body}`;
     btn.disabled = false;
@@ -153,13 +162,11 @@ function initMap() {
     attributionControl: false,
   });
 
-  // Tuiles sombres CartoDB
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 10,
     minZoom: 4,
   }).addTo(map);
 
-  // Icône personnalisée dorée
   const goldIcon = L.divIcon({
     className: '',
     html: '<div style="width:12px;height:12px;background:#c9a84c;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px rgba(201,168,76,0.8);"></div>',
@@ -193,11 +200,9 @@ function initMap() {
       );
   });
 
-  // Attribution minimale
   L.control.attribution({ prefix: '© CartoDB' }).addTo(map);
 }
 
-// Initialiser la carte après chargement complet
 window.addEventListener('load', function() {
   setTimeout(initMap, 100);
 });

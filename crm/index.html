@@ -360,7 +360,7 @@ const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 // ── DÉTECTION MOBILE ──────────────────────────────────────────
 function isMobile(){return window.innerWidth<=768;}
-const INFO={nom:"Maison Sol Noble",forme:"SAS à associé unique",siret:"105 745 806 R.C.S. Toulouse",tva:"FR3102.105745806",adresse:"6 place du Président Thomas Woodrow Wilson",cp:"31000",ville:"Toulouse",tel:"05 54 54 28 64",email:"contact@maisonsolnoble.com",president:"TAHAR Adam",capital:"50,00 €",site:"maisonsolnoble.com"};
+const INFO={nom:"Maison Sol Noble",forme:"SAS à associé unique",siret:"105 745 806 00015",tva:"FR3102.105745806",adresse:"6 place du Président Thomas Woodrow Wilson",cp:"31000",ville:"Toulouse",tel:"05 54 54 28 64",email:"contact@maisonsolnoble.com",president:"TAHAR Adam",capital:"50,00 €",site:"maisonsolnoble.com"};
 
 let TARIFS={
   marbre:{label:"Marbre",trav:["Polissage simple","Rénovation complète","Cristallisation","Protection imperméabilisante"],prix:[30,55,45,14]},
@@ -380,6 +380,8 @@ const ROLES={directeur:{label:"Directeur",color:"#c9a84c",acces:["devis","planni
 const COEFF={bon:1,moyen:1.2,mauvais:1.5};
 const STATUTS=["Nouveau","Contacté","Devis envoyé","Gagné","Perdu"];
 const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagné:"#3B6D11",Perdu:"#A32D2D"};
+// Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
+function isLead(d){return d.source==="site_vitrine";}
 
 let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",prix_m2:30}};
 
@@ -387,6 +389,33 @@ function set(patch){S={...S,...patch};render();}
 
 async function api(path,opts={},token=null){
   try{const r=await fetch(`${SUPA_URL}/rest/v1/${path}`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token||SUPA_KEY}`,"Content-Type":"application/json",Prefer:"return=representation"},...opts});const t=await r.text();return t?JSON.parse(t):null;}catch{return null;}
+}
+
+async function loadDevisFromSupabase(){
+  const remote=await api("devis?order=created_at.desc&limit=500");
+  if(remote&&Array.isArray(remote)&&remote.length){
+    localStorage.setItem("msn_devis",JSON.stringify(remote));
+    return remote;
+  }
+  // fallback localStorage
+  try{return JSON.parse(localStorage.getItem("msn_devis")||"[]");}catch{return [];}
+}
+
+async function saveDevisToSupabase(payload){
+  // Upsert en Supabase
+  const r=await api("devis",{method:"POST",body:JSON.stringify(payload)});
+  // Toujours sauvegarder en local aussi
+  const local=JSON.parse(localStorage.getItem("msn_devis")||"[]");
+  const updated=[payload,...local.filter(d=>d.numero!==payload.numero)];
+  localStorage.setItem("msn_devis",JSON.stringify(updated));
+  return r;
+}
+
+async function updateDevisSupabase(numero,patch){
+  await api(`devis?numero=eq.${encodeURIComponent(numero)}`,{method:"PATCH",body:JSON.stringify(patch)});
+  const local=JSON.parse(localStorage.getItem("msn_devis")||"[]");
+  const updated=local.map(d=>d.numero===numero?{...d,...patch}:d);
+  localStorage.setItem("msn_devis",JSON.stringify(updated));
 }
 
 // ── SYSTÈME AUTH PIN LOCAL ────────────────────────────────────
@@ -611,8 +640,10 @@ function renderLogin(){
     set({loginLoading:true,loginError:""});
     try{
       const compte=loginPin(S.loginEmail,S.loginPin||pinVal);
-      const devis=JSON.parse(localStorage.getItem("msn_devis")||"[]");
-      set({page:"crm",session:getSession(),role:compte.role,devis:devis.length?devis:DEMO_DEVIS,loading:false,loginLoading:false,loginPin:"",loginError:""});
+      set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true,loginLoading:false,loginPin:"",loginError:""});
+      loadDevisFromSupabase().then(devis=>{
+        set({devis:devis.length?devis:DEMO_DEVIS,loading:false});
+      });
       pinVal="";updateDots();
     }catch(err){
       pinVal="";updateDots();S.loginPin="";
@@ -692,8 +723,8 @@ function renderSetup(){
               errDiv.textContent="";
               setTimeout(()=>{
                 loginPin(compte.email,pin1);
-                const devis=JSON.parse(localStorage.getItem("msn_devis")||"[]");
-                set({page:"crm",session:getSession(),role:compte.role,devis:devis.length?devis:DEMO_DEVIS,loading:false});
+                set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true});
+              loadDevisFromSupabase().then(devis=>{set({devis:devis.length?devis:DEMO_DEVIS,loading:false});});
               },1000);
             }catch(e){errDiv.textContent="Erreur: "+e.message;}
           }else{
@@ -731,27 +762,39 @@ function renderCRM(){
   const app=el("div",{style:{minHeight:"100vh",background:"#0d0d0d",display:"flex"}});
   const sb=el("div",{style:{position:"fixed",top:0,left:0,bottom:0,width:"220px",background:"#090909",borderRight:"1px solid #1a1a1a",display:"flex",flexDirection:"column",zIndex:"100",overflowY:"auto"}});
   const sh=el("div",{style:{padding:"1.5rem 1.5rem 1rem"}});
-  sh.appendChild(el("div",{style:{fontSize:"0.65rem",letterSpacing:"0.2em",color:"#c9a84c",textTransform:"uppercase",marginBottom:"2px"}},"Maison"));
-  sh.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem",color:"#f0ece4",fontWeight:"400"}},"Sol Noble"));
-  sh.appendChild(el("div",{style:{fontSize:"10px",color:"#3a3020",marginTop:"4px",letterSpacing:"0.1em"}},"CRM"));
+  sh.appendChild(el("div",{style:{fontSize:"0.6rem",letterSpacing:"0.25em",color:"#c9a84c",textTransform:"uppercase",marginBottom:"1px"}},"Maison"));
+  sh.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#f0ece4",fontWeight:"300",lineHeight:"1.1"}},"Sol Noble"));
+  sh.appendChild(el("div",{style:{fontSize:"9px",color:"#2a2010",marginTop:"6px",letterSpacing:"0.15em",textTransform:"uppercase",background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.15)",borderRadius:"3px",padding:"2px 8px",display:"inline-block"}},"Espace de gestion"));
   sb.appendChild(sh);
   const nav=el("nav",{style:{flex:"1",padding:"0.5rem 0"}});
   navItems.forEach(([icon,id,label])=>{
     const active=S.onglet===id;
-    const btn=el("button",{style:{width:"100%",display:"flex",alignItems:"center",gap:"10px",padding:"0.75rem 1.5rem",background:active?"rgba(201,168,76,0.08)":"transparent",border:"none",borderLeft:`2px solid ${active?"#c9a84c":"transparent"}`,color:active?"#c9a84c":"#6a6050",fontSize:"13px",fontWeight:active?"500":"300",textAlign:"left"}},el("span",{style:{fontSize:"16px"}},icon),label);
+    const btn=el("button",{style:{width:"100%",display:"flex",alignItems:"center",gap:"12px",padding:"0.65rem 1.5rem",background:active?"rgba(201,168,76,0.1)":"transparent",border:"none",borderLeft:`2px solid ${active?"#c9a84c":"transparent"}`,color:active?"#c9a84c":"#5a5040",fontSize:"13px",fontWeight:active?"500":"300",textAlign:"left",transition:"all 0.15s",borderRadius:"0 6px 6px 0",marginRight:"8px"}},el("span",{style:{fontSize:"15px",opacity:active?"1":"0.6"}},icon),label);
+    btn.addEventListener("mouseenter",()=>{if(!active)btn.style.background="rgba(201,168,76,0.05)";btn.style.color=active?"#c9a84c":"#9a9080";});
+    btn.addEventListener("mouseleave",()=>{if(!active)btn.style.background="transparent";btn.style.color=active?"#c9a84c":"#5a5040";});
     btn.addEventListener("click",()=>set({onglet:id}));nav.appendChild(btn);
   });
   sb.appendChild(nav);
-  const sf=el("div",{style:{padding:"1rem 1.5rem",borderTop:"1px solid #1a1a1a"}});
-  sf.appendChild(roleBadge(S.role));
-  sf.appendChild(el("div",{style:{fontSize:"11px",color:"#5a5040",marginTop:"6px",marginBottom:"4px"}},S.session?.nom||S.session?.email||INFO.email));
-  const bo=el("button",{style:{background:"none",border:"none",color:"#5a5040",fontSize:"11px",padding:"0",display:"flex",alignItems:"center",gap:"5px"}},"⏻ Déconnexion");
+  const sf=el("div",{style:{padding:"1rem 1.5rem",borderTop:"1px solid #1a1a1a",background:"#060606"}});
+  const userRow=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}});
+  const avatar=el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(S.session?.nom||"?").split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase());
+  const userInfo=el("div",{});
+  userInfo.appendChild(el("div",{style:{fontSize:"12px",color:"#e0d8cc",fontWeight:"500",lineHeight:"1.2"}},S.session?.nom||S.session?.email||""));
+  userInfo.appendChild(roleBadge(S.role));
+  userRow.appendChild(avatar);userRow.appendChild(userInfo);
+  sf.appendChild(userRow);
+  const bo=el("button",{style:{background:"none",border:"1px solid #1e1e1e",borderRadius:"4px",color:"#5a5040",fontSize:"11px",padding:"5px 10px",display:"flex",alignItems:"center",gap:"5px",cursor:"pointer",width:"100%",justifyContent:"center",transition:"all 0.15s"}});
+  bo.textContent="⏻ Déconnexion";
+  bo.addEventListener("mouseenter",()=>{bo.style.borderColor="#2a2a2a";bo.style.color="#8a8070";});
+  bo.addEventListener("mouseleave",()=>{bo.style.borderColor="#1e1e1e";bo.style.color="#5a5040";});
   bo.addEventListener("click",()=>{logoutLocal();set({page:"login",session:null,loginEmail:"",loginPin:"",loginError:""});});
   sf.appendChild(bo);sb.appendChild(sf);app.appendChild(sb);
   const main=el("div",{style:{marginLeft:"220px",flex:"1",minHeight:"100vh"}});
   const titles={devis:"Devis",planning:"Planning",clients:"Clients",employes:"Équipe",fiches:"Fiches tech.",parametres:"Paramètres"};
-  const hdr=el("div",{style:{background:"#0a0a0a",borderBottom:"1px solid #1a1a1a",padding:"1rem 2rem",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:"0",zIndex:"50"},className:"desktop-only"});
-  hdr.appendChild(el("h1",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#f0ece4",fontWeight:"400"}},titles[S.onglet]||"CRM"));
+  const hdr=el("div",{style:{background:"rgba(10,10,10,0.95)",backdropFilter:"blur(10px)",borderBottom:"1px solid #1a1a1a",padding:"0.85rem 2rem",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:"0",zIndex:"50"},className:"desktop-only"});
+  const hdrLeft=el("div",{style:{display:"flex",alignItems:"center",gap:"12px"}});
+  hdrLeft.appendChild(el("h1",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#f0ece4",fontWeight:"400",letterSpacing:"0.02em"}},titles[S.onglet]||"CRM"));
+  hdr.appendChild(hdrLeft);
   const hr=el("div",{style:{display:"flex",gap:"0.5rem",alignItems:"center"}});
   hr.appendChild(el("span",{style:{fontSize:"11px",color:"#4a4030"}},new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})));
   if(hasAccess("devis")){const bn=el("button",{style:{...BP,padding:"0.5rem 1rem",fontSize:"12px"}},"+  Devis rapide");bn.addEventListener("click",()=>set({onglet:"devis",modal:"nouveau"}));hr.appendChild(bn);}
@@ -771,7 +814,7 @@ function renderCRM(){
   }
   mobHdr.appendChild(mobRight);
   main.appendChild(mobHdr);
-  const body=el("div",{style:{padding:"2rem"},className:"mob-body"});
+  const body=el("div",{style:{padding:"2rem 2.5rem"},className:"mob-body"});
   if(S.onglet==="devis")body.appendChild(renderDevis());
   else if(S.onglet==="planning")body.appendChild(renderPlanning());
   else if(S.onglet==="clients")body.appendChild(renderClients());
@@ -803,16 +846,22 @@ function renderDevis(){
   const dvs=S.devis;
   const ca=dvs.filter(d=>d.statut==="Gagné").reduce((s,d)=>s+(d.montant_ht||0),0);
   const kpis=el("div",{className:isMobile()?"mob-kpi-grid":"",style:isMobile()?{}:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"1rem",marginBottom:"1.5rem"}});
-  [{l:"Total devis",v:dvs.length},{l:"En attente",v:dvs.filter(d=>d.statut==="Devis envoyé").length},{l:"Gagnés",v:dvs.filter(d=>d.statut==="Gagné").length},{l:"CA HT",v:ca.toFixed(0)+" €"}].forEach((k,i)=>{
+  const leads=dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length;
+  [{l:"Leads site",v:leads,alert:leads>0},{l:"Total devis",v:dvs.length},{l:"Gagnés",v:dvs.filter(d=>d.statut==="Gagné").length},{l:"CA HT",v:ca.toFixed(0)+" €"}].forEach((k,i)=>{
     const c=el("div",{className:isMobile()?"mob-kpi":"",style:isMobile()?{}:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1rem 1.2rem"}});
     c.appendChild(el("div",{className:isMobile()?"mob-kpi-label":"",style:isMobile()?{}:{fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",marginBottom:"6px"}},k.l));
-    c.appendChild(el("div",{className:isMobile()?"mob-kpi-val"+(i===3?" gold":""):"",style:isMobile()?{}:{fontFamily:"'Cormorant Garamond',serif",fontSize:"24px",color:i===3?"#c9a84c":"#f0ece4",fontWeight:"400"}},String(k.v)));
+    const alertColor=k.alert?"#E24B4A":(i===3?"#c9a84c":"#f0ece4");
+    c.appendChild(el("div",{className:isMobile()?"mob-kpi-val"+(i===3?" gold":""):"",style:isMobile()?{}:{fontFamily:"'Cormorant Garamond',serif",fontSize:"24px",color:alertColor,fontWeight:"400"}},String(k.v)));
     kpis.appendChild(c);
   });
   wrap.appendChild(kpis);
   if(!isMobile()){
     const bar=el("div",{style:{display:"flex",gap:"0.8rem",marginBottom:"1rem",flexWrap:"wrap",alignItems:"center"}});
     const bn=el("button",{style:BP},"+ Nouveau devis");bn.addEventListener("click",()=>set({modal:"nouveau"}));bar.appendChild(bn);
+    if(dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length>0){
+      const bl=el("button",{style:{...BP,background:"#E24B4A",marginLeft:"4px"}},`🔔 Leads (${dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length})`);
+      bl.addEventListener("click",()=>set({filterStatut:"Nouveau",search:""}));bar.appendChild(bl);
+    }
     const si=el("input",{type:"text",placeholder:"Rechercher...",style:{maxWidth:"200px"},value:S.search});si.addEventListener("input",e=>{S.search=e.target.value;render();});bar.appendChild(si);
     const sf=el("select",{style:{maxWidth:"160px",padding:"0.55rem 0.8rem"}});
     ["Tous",...STATUTS].forEach(s=>{const o=el("option",{},s);if(s===S.filterStatut)o.selected=true;sf.appendChild(o);});
@@ -844,7 +893,10 @@ function renderDevis(){
   filtered.forEach(d=>{
     const tr=el("tr",{style:{borderBottom:"1px solid #1a1a1a"}});
     tr.addEventListener("mouseenter",()=>tr.style.background="#161616");tr.addEventListener("mouseleave",()=>tr.style.background="");
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#c9a84c",fontWeight:"600"}},d.numero||"—"));
+    const numCell=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#c9a84c",fontWeight:"600"}});
+    numCell.appendChild(document.createTextNode(d.numero||"—"));
+    if(isLead(d)){const lb=el("span",{style:{marginLeft:"6px",background:"rgba(226,75,74,0.15)",color:"#E24B4A",border:"1px solid rgba(226,75,74,0.3)",padding:"1px 6px",borderRadius:"10px",fontSize:"10px",fontWeight:"600"}},"LEAD");numCell.appendChild(lb);}
+    tr.appendChild(numCell);
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#e0d8cc",fontWeight:"500"}},d.client_nom));
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#7a7060"}},d.ville||"—"));
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#7a7060"}},TARIFS[d.type_sol]?.label||d.type_sol));
@@ -931,9 +983,8 @@ function renderFormDevis(){
     e.preventDefault();
     const num=`MSN-${Date.now().toString().slice(-6)}`;
     const payload={...S.form,numero:num,montant_ht:ht,statut:"Devis envoyé",created_at:new Date().toISOString()};
-    await api("devis",{method:"POST",body:JSON.stringify(payload)},S.token);
+    await saveDevisToSupabase(payload);
     S.devis=[payload,...S.devis];
-    localStorage.setItem("msn_devis",JSON.stringify(S.devis));
     S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",prix_m2:30};
     set({modal:null});
   });
@@ -959,14 +1010,14 @@ function renderDetailDevis(d){
   wrap.appendChild(lbl("Statut"));
   const ss=el("select",{style:{fontSize:"16px",marginBottom:"1rem"}});
   STATUTS.forEach(s=>{const o=el("option",{},s);if(s===d.statut)o.selected=true;ss.appendChild(o);});
-  ss.addEventListener("change",e=>{const ns=e.target.value;S.devis=S.devis.map(x=>x.numero===d.numero?{...x,statut:ns}:x);S.selected={...d,statut:ns};localStorage.setItem("msn_devis",JSON.stringify(S.devis));render();});
+  ss.addEventListener("change",e=>{const ns=e.target.value;S.devis=S.devis.map(x=>x.numero===d.numero?{...x,statut:ns}:x);S.selected={...d,statut:ns};updateDevisSupabase(d.numero,{statut:ns});render();});
   wrap.appendChild(ss);
   // Boutons
   const bpdf=el("button",{className:"mob-btn-full"},"🖨 Imprimer devis PDF");
   bpdf.addEventListener("click",()=>genPDF(d,"devis"));wrap.appendChild(bpdf);
   if(d.statut!=="Gagné"){
     const bf=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff"}},"✓ Convertir en facture");
-    bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);localStorage.setItem("msn_devis",JSON.stringify(S.devis));genPDF(f,"facture");set({modal:null,selected:null});});
+    bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);updateDevisSupabase(d.numero,{statut:"Gagné"});genPDF(f,"facture");set({modal:null,selected:null});});
     wrap.appendChild(bf);
   }
   const bc=el("button",{className:"mob-btn-outline"},"Fermer");
@@ -1359,8 +1410,8 @@ function render(){
   // Vérifier session existante
   const session=getSession();
   if(session){
-    const devis=JSON.parse(localStorage.getItem("msn_devis")||"[]");
-    S={...S,page:"crm",session,role:session.role,devis:devis.length?devis:DEMO_DEVIS,loading:false};
+    S={...S,page:"crm",session,role:session.role,devis:[],loading:true};
+    loadDevisFromSupabase().then(devis=>{S.devis=devis.length?devis:DEMO_DEVIS;S.loading=false;render();});
   }else{
     // Vérifier si le directeur n'a pas encore de PIN
     const comptes=getComptes();
