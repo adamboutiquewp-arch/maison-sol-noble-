@@ -674,13 +674,8 @@ export default function CRM() {
         const data = await sb("devis?order=created_at.desc", {}, authToken);
         setDevis(data || []);
       } catch {
-        // Mode démo — données factices
-        setDevis([
-          { numero: "MSN-001", client_nom: "Sophie L.", client_tel: "06 12 34 56 78", client_email: "sophie@email.com", ville: "Paris 16ème", type_sol: "marbre", travaux: "Rénovation complète", surface: 65, prix_m2: 55, montant_ht: 4290, etat: "mauvais", statut: "Gagné", created_at: "2025-04-15" },
-          { numero: "MSN-002", client_nom: "Pierre M.", client_tel: "07 98 76 54 32", client_email: "pierre@email.com", ville: "Cannes", type_sol: "travertin", travaux: "Rénovation complète", surface: 120, prix_m2: 50, montant_ht: 7200, etat: "moyen", statut: "Devis envoyé", created_at: "2025-05-02" },
-          { numero: "MSN-003", client_nom: "Marie R.", client_tel: "06 55 44 33 22", client_email: "marie@email.com", ville: "Lyon", type_sol: "parquet", travaux: "Ponçage + vitrification", surface: 80, prix_m2: 28, montant_ht: 2688, etat: "moyen", statut: "Contacté", created_at: "2025-05-18" },
-          { numero: "MSN-004", client_nom: "A. Fontaine", client_tel: "06 11 22 33 44", client_email: "", ville: "Monaco", type_sol: "marbre", travaux: "Cristallisation", surface: 200, prix_m2: 45, montant_ht: 10800, etat: "bon", statut: "Devis envoyé", created_at: "2025-06-01" },
-        ]);
+        // Pas de connexion Supabase configurée — liste vide, prêt pour tes premiers vrais devis
+        setDevis([]);
       }
       setLoading(false);
     })();
