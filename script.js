@@ -146,7 +146,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ===== ANNÉE COPYRIGHT AUTO =====
 const yearEl = document.querySelector('.footer-bottom p');
 if (yearEl) {
-  yearEl.textContent = yearEl.textContent.replace('2025', new Date().getFullYear());
+  yearEl.textContent = '© ' + new Date().getFullYear() + ' Maison Sol Noble · Tous droits réservés';
 }
 
 // ===== CARTE LEAFLET FRANCE =====
@@ -176,17 +176,17 @@ function initMap() {
 
   const villes = [
     { name: 'Paris', lat: 48.8566, lng: 2.3522 },
-    { name: 'Lyon', lat: 45.7640, lng: 4.8357 },
-    { name: 'Marseille', lat: 43.2965, lng: 5.3698 },
-    { name: 'Bordeaux', lat: 44.8378, lng: -0.5792 },
-    { name: 'Toulouse', lat: 43.6047, lng: 1.4442 },
-    { name: 'Nantes', lat: 47.2184, lng: -1.5536 },
-    { name: 'Strasbourg', lat: 48.5734, lng: 7.7521 },
-    { name: 'Lille', lat: 50.6292, lng: 3.0573 },
+    { name: 'Neuilly-sur-Seine', lat: 48.8846, lng: 2.2693 },
+    { name: 'Versailles', lat: 48.8014, lng: 2.1301 },
+    { name: 'Saint-Germain-en-Laye', lat: 48.8989, lng: 2.0940 },
     { name: 'Nice', lat: 43.7102, lng: 7.2620 },
-    { name: 'Rennes', lat: 48.1173, lng: -1.6778 },
-    { name: 'Montpellier', lat: 43.6108, lng: 3.8767 },
-    { name: 'Aix-en-Provence', lat: 43.5297, lng: 5.4474 },
+    { name: 'Cannes', lat: 43.5528, lng: 7.0174 },
+    { name: 'Antibes', lat: 43.5808, lng: 7.1239 },
+    { name: 'Saint-Tropez', lat: 43.2677, lng: 6.6399 },
+    { name: 'Monaco', lat: 43.7384, lng: 7.4246 },
+    { name: 'Biarritz', lat: 43.4832, lng: -1.5586 },
+    { name: 'Bayonne', lat: 43.4933, lng: -1.4748 },
+    { name: 'Saint-Jean-de-Luz', lat: 43.3895, lng: -1.6600 },
   ];
 
   villes.forEach(v => {

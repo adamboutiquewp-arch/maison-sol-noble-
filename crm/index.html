@@ -1,7 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/images/logo.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>CRM — Maison Sol Noble</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -394,7 +395,8 @@ function initDirecteur(){
 
 function genPDF(dv,type="devis"){
   const ht=dv.montant_ht||0,tva=(ht*0.2).toFixed(2),ttc=(ht*1.2).toFixed(2),titre=type==="devis"?"DEVIS":"FACTURE",num=type==="facture"?"FAC-"+dv.numero.replace("MSN-",""):dv.numero;
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:40px;}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #c9a84c;}.lm{font-size:9px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;}.ls{font-size:20px;font-weight:300;}.dt{font-size:26px;font-weight:700;letter-spacing:4px;}.bl{display:flex;justify-content:space-between;margin:25px 0;}.bl h3{font-size:9px;letter-spacing:2px;color:#c9a84c;text-transform:uppercase;margin-bottom:6px;}.bl p{line-height:1.7;}table{width:100%;border-collapse:collapse;margin:20px 0;}th{background:#1a1a1a;color:#fff;padding:9px 12px;text-align:left;font-size:11px;}td{padding:9px 12px;border-bottom:1px solid #eee;}.tot{margin-left:auto;width:260px;margin-top:15px;}.tr{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;}.ttc{border-top:2px solid #1a1a1a;font-size:15px;font-weight:700;padding-top:8px;margin-top:3px;}.gold{color:#c9a84c;font-weight:700;}.ft{margin-top:40px;padding-top:15px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;}.nt{background:#f9f7f3;border-left:3px solid #c9a84c;padding:10px 14px;margin:15px 0;font-size:11px;color:#555;}</style></head><body><div class="hd"><div><div class="lm">Maison</div><div class="ls">Sol Noble</div><div style="font-size:11px;color:#888;margin-top:4px;">${INFO.adresse}, ${INFO.cp} ${INFO.ville}</div><div style="font-size:11px;color:#888;">${INFO.tel} · ${INFO.email}</div></div><div style="text-align:right"><div class="dt">${titre}</div><div style="font-size:12px;color:#888">N° ${num}</div><div style="font-size:11px;color:#888;margin-top:3px">Date : ${new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR")}</div><div style="font-size:11px;color:#888">${type==="devis"?"Valable 30 jours":"Échéance : "+new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR")}</div></div></div><div class="bl"><div><h3>Émetteur</h3><p><strong>${INFO.nom}</strong><br>${INFO.forme}<br>SIRET : ${INFO.siret}<br>TVA : ${INFO.tva}</p></div><div><h3>Client</h3><p><strong>${dv.client_nom}</strong><br>${dv.client_tel||""}<br>${dv.client_email||""}<br>${dv.ville||""}</p></div></div><table><thead><tr><th>Description</th><th>Type de sol</th><th>Surface</th><th>Prix/m²</th><th>Total HT</th></tr></thead><tbody><tr><td>${dv.travaux}</td><td>${TARIFS[dv.type_sol]?.label||dv.type_sol}</td><td>${dv.surface} m²</td><td>${dv.prix_m2} €</td><td><strong>${ht.toFixed(2)} €</strong></td></tr>${dv.description?`<tr><td colspan="5" style="font-size:11px;color:#666;font-style:italic">${dv.description}</td></tr>`:""}</tbody></table><div class="tot"><div class="tr"><span>Montant HT</span><span>${ht.toFixed(2)} €</span></div><div class="tr"><span>TVA 20%</span><span>${tva} €</span></div><div class="tr ttc"><span>TOTAL TTC</span><span class="gold">${ttc} €</span></div></div><div class="nt">${type==="devis"?"<strong>Conditions :</strong> Devis valable 30 jours. Déplacement inclus. Acompte 30% à la commande.":"<strong>Règlement :</strong> Paiement à réception. Pénalités de retard : 3x le taux légal."}</div><div class="ft">${INFO.nom} · SIRET ${INFO.siret} · TVA ${INFO.tva}<br>${INFO.adresse}, ${INFO.cp} ${INFO.ville} · ${INFO.email} · ${INFO.site}</div></body></html>`;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/images/logo.png"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:40px;}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #c9a84c;}.lm{font-size:9px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;}.ls{font-size:20px;font-weight:300;}.dt{font-size:26px;font-weight:700;letter-spacing:4px;}.bl{display:flex;justify-content:space-between;margin:25px 0;}.bl h3{font-size:9px;letter-spacing:2px;color:#c9a84c;text-transform:uppercase;margin-bottom:6px;}.bl p{line-height:1.7;}table{width:100%;border-collapse:collapse;margin:20px 0;}th{background:#1a1a1a;color:#fff;padding:9px 12px;text-align:left;font-size:11px;}td{padding:9px 12px;border-bottom:1px solid #eee;}.tot{margin-left:auto;width:260px;margin-top:15px;}.tr{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;}.ttc{border-top:2px solid #1a1a1a;font-size:15px;font-weight:700;padding-top:8px;margin-top:3px;}.gold{color:#c9a84c;font-weight:700;}.ft{margin-top:40px;padding-top:15px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;}.nt{background:#f9f7f3;border-left:3px solid #c9a84c;padding:10px 14px;margin:15px 0;font-size:11px;color:#555;}</style></head><body><div class="hd"><div><div class="lm">Maison</div><div class="ls">Sol Noble</div><div style="font-size:11px;color:#888;margin-top:4px;">${INFO.adresse}, ${INFO.cp} ${INFO.ville}</div><div style="font-size:11px;color:#888;">${INFO.tel} · ${INFO.email}</div></div><div style="text-align:right"><div class="dt">${titre}</div><div style="font-size:12px;color:#888">N° ${num}</div><div style="font-size:11px;color:#888;margin-top:3px">Date : ${new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR")}</div><div style="font-size:11px;color:#888">${type==="devis"?"Valable 30 jours":"Échéance : "+new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR")}</div></div></div><div class="bl"><div><h3>Émetteur</h3><p><strong>${INFO.nom}</strong><br>${INFO.forme}<br>SIRET : ${INFO.siret}<br>TVA : ${INFO.tva}</p></div><div><h3>Client</h3><p><strong>${dv.client_nom}</strong><br>${dv.client_tel||""}<br>${dv.client_email||""}<br>${dv.ville||""}</p></div></div><table><thead><tr><th>Description</th><th>Type de sol</th><th>Surface</th><th>Prix/m²</th><th>Total HT</th></tr></thead><tbody><tr><td>${dv.travaux}</td><td>${TARIFS[dv.type_sol]?.label||dv.type_sol}</td><td>${dv.surface} m²</td><td>${dv.prix_m2} €</td><td><strong>${ht.toFixed(2)} €</strong></td></tr>${dv.description?`<tr><td colspan="5" style="font-size:11px;color:#666;font-style:italic">${dv.description}</td></tr>`:""}</tbody></table><div class="tot"><div class="tr"><span>Montant HT</span><span>${ht.toFixed(2)} €</span></div><div class="tr"><span>TVA 20%</span><span>${tva} €</span></div><div class="tr ttc"><span>TOTAL TTC</span><span class="gold">${ttc} €</span></div></div><div class="nt">${type==="devis"?"<strong>Conditions :</strong> Devis valable 30 jours. Déplacement inclus. Acompte 30% à la commande.":"<strong>Règlement :</strong> Paiement à réception. Pénalités de retard : 3x le taux légal."}</div><div class="ft">${INFO.nom} · SIRET ${INFO.siret} · TVA ${INFO.tva}<br>${INFO.adresse}, ${INFO.cp} ${INFO.ville} · ${INFO.email} · ${INFO.site}</div></body></html>`;
   const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();w.print();}
 }
 
@@ -986,11 +988,27 @@ function renderEmployes(){
   const bSync=el("button",{style:{...BS,fontSize:"12px"}},"📱 Sync mobile");
   bSync.addEventListener("click",()=>{
     const comptes=getComptes();
-    const encoded=encodeURIComponent(btoa(JSON.stringify(comptes)));
+    // encodeURIComponent seul (pas btoa) pour supporter les accents
+    const encoded=encodeURIComponent(JSON.stringify(comptes));
     const lien=window.location.origin+window.location.pathname+"?sync_comptes="+encoded;
-    navigator.clipboard.writeText(lien).catch(()=>{});
-    bSync.textContent="✓ Lien copié !";bSync.style.color="#3B6D11";
-    setTimeout(()=>{bSync.textContent="📱 Sync mobile";bSync.style.color="";},4000);
+    // Afficher le lien dans une popup pour pouvoir le copier/envoyer
+    const box=document.createElement("div");
+    box.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+    const inner=document.createElement("div");
+    inner.style.cssText="background:#fff;border-radius:16px;padding:24px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);";
+    inner.innerHTML=`<div style="font-size:13px;font-weight:600;color:#1a1611;margin-bottom:8px;">📱 Lien de synchronisation</div>
+      <div style="font-size:12px;color:#8a8278;margin-bottom:16px;">Envoie ce lien à toi-même (WhatsApp, email…) et ouvre-le sur ton téléphone.</div>
+      <textarea readonly style="width:100%;height:80px;font-size:11px;border:1px solid #dddad2;border-radius:8px;padding:8px;resize:none;color:#5a5450;word-break:break-all;">${lien}</textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button id="syncCopy" style="flex:1;background:#c9a84c;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;font-weight:600;">Copier le lien</button>
+        <button id="syncClose" style="flex:1;background:#f5f4f0;color:#5a5450;border:1px solid #dddad2;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;">Fermer</button>
+      </div>`;
+    box.appendChild(inner);
+    document.body.appendChild(box);
+    const ta=inner.querySelector("textarea");ta.select();
+    inner.querySelector("#syncCopy").addEventListener("click",()=>{navigator.clipboard.writeText(lien).catch(()=>{});ta.select();document.execCommand("copy");inner.querySelector("#syncCopy").textContent="✓ Copié !";});
+    inner.querySelector("#syncClose").addEventListener("click",()=>box.remove());
+    box.addEventListener("click",e=>{if(e.target===box)box.remove();});
   });
   btnRow.appendChild(bSync);
   const bn=el("button",{style:BP},"+ Nouveau compte");
@@ -1039,7 +1057,7 @@ function renderEmployes(){
       if(!isMe){
         const acts=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
         const bT=el("button",{style:{flex:"1",padding:"7px 0",fontSize:"12px",borderRadius:"8px",border:`1px solid ${p.actif!==false?"#A32D2D44":"#3B6D1144"}`,background:"#ffffff",color:p.actif!==false?"#A32D2D":"#3B6D11",cursor:"pointer",WebkitAppearance:"none"}},p.actif!==false?"Désactiver":"Activer");
-        bT.addEventListener("click",async()=>{const na=!(p.actif!==false);await updateProfile(S.token,p.id,{actif:na});S.profiles=S.profiles.map(x=>x.id===p.id?{...x,actif:na}:x);render();});
+        bT.addEventListener("click",()=>{const na=!(p.actif!==false);updateCompte(p.id,{actif:na});render();});
         const bR=el("button",{style:{flex:"1",padding:"7px 0",fontSize:"12px",borderRadius:"8px",border:"1px solid #dddad2",background:"#ffffff",color:"#5a5450",cursor:"pointer",WebkitAppearance:"none"}},"🔑 Reset PIN");
         bR.addEventListener("click",()=>{updateCompte(p.id,{pin_hash:null});const data=btoa(JSON.stringify({id:p.id,email:p.email,nom:p.nom,role:p.role,created_at:p.created_at}));const lien=window.location.origin+"/crm/?newuser="+encodeURIComponent(data);navigator.clipboard.writeText(lien).catch(()=>{});bR.textContent="✓ Lien copié !";bR.style.color="#3B6D11";setTimeout(()=>{bR.textContent="🔑 Reset PIN";bR.style.color="";},3000);});
         const bDel=el("button",{style:{padding:"7px 12px",fontSize:"12px",borderRadius:"8px",border:"1px solid #A32D2D44",background:"#ffffff",color:"#A32D2D",cursor:"pointer",WebkitAppearance:"none"}},"🗑");
@@ -1092,7 +1110,7 @@ function renderEmployes(){
       const acts=el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap"}});
       if(!isMe){
         const bT=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:p.actif!==false?"#A32D2D":"#3B6D11",borderColor:p.actif!==false?"#A32D2D44":"#3B6D1144"}},p.actif!==false?"Désactiver":"Activer");
-        bT.addEventListener("click",async()=>{const na=!(p.actif!==false);await updateProfile(S.token,p.id,{actif:na});S.profiles=S.profiles.map(x=>x.id===p.id?{...x,actif:na}:x);render();});
+        bT.addEventListener("click",()=>{const na=!(p.actif!==false);updateCompte(p.id,{actif:na});render();});
         acts.appendChild(bT);
         const bR=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"🔑 Reset PIN");
         bR.addEventListener("click",()=>{updateCompte(p.id,{pin_hash:null});const data=btoa(JSON.stringify({id:p.id,email:p.email,nom:p.nom,role:p.role,created_at:p.created_at}));const lien=window.location.origin+"/crm/?newuser="+encodeURIComponent(data);navigator.clipboard.writeText(lien).catch(()=>{});bR.textContent="✓ Lien copié !";bR.style.color="#3B6D11";setTimeout(()=>{bR.textContent="🔑 Reset PIN";bR.style.color="";},3000);});
@@ -1330,9 +1348,8 @@ function render(){
   const syncData = params.get("sync_comptes");
   if(syncData){
     try{
-      const imported=JSON.parse(atob(decodeURIComponent(syncData)));
+      const imported=JSON.parse(decodeURIComponent(syncData));
       if(Array.isArray(imported)&&imported.length){
-        // Fusionner sans écraser les comptes existants (conserver PIN si déjà configuré)
         const existing=getComptes();
         const merged=imported.map(imp=>{
           const found=existing.find(e=>e.id===imp.id||e.email===imp.email);
@@ -1341,7 +1358,6 @@ function render(){
         saveComptes(merged);
       }
     }catch{}
-    // Retirer le param de l'URL et continuer
     const clean=window.location.pathname;
     window.history.replaceState({},"",clean);
   }
