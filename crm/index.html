@@ -16,7 +16,7 @@ body{background:#0d0d0d;color:#e0d8cc;font-family:Inter,sans-serif;font-weight:3
 input,select,textarea{background:#0d0d0d;border:1px solid #2a2a2a;color:#e0d8cc;padding:0.7rem 0.9rem;font-family:Inter,sans-serif;font-size:14px;border-radius:4px;width:100%;outline:none;appearance:none;}
 input:focus,select:focus,textarea:focus{border-color:#c9a84c;}
 input::placeholder,textarea::placeholder{color:#3a3020;}
-button{cursor:pointer;font-family:Inter,sans-serif;}
+button{cursor:pointer;font-family:Inter,sans-serif;-webkit-appearance:none;appearance:none;background:transparent;}
 table{width:100%;border-collapse:collapse;}
 ::-webkit-scrollbar{width:6px;}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
@@ -742,12 +742,12 @@ function renderCRM(){
   mobLeft.appendChild(el("div",{style:{fontSize:"8px",letterSpacing:"0.22em",color:"#c9a84c",textTransform:"uppercase",lineHeight:"1"}},"Maison Sol Noble"));
   mobLeft.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"17px",color:"#f0ece4",fontWeight:"300",lineHeight:"1.2"}},titles[S.onglet]||"CRM"));
   mobHdr.appendChild(mobLeft);
-  const mobRight=el("div",{style:{display:"flex",gap:"8px",alignItems:"center"}});
-  // Bouton déconnexion compact
-  const mobLogout=el("button",{style:{background:"none",border:"1px solid #2a2a2a",borderRadius:"8px",color:"#5a5040",fontSize:"11px",padding:"5px 10px",cursor:"pointer"}});
+  const mobRight=el("div",{style:{display:"flex",gap:"4px",alignItems:"center"}});
+  const mobLogout=el("button",{style:{background:"transparent",border:"none",color:"#3a3020",fontSize:"22px",padding:"6px 10px",cursor:"pointer",lineHeight:"1",borderRadius:"8px",WebkitAppearance:"none"}});
   mobLogout.textContent="⏻";
+  mobLogout.addEventListener("touchstart",()=>mobLogout.style.color="#c9a84c",{passive:true});
+  mobLogout.addEventListener("touchend",()=>mobLogout.style.color="#3a3020",{passive:true});
   mobLogout.addEventListener("click",()=>{logoutLocal();set({page:"login",session:null,loginEmail:"",loginPin:"",loginError:""});});
-  mobRight.appendChild(roleBadge(S.role));
   mobRight.appendChild(mobLogout);
   mobHdr.appendChild(mobRight);
   main.appendChild(mobHdr);
