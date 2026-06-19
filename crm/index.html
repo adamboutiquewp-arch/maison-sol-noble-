@@ -324,7 +324,7 @@ function saveComptes(comptes){
 function hashPin(pin){
   // Hash simple du PIN (suffisant pour usage local)
   let h=0;
-  const str=pin+"MSN2025SALT";
+  const str=pin+"MSN2026SALT";
   for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}
   return h.toString(36);
 }
@@ -1316,10 +1316,7 @@ function renderParametres(){
 }
 
 const DEMO_DEVIS=[
-  {numero:"MSN-001",client_nom:"Sophie L.",client_tel:"06 12 34 56 78",client_email:"sophie@email.com",ville:"Paris 16ème",type_sol:"marbre",travaux:"Rénovation complète",surface:65,prix_m2:55,montant_ht:4290,etat:"mauvais",statut:"Gagné",created_at:"2025-04-15"},
-  {numero:"MSN-002",client_nom:"Pierre M.",client_tel:"07 98 76 54 32",client_email:"pierre@email.com",ville:"Cannes",type_sol:"travertin",travaux:"Rénovation complète",surface:120,prix_m2:50,montant_ht:7200,etat:"moyen",statut:"Devis envoyé",created_at:"2025-05-02"},
-  {numero:"MSN-003",client_nom:"Marie R.",client_tel:"06 55 44 33 22",client_email:"marie@email.com",ville:"Lyon",type_sol:"parquet",travaux:"Ponçage + vitrification",surface:80,prix_m2:28,montant_ht:2688,etat:"moyen",statut:"Contacté",created_at:"2025-05-18"},
-  {numero:"MSN-004",client_nom:"A. Fontaine",client_tel:"06 11 22 33 44",client_email:"",ville:"Monaco",type_sol:"marbre",travaux:"Cristallisation",surface:200,prix_m2:45,montant_ht:10800,etat:"bon",statut:"Devis envoyé",created_at:"2025-06-01"},
+  // Mode démo — vide. Tes vrais devis apparaîtront ici une fois connecté à Supabase.
 ];
 
 function render(){
