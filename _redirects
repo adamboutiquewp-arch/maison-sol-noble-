@@ -3,6 +3,9 @@
 # est déjà gérée nativement par Render au niveau du Custom Domain.
 # Ne pas dupliquer cette règle ici pour éviter tout conflit.
 
+# Article renommé 2025 → 2026 (fraîcheur SEO)
+/blog/prix-renovation-parquet-2025.html /blog/prix-renovation-parquet-2026.html 301
+
 # CRM — ne pas rediriger vers index.html
 /crm /crm/index.html 200
 /crm/ /crm/index.html 200
