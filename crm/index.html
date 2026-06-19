@@ -1196,9 +1196,17 @@ function renderFormEmploye(){
 
 function renderFiches(){
   const wrap=el("div",{});
-  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #e8e4dc",marginBottom:"2rem"}});
-  Object.entries(TARIFS).forEach(([key,t])=>{const btn=el("button",{className:"tab-btn"+(S.ficheTab===key?" active":""),style:{fontFamily:"Inter,sans-serif"}},t.label);btn.addEventListener("click",()=>set({ficheTab:key}));tabs.appendChild(btn);});
-  wrap.appendChild(tabs);
+  if(isMobile()){
+    // Sélecteur déroulant sur mobile — tous les sols visibles
+    const sel=el("select",{style:{width:"100%",fontSize:"16px",marginBottom:"1.2rem",padding:"12px 14px",background:"#ffffff",border:"1px solid #e8e4dc",color:"#2a2520",borderRadius:"12px",fontFamily:"'Cormorant Garamond',serif",fontWeight:"400",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}});
+    Object.entries(TARIFS).forEach(([key,t])=>{const o=el("option",{value:key},t.label);if(key===S.ficheTab)o.selected=true;sel.appendChild(o);});
+    sel.addEventListener("change",e=>set({ficheTab:e.target.value}));
+    wrap.appendChild(sel);
+  }else{
+    const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #e8e4dc",marginBottom:"2rem",overflowX:"auto",WebkitOverflowScrolling:"touch"}});
+    Object.entries(TARIFS).forEach(([key,t])=>{const btn=el("button",{className:"tab-btn"+(S.ficheTab===key?" active":""),style:{fontFamily:"Inter,sans-serif",whiteSpace:"nowrap",flexShrink:"0"}},t.label);btn.addEventListener("click",()=>set({ficheTab:key}));tabs.appendChild(btn);});
+    wrap.appendChild(tabs);
+  }
   const fiche=FICHES[S.ficheTab];
   if(!fiche)return wrap;
   wrap.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"24px",fontWeight:"400",marginBottom:"2rem"}},fiche.titre));
@@ -1227,8 +1235,8 @@ function renderFiches(){
 
 function renderParametres(){
   const wrap=el("div",{style:{maxWidth:"700px"}});
-  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #e8e4dc",marginBottom:"2rem"}});
-  [["infos","Entreprise"],["tarifs","Tarifs"]].forEach(([id,label])=>{const btn=el("button",{className:"tab-btn"+(S.paramTab===id?" active":""),style:{fontFamily:"Inter,sans-serif"}},label);btn.addEventListener("click",()=>set({paramTab:id}));tabs.appendChild(btn);});
+  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #e8e4dc",marginBottom:"2rem",overflowX:"auto",WebkitOverflowScrolling:"touch"}});
+  [["infos","Entreprise"],["tarifs","Tarifs"]].forEach(([id,label])=>{const btn=el("button",{className:"tab-btn"+(S.paramTab===id?" active":""),style:{fontFamily:"Inter,sans-serif",whiteSpace:"nowrap",flexShrink:"0"}},label);btn.addEventListener("click",()=>set({paramTab:id}));tabs.appendChild(btn);});
   wrap.appendChild(tabs);
   if(S.paramTab==="infos"){
     wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"20px",fontWeight:"400",marginBottom:"1.5rem"}},"Informations entreprise"));
