@@ -1,6 +1,27 @@
 # Maison Sol Noble — v4 : Site corrigé + stratégie de lancement Meta Ads
 
-## Résumé des changements depuis le v3
+## ⚠️ Action requise immédiatement après déploiement
+
+### 1. Render — fichiers ajoutés dans cette version
+- **`render.yaml`** : corrige le Content-Type du `sitemap.xml` (était servi en "binary data", empêchait Google de le lire). Render doit détecter ce fichier automatiquement au prochain déploiement.
+- **`_redirects`** : corrigé pour converger vers une seule URL canonique **`https://maisonsolnoble.com` (sans www)** — cohérent avec toutes les URLs déjà présentes dans `sitemap.xml` et `index.html`. Avant, le fichier redirigeait par erreur vers des versions contradictoires (boucle potentielle).
+
+### 2. Google Search Console — à corriger côté toi
+Tu avais vérifié et soumis le sitemap sur la propriété **`www.maisonsolnoble.com`**. Comme la version canonique du site est **sans www**, il faut :
+1. Dans Search Console, passe sur la propriété **`maisonsolnoble.com`** (celle en haut de la liste, type "Domaine" — pas celle en `https://www...`)
+2. Soumets à nouveau `sitemap.xml` depuis cette propriété
+3. Une fois le nouveau `render.yaml` déployé, attends 24-48h puis vérifie que le sitemap passe en statut "Réussite" (pas "Impossible de récupérer")
+
+### 3. Vérification technique (optionnelle mais recommandée)
+Après le déploiement Render, un développeur ou toi-même pouvez vérifier avec :
+```
+curl -I https://maisonsolnoble.com/sitemap.xml
+```
+La ligne `content-type:` doit afficher `application/xml` (pas `application/octet-stream` ni `text/html`).
+
+---
+
+
 
 Cette version corrige deux problèmes bloquants identifiés dans le site reçu, et recentre la stratégie commerciale sur les bonnes zones géographiques.
 

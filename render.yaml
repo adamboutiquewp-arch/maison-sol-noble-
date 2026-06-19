@@ -1,0 +1,13 @@
+services:
+  - type: web
+    runtime: static
+    name: maisonsolnoble
+    buildCommand: ""
+    staticPublishPath: ./
+    headers:
+      - path: /sitemap.xml
+        name: Content-Type
+        value: application/xml; charset=utf-8
+      - path: /robots.txt
+        name: Content-Type
+        value: text/plain; charset=utf-8
