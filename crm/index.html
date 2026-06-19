@@ -981,9 +981,22 @@ function renderEmployes(){
   // Header avec bouton créer
   const bar=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.5rem",flexWrap:"wrap",gap:"0.8rem"}});
   bar.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"20px",fontWeight:"400"}},"Gestion de l'équipe"));
+  const btnRow=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
+  // Bouton sync mobile — permet d'envoyer tous les comptes vers un autre appareil
+  const bSync=el("button",{style:{...BS,fontSize:"12px"}},"📱 Sync mobile");
+  bSync.addEventListener("click",()=>{
+    const comptes=getComptes();
+    const encoded=encodeURIComponent(btoa(JSON.stringify(comptes)));
+    const lien=window.location.origin+window.location.pathname+"?sync_comptes="+encoded;
+    navigator.clipboard.writeText(lien).catch(()=>{});
+    bSync.textContent="✓ Lien copié !";bSync.style.color="#3B6D11";
+    setTimeout(()=>{bSync.textContent="📱 Sync mobile";bSync.style.color="";},4000);
+  });
+  btnRow.appendChild(bSync);
   const bn=el("button",{style:BP},"+ Nouveau compte");
   bn.addEventListener("click",()=>set({modal:"employe_new"}));
-  bar.appendChild(bn);
+  btnRow.appendChild(bn);
+  bar.appendChild(btnRow);
   wrap.appendChild(bar);
 
   // Liste des comptes
@@ -1313,6 +1326,25 @@ function render(){
   const newuser = params.get("newuser");
   const setupToken = params.get("setup");
   const emailParam = params.get("email");
+  // Sync comptes depuis un autre appareil (?sync_comptes=BASE64)
+  const syncData = params.get("sync_comptes");
+  if(syncData){
+    try{
+      const imported=JSON.parse(atob(decodeURIComponent(syncData)));
+      if(Array.isArray(imported)&&imported.length){
+        // Fusionner sans écraser les comptes existants (conserver PIN si déjà configuré)
+        const existing=getComptes();
+        const merged=imported.map(imp=>{
+          const found=existing.find(e=>e.id===imp.id||e.email===imp.email);
+          return found?{...imp,pin_hash:found.pin_hash??imp.pin_hash}:imp;
+        });
+        saveComptes(merged);
+      }
+    }catch{}
+    // Retirer le param de l'URL et continuer
+    const clean=window.location.pathname;
+    window.history.replaceState({},"",clean);
+  }
   if(newuser){
     // Nouveau compte employé — décoder les infos
     try{
