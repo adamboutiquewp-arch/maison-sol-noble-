@@ -656,7 +656,7 @@ function renderCRM(){
     fabBtn.addEventListener("click",()=>set({modal:"nouveau"}));
     app.appendChild(fabBtn);
   }
-  const body=el("div",{style:{padding:isMobile()?"0":"2rem 2.5rem"},className:"mob-body"});
+  const body=el("div",{style:isMobile()?{}:{padding:"2rem 2.5rem"},className:"mob-body"});
   if(S.onglet==="devis")body.appendChild(renderDevis());
   else if(S.onglet==="planning")body.appendChild(renderPlanning());
   else if(S.onglet==="clients")body.appendChild(renderClients());
@@ -986,104 +986,117 @@ function renderEmployes(){
   bar.appendChild(bn);
   wrap.appendChild(bar);
 
-  // Tableau des comptes
+  // Liste des comptes
   const profiles=getComptes();
-  const tbl=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",overflow:"hidden",marginBottom:"2rem",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}});
-  const t=el("table",{});
-  const th=el("tr",{style:{borderBottom:"1px solid #e8e4dc"}});
-  ["Nom","Email","Rôle","Statut","Actions"].forEach(h=>th.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",fontWeight:"500"}},h)));
-  t.appendChild(el("thead",{},[th]));
-  const tbody=el("tbody",{});
-  
-  if(!profiles.length){
-    const tr=el("tr",{});
-    tr.appendChild(el("td",{colSpan:"5",style:{padding:"2rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},"Aucun compte — clique sur + Nouveau compte pour créer le premier."));
-    tbody.appendChild(tr);
-  }
-  
-  profiles.forEach(p=>{
-    const isMe=p.email?.toLowerCase()===S.session?.email?.toLowerCase();
-    const tr=el("tr",{style:{borderBottom:"1px solid #eceae4"}});
-    tr.addEventListener("mouseenter",()=>tr.style.background="#f5f4f0");
-    tr.addEventListener("mouseleave",()=>tr.style.background="");
-    
-    // Nom
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#2a2520",fontWeight:"500",fontSize:"13px"}},
-      el("div",{style:{display:"flex",alignItems:"center",gap:"8px"}},[
-        el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"12px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(p.nom||p.email||"?").slice(0,2).toUpperCase()),
-        el("span",{},p.nom||"—")
-      ])
-    ));
-    
-    // Email
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#8a8278",fontSize:"12px"}},p.email||"—"));
-    
-    // Rôle — dropdown si directeur et pas soi-même
-    const tdR=el("td",{style:{padding:"0.8rem 1rem"}});
-    if(!isMe){
-      const rs=el("select",{style:{background:"#f5f4f0",border:"1px solid #dddad2",color:"#2a2520",padding:"4px 8px",fontSize:"12px",borderRadius:"4px",cursor:"pointer"}});
-      Object.entries(ROLES).forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===p.role)o.selected=true;rs.appendChild(o);});
-      rs.addEventListener("change",e=>{
-        updateCompte(p.id,{role:e.target.value});
-        render();
-      });
-      tdR.appendChild(rs);
-    }else{tdR.appendChild(roleBadge(p.role));}
-    tr.appendChild(tdR);
-    
-    // Statut
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem"}},
-      el("span",{style:{color:p.actif!==false?"#3B6D11":"#A32D2D",fontSize:"12px"}},(p.actif!==false?"● Actif":"○ Inactif"))
-    ));
-    
-    // Actions
-    const tdA=el("td",{style:{padding:"0.8rem 1rem"}});
-    const acts=el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap"}});
-    
-    if(!isMe){
-      // Activer/Désactiver
-      const bT=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:p.actif!==false?"#A32D2D":"#3B6D11",borderColor:p.actif!==false?"#A32D2D44":"#3B6D1144"}},p.actif!==false?"Désactiver":"Activer");
-      bT.addEventListener("click",async()=>{
-        const na=!(p.actif!==false);
-        await updateProfile(S.token,p.id,{actif:na});
-        S.profiles=S.profiles.map(x=>x.id===p.id?{...x,actif:na}:x);
-        render();
-      });
-      acts.appendChild(bT);
-      
-      // Reset mot de passe
-      const bR=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"🔑 Reset PIN");
-      bR.addEventListener("click",()=>{
-        updateCompte(p.id,{pin_hash:null});
-        const data=btoa(JSON.stringify({id:p.id,email:p.email,nom:p.nom,role:p.role,created_at:p.created_at}));
-        const lien=window.location.origin+"/crm/?newuser="+encodeURIComponent(data);
-        navigator.clipboard.writeText(lien).catch(()=>{});
-        bR.textContent="✓ Lien copié !";bR.style.color="#3B6D11";
-        setTimeout(()=>{bR.textContent="🔑 Reset PIN";bR.style.color="";},3000);
-      });
-      acts.appendChild(bR);
-      // Bouton supprimer
-      const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑 Supprimer");
-      bDel.addEventListener("click",()=>{
-        if(confirm("Supprimer le compte de "+p.nom+" ? Cette action est irréversible.")){
-          deleteCompte(p.id);
-          render();
-        }
-      });
-      acts.appendChild(bDel);
-    }else{
-      acts.appendChild(el("span",{style:{color:"#9a9488",fontSize:"12px",padding:"3px 8px"}},"Vous"));
+  const mob=isMobile();
+
+  if(mob){
+    // ---- MOBILE : cartes ----
+    const list=el("div",{style:{display:"flex",flexDirection:"column",gap:"10px",marginBottom:"1.5rem"}});
+    if(!profiles.length){
+      list.appendChild(el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"12px",padding:"1.5rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},
+        "Aucun compte — appuie sur + Nouveau compte."));
     }
-    
-    tdA.appendChild(acts);tr.appendChild(tdA);tbody.appendChild(tr);
-  });
-  
-  t.appendChild(tbody);tbl.appendChild(t);wrap.appendChild(tbl);
+    profiles.forEach(p=>{
+      const isMe=p.email?.toLowerCase()===S.session?.email?.toLowerCase();
+      const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"14px",padding:"14px 16px",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}});
+      // ligne 1 : avatar + nom + statut
+      const row1=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"10px"}});
+      row1.appendChild(el("div",{style:{width:"40px",height:"40px",borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(p.nom||p.email||"?").slice(0,2).toUpperCase()));
+      const info=el("div",{style:{flex:"1",minWidth:"0"}});
+      info.appendChild(el("div",{style:{color:"#2a2520",fontWeight:"600",fontSize:"14px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},p.nom||"—"));
+      info.appendChild(el("div",{style:{color:"#8a8278",fontSize:"12px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},p.email||"—"));
+      row1.appendChild(info);
+      row1.appendChild(el("span",{style:{color:p.actif!==false?"#3B6D11":"#A32D2D",fontSize:"11px",fontWeight:"500",whiteSpace:"nowrap"}},(p.actif!==false?"● Actif":"○ Inactif")));
+      card.appendChild(row1);
+      // ligne 2 : rôle
+      const row2=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}});
+      if(!isMe){
+        const rs=el("select",{style:{flex:"1",background:"#f5f4f0",border:"1px solid #dddad2",color:"#2a2520",padding:"6px 10px",fontSize:"13px",borderRadius:"8px",cursor:"pointer",WebkitAppearance:"none"}});
+        Object.entries(ROLES).forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===p.role)o.selected=true;rs.appendChild(o);});
+        rs.addEventListener("change",e=>{updateCompte(p.id,{role:e.target.value});render();});
+        row2.appendChild(el("span",{style:{color:"#9a9488",fontSize:"12px",flexShrink:"0"}},"Rôle :"));
+        row2.appendChild(rs);
+      }else{
+        row2.appendChild(el("span",{style:{color:"#9a9488",fontSize:"12px"}},"Rôle :"));
+        row2.appendChild(roleBadge(p.role));
+      }
+      card.appendChild(row2);
+      // ligne 3 : actions
+      if(!isMe){
+        const acts=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
+        const bT=el("button",{style:{flex:"1",padding:"7px 0",fontSize:"12px",borderRadius:"8px",border:`1px solid ${p.actif!==false?"#A32D2D44":"#3B6D1144"}`,background:"#ffffff",color:p.actif!==false?"#A32D2D":"#3B6D11",cursor:"pointer",WebkitAppearance:"none"}},p.actif!==false?"Désactiver":"Activer");
+        bT.addEventListener("click",async()=>{const na=!(p.actif!==false);await updateProfile(S.token,p.id,{actif:na});S.profiles=S.profiles.map(x=>x.id===p.id?{...x,actif:na}:x);render();});
+        const bR=el("button",{style:{flex:"1",padding:"7px 0",fontSize:"12px",borderRadius:"8px",border:"1px solid #dddad2",background:"#ffffff",color:"#5a5450",cursor:"pointer",WebkitAppearance:"none"}},"🔑 Reset PIN");
+        bR.addEventListener("click",()=>{updateCompte(p.id,{pin_hash:null});const data=btoa(JSON.stringify({id:p.id,email:p.email,nom:p.nom,role:p.role,created_at:p.created_at}));const lien=window.location.origin+"/crm/?newuser="+encodeURIComponent(data);navigator.clipboard.writeText(lien).catch(()=>{});bR.textContent="✓ Lien copié !";bR.style.color="#3B6D11";setTimeout(()=>{bR.textContent="🔑 Reset PIN";bR.style.color="";},3000);});
+        const bDel=el("button",{style:{padding:"7px 12px",fontSize:"12px",borderRadius:"8px",border:"1px solid #A32D2D44",background:"#ffffff",color:"#A32D2D",cursor:"pointer",WebkitAppearance:"none"}},"🗑");
+        bDel.addEventListener("click",()=>{if(confirm("Supprimer le compte de "+p.nom+" ?")){deleteCompte(p.id);render();}});
+        acts.appendChild(bT);acts.appendChild(bR);acts.appendChild(bDel);
+        card.appendChild(acts);
+      }else{
+        card.appendChild(el("div",{style:{fontSize:"12px",color:"#9a9488",fontStyle:"italic"}},"Votre compte"));
+      }
+      list.appendChild(card);
+    });
+    wrap.appendChild(list);
+  } else {
+    // ---- DESKTOP : tableau ----
+    const tbl=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",overflow:"hidden",marginBottom:"2rem",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}});
+    const t=el("table",{});
+    const th=el("tr",{style:{borderBottom:"1px solid #e8e4dc"}});
+    ["Nom","Email","Rôle","Statut","Actions"].forEach(h=>th.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",fontWeight:"500"}},h)));
+    t.appendChild(el("thead",{},[th]));
+    const tbody=el("tbody",{});
+    if(!profiles.length){
+      const tr=el("tr",{});
+      tr.appendChild(el("td",{colSpan:"5",style:{padding:"2rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},"Aucun compte — clique sur + Nouveau compte pour créer le premier."));
+      tbody.appendChild(tr);
+    }
+    profiles.forEach(p=>{
+      const isMe=p.email?.toLowerCase()===S.session?.email?.toLowerCase();
+      const tr=el("tr",{style:{borderBottom:"1px solid #eceae4"}});
+      tr.addEventListener("mouseenter",()=>tr.style.background="#f5f4f0");
+      tr.addEventListener("mouseleave",()=>tr.style.background="");
+      tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#2a2520",fontWeight:"500",fontSize:"13px"}},
+        el("div",{style:{display:"flex",alignItems:"center",gap:"8px"}},[
+          el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"12px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(p.nom||p.email||"?").slice(0,2).toUpperCase()),
+          el("span",{},p.nom||"—")
+        ])
+      ));
+      tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#8a8278",fontSize:"12px"}},p.email||"—"));
+      const tdR=el("td",{style:{padding:"0.8rem 1rem"}});
+      if(!isMe){
+        const rs=el("select",{style:{background:"#f5f4f0",border:"1px solid #dddad2",color:"#2a2520",padding:"4px 8px",fontSize:"12px",borderRadius:"4px",cursor:"pointer"}});
+        Object.entries(ROLES).forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===p.role)o.selected=true;rs.appendChild(o);});
+        rs.addEventListener("change",e=>{updateCompte(p.id,{role:e.target.value});render();});
+        tdR.appendChild(rs);
+      }else{tdR.appendChild(roleBadge(p.role));}
+      tr.appendChild(tdR);
+      tr.appendChild(el("td",{style:{padding:"0.8rem 1rem"}},
+        el("span",{style:{color:p.actif!==false?"#3B6D11":"#A32D2D",fontSize:"12px"}},(p.actif!==false?"● Actif":"○ Inactif"))
+      ));
+      const tdA=el("td",{style:{padding:"0.8rem 1rem"}});
+      const acts=el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap"}});
+      if(!isMe){
+        const bT=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:p.actif!==false?"#A32D2D":"#3B6D11",borderColor:p.actif!==false?"#A32D2D44":"#3B6D1144"}},p.actif!==false?"Désactiver":"Activer");
+        bT.addEventListener("click",async()=>{const na=!(p.actif!==false);await updateProfile(S.token,p.id,{actif:na});S.profiles=S.profiles.map(x=>x.id===p.id?{...x,actif:na}:x);render();});
+        acts.appendChild(bT);
+        const bR=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"🔑 Reset PIN");
+        bR.addEventListener("click",()=>{updateCompte(p.id,{pin_hash:null});const data=btoa(JSON.stringify({id:p.id,email:p.email,nom:p.nom,role:p.role,created_at:p.created_at}));const lien=window.location.origin+"/crm/?newuser="+encodeURIComponent(data);navigator.clipboard.writeText(lien).catch(()=>{});bR.textContent="✓ Lien copié !";bR.style.color="#3B6D11";setTimeout(()=>{bR.textContent="🔑 Reset PIN";bR.style.color="";},3000);});
+        acts.appendChild(bR);
+        const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑 Supprimer");
+        bDel.addEventListener("click",()=>{if(confirm("Supprimer le compte de "+p.nom+" ? Cette action est irréversible.")){deleteCompte(p.id);render();}});
+        acts.appendChild(bDel);
+      }else{acts.appendChild(el("span",{style:{color:"#9a9488",fontSize:"12px",padding:"3px 8px"}},"Vous"));}
+      tdA.appendChild(acts);tr.appendChild(tdA);tbody.appendChild(tr);
+    });
+    t.appendChild(tbody);tbl.appendChild(t);wrap.appendChild(tbl);
+  }
 
   // Légende des rôles
   const legend=el("div",{});
   legend.appendChild(el("h4",{style:{color:"#c9a84c",fontSize:"12px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem",fontWeight:"500"}},"Accès par rôle"));
-  const rolesGrid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px"}});
+  const rolesGrid=el("div",{style:{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"repeat(3,1fr)",gap:"8px"}});
   Object.entries(ROLES).forEach(([key,r])=>{
     const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"0.9rem"}});
     const top=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"0.5rem"}});
