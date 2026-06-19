@@ -184,9 +184,16 @@ function initMap() {
     { name: 'Antibes', lat: 43.5808, lng: 7.1239 },
     { name: 'Saint-Tropez', lat: 43.2677, lng: 6.6399 },
     { name: 'Monaco', lat: 43.7384, lng: 7.4246 },
+    { name: 'Mougins', lat: 43.6012, lng: 6.9902 },
+    { name: 'Grasse', lat: 43.6600, lng: 6.9249 },
+    { name: 'Valbonne', lat: 43.6449, lng: 7.0091 },
+    { name: 'Levallois-Perret', lat: 48.8946, lng: 2.2873 },
+    { name: 'Saint-Cloud', lat: 48.8464, lng: 2.2180 },
+    { name: 'Courbevoie', lat: 48.8978, lng: 2.2547 },
     { name: 'Biarritz', lat: 43.4832, lng: -1.5586 },
     { name: 'Bayonne', lat: 43.4933, lng: -1.4748 },
     { name: 'Saint-Jean-de-Luz', lat: 43.3895, lng: -1.6600 },
+    { name: 'Anglet', lat: 43.4896, lng: -1.5241 },
   ];
 
   villes.forEach(v => {
