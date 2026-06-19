@@ -1,4 +1,4 @@
-// ===== NAVBAR SCROLL =====
+﻿// ===== NAVBAR SCROLL =====
 const navbar = document.getElementById('navbar');
 const urgenceHeight = document.querySelector('.urgence-bar')?.offsetHeight || 38;
 
@@ -67,8 +67,8 @@ if (floatBtns) {
 }
 
 // ===== FORMULAIRE — envoie dans Supabase comme "lead" =====
-const SUPA_URL = 'https://gwcrschnztnyqvfsjpdd.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE';
+const SUPA_URL = '__SUPABASE_URL__';
+const SUPA_KEY = '__SUPABASE_ANON_KEY__';
 
 async function handleSubmit(e) {
   e.preventDefault();

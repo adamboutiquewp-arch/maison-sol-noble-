@@ -146,8 +146,8 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
   <div style="width:28px;height:28px;border:2px solid #e0dcd5;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div>
 </div>
 <script>
-const SUPA_URL="https://gwcrschnztnyqvfsjpdd.supabase.co";
-const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE";
+const SUPA_URL="__SUPABASE_URL__";
+const SUPA_KEY="__SUPABASE_ANON_KEY__";
 
 // ── COMPTE TECHNIQUE SUPABASE AUTH ──────────────────────────────
 // Ce compte permet à l'app de s'authentifier auprès de Supabase
@@ -474,11 +474,51 @@ function renderLogin(){
   if(S.loginError)form.appendChild(el("div",{style:{background:"rgba(163,45,45,0.15)",border:"1px solid rgba(163,45,45,0.3)",borderRadius:"6px",padding:"0.7rem 1rem",marginBottom:"1rem",fontSize:"13px",color:"#e07070",textAlign:"center"}},S.loginError));
   const btn=el("button",{type:"submit",style:{...BP,width:"100%",padding:"0.9rem",opacity:S.loginLoading?"0.7":"1"}},S.loginLoading?"Connexion...":"Se connecter");
   form.appendChild(btn);
+  // Anti-brute-force : 5 tentatives max → blocage 15 min
+  function getLoginBlock(){
+    try{
+      const b=JSON.parse(localStorage.getItem("msn_login_block")||"{}");
+      if(b.until&&Date.now()<b.until)return b;
+      if(b.until&&Date.now()>=b.until){localStorage.removeItem("msn_login_block");return{};}
+      return b;
+    }catch{return{};}
+  }
+  function recordFailedAttempt(){
+    const b=getLoginBlock();
+    const attempts=(b.attempts||0)+1;
+    if(attempts>=5){
+      localStorage.setItem("msn_login_block",JSON.stringify({attempts,until:Date.now()+15*60*1000}));
+    }else{
+      localStorage.setItem("msn_login_block",JSON.stringify({attempts}));
+    }
+    return attempts;
+  }
+  function clearLoginBlock(){localStorage.removeItem("msn_login_block");}
+
+  // Afficher blocage si actif
+  const blockState=getLoginBlock();
+  if(blockState.until){
+    const remaining=Math.ceil((blockState.until-Date.now())/60000);
+    const blockDiv=el("div",{style:{background:"rgba(163,45,45,0.1)",border:"1px solid rgba(163,45,45,0.3)",borderRadius:"8px",padding:"1rem",marginBottom:"1rem",textAlign:"center"}});
+    blockDiv.appendChild(el("div",{style:{color:"#e07070",fontSize:"13px",fontWeight:"600",marginBottom:"4px"}},`Trop de tentatives — bloqué ${remaining} min`));
+    blockDiv.appendChild(el("div",{style:{color:"#b08080",fontSize:"12px"}},`Réessaie après ${new Date(blockState.until).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`));
+    form.insertBefore(blockDiv,btn);
+    btn.disabled=true;btn.style.opacity="0.5";
+  }
+
   form.addEventListener("submit",e=>{
     e.preventDefault();
+    // Vérifier blocage
+    const block=getLoginBlock();
+    if(block.until){
+      const remaining=Math.ceil((block.until-Date.now())/60000);
+      set({loginError:`Compte temporairement bloqué. Réessaie dans ${remaining} min.`});
+      return;
+    }
     set({loginLoading:true,loginError:""});
     try{
       const compte=loginPin(S.loginEmail,S.loginPin||pinVal);
+      clearLoginBlock();
       set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true,loginLoading:false,loginPin:"",loginError:""});
       loadDevisFromSupabase().then(devis=>{
         set({devis:devis.length?devis:DEMO_DEVIS,loading:false});
@@ -486,7 +526,12 @@ function renderLogin(){
       pinVal="";updateDots();
     }catch(err){
       pinVal="";updateDots();S.loginPin="";
-      set({loginLoading:false,loginError:err.message});
+      const attempts=recordFailedAttempt();
+      const remaining=5-attempts;
+      const msg=remaining<=0
+        ?`Trop de tentatives. Compte bloqué 15 minutes.`
+        :err.message+(remaining<=2?` (${remaining} tentative${remaining>1?"s":""} restante${remaining>1?"s":""})` : "");
+      set({loginLoading:false,loginError:msg});
     }
   });
   card.appendChild(form);

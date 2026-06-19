@@ -43,12 +43,24 @@ CREATE OR REPLACE TRIGGER devis_updated_at
 BEFORE UPDATE ON devis
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- Politique RLS (Row Level Security) — accès réservé aux utilisateurs authentifiés uniquement.
--- Le CRM s'authentifie via un compte technique Supabase Auth (voir crm/index.html,
--- fonction getAppAuthToken). Sans ce token, aucune lecture ni écriture n'est possible.
+-- ============================================================
+-- POLITIQUES RLS
+-- Deux politiques distinctes :
+--   1. Anonyme : INSERT uniquement, pour le formulaire de contact du site vitrine
+--   2. Authentifié : ALL, pour le CRM (accès via APP_AUTH_PASSWORD → JWT Supabase)
+-- ============================================================
 ALTER TABLE devis ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Accès libre devis" ON devis
+-- Politique 1 : formulaire de contact (clé anon — publique, conçue pour ça)
+-- Seul INSERT autorisé, uniquement si source='site_vitrine' et statut='Nouveau'
+-- Empêche toute lecture, modification ou suppression par un visiteur anonyme.
+CREATE POLICY "Leads vitrine — insert anon uniquement" ON devis
+  FOR INSERT
+  TO anon
+  WITH CHECK (source = 'site_vitrine' AND statut = 'Nouveau');
+
+-- Politique 2 : CRM (utilisateur Supabase Auth authentifié via APP_AUTH_PASSWORD)
+CREATE POLICY "CRM — acces complet authentifie" ON devis
   FOR ALL
   TO authenticated
   USING (auth.role() = 'authenticated');
