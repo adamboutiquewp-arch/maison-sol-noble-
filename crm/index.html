@@ -229,12 +229,18 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
     width:100%;background:transparent;color:#a09080;
     border:1px solid #2a2a2a;padding:14px 16px;
     font-size:14px;border-radius:12px;cursor:pointer;margin-bottom:8px;
+    -webkit-appearance:none;
   }
+  .mob-btn-outline:active{background:#111;transform:scale(0.98);}
   .mob-btn-danger{
     width:100%;background:transparent;color:#e07070;
     border:1px solid rgba(163,45,45,0.3);padding:14px 16px;
     font-size:14px;border-radius:12px;cursor:pointer;margin-bottom:8px;
+    -webkit-appearance:none;
   }
+  .mob-btn-danger:active{background:rgba(163,45,45,0.08);transform:scale(0.98);}
+  .mob-tab{-webkit-appearance:none;}
+  .mob-fab{-webkit-appearance:none;}
 }
 </style>
 </head>
@@ -505,8 +511,8 @@ function el(tag,props,...kids){
   return e;
 }
 
-const BP={background:"#c9a84c",color:"#111",border:"none",padding:"0.65rem 1.3rem",fontSize:"13px",fontWeight:"600",letterSpacing:"0.08em",borderRadius:"4px",textTransform:"uppercase"};
-const BS={background:"transparent",color:"#a09080",border:"1px solid #2a2a2a",padding:"0.55rem 1.1rem",fontSize:"12px",borderRadius:"4px"};
+const BP={background:"#c9a84c",color:"#111",border:"none",padding:"0.65rem 1.3rem",fontSize:"13px",fontWeight:"600",letterSpacing:"0.08em",borderRadius:"4px",textTransform:"uppercase",WebkitAppearance:"none"};
+const BS={background:"transparent",color:"#a09080",border:"1px solid #2a2a2a",padding:"0.55rem 1.1rem",fontSize:"12px",borderRadius:"4px",WebkitAppearance:"none"};
 function badge(s){return el("span",{style:{background:SCOL[s]+"22",color:SCOL[s],border:`1px solid ${SCOL[s]}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500",whiteSpace:"nowrap"}},s);}
 function roleBadge(r){const ro=ROLES[r];if(!ro)return el("span",{},"—");return el("span",{style:{background:ro.color+"22",color:ro.color,border:`1px solid ${ro.color}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500"}},ro.label);}
 function lbl(txt){return el("label",{style:{display:"block",fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#6a6050",marginBottom:"6px"}},txt);}
@@ -1015,11 +1021,13 @@ function renderPlanning(){
   const wrap=el("div",{});
   const today=new Date(),jours=["Lun","Mar","Mer","Jeu","Ven","Sam"];
   const debut=new Date(today);debut.setDate(today.getDate()-today.getDay()+1+S.semaine*7);
-  const nav=el("div",{style:{display:"flex",gap:"0.8rem",marginBottom:"1.5rem",alignItems:"center",flexWrap:"wrap"}});
-  const bp=el("button",{style:BS},"← Précédente");bp.addEventListener("click",()=>set({semaine:S.semaine-1}));nav.appendChild(bp);
-  nav.appendChild(el("span",{style:{color:"#e0d8cc",fontSize:"14px",fontWeight:"500"}},`Semaine du ${debut.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`));
-  const bn=el("button",{style:BS},"Suivante →");bn.addEventListener("click",()=>set({semaine:S.semaine+1}));nav.appendChild(bn);
-  const bt=el("button",{style:{...BS,marginLeft:"auto"}},"Aujourd'hui");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);
+  const nav=el("div",{style:{display:"flex",gap:isMobile()?"6px":"0.8rem",marginBottom:"1.5rem",alignItems:"center",flexWrap:isMobile()?"nowrap":"wrap"}});
+  const bpStyle=isMobile()?{background:"#111",border:"1px solid #1e1e1e",color:"#a09080",padding:"10px 14px",fontSize:"16px",borderRadius:"10px",WebkitAppearance:"none",minWidth:"44px",display:"flex",alignItems:"center",justifyContent:"center"}:BS;
+  const bp=el("button",{style:bpStyle},isMobile()?"‹":"← Précédente");bp.addEventListener("click",()=>set({semaine:S.semaine-1}));nav.appendChild(bp);
+  nav.appendChild(el("span",{style:{color:"#e0d8cc",fontSize:isMobile()?"13px":"14px",fontWeight:"500",flex:isMobile()?"1":"",textAlign:isMobile()?"center":"left",padding:isMobile()?"0 4px":"0"}},`Semaine du ${debut.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`));
+  const bn=el("button",{style:bpStyle},isMobile()?"›":"Suivante →");bn.addEventListener("click",()=>set({semaine:S.semaine+1}));nav.appendChild(bn);
+  if(!isMobile()){const bt=el("button",{style:{...BS,marginLeft:"auto"}},"Aujourd'hui");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);}
+  else{const bt=el("button",{style:{...bpStyle,fontSize:"11px",padding:"10px 10px",color:"#c9a84c",borderColor:"rgba(201,168,76,0.25)"}},"Auj.");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);}
   wrap.appendChild(nav);
   const grid=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"repeat(3,1fr)":"repeat(6,1fr)",gap:isMobile()?"6px":"4px",marginBottom:"1.5rem"}});
   const chantiers=S.devis.filter(d=>d.statut==="Devis envoyé"||d.statut==="Gagné");
