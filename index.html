@@ -2,1422 +2,832 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>CRM — Maison Sol Noble</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Sol Noble CRM">
-<meta name="theme-color" content="#090909">
-<meta name="robots" content="noindex, nofollow">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0d0d0d;color:#e0d8cc;font-family:Inter,sans-serif;font-weight:300;}
-input,select,textarea{background:#0d0d0d;border:1px solid #2a2a2a;color:#e0d8cc;padding:0.7rem 0.9rem;font-family:Inter,sans-serif;font-size:14px;border-radius:4px;width:100%;outline:none;appearance:none;}
-input:focus,select:focus,textarea:focus{border-color:#c9a84c;}
-input::placeholder,textarea::placeholder{color:#3a3020;}
-button{cursor:pointer;font-family:Inter,sans-serif;}
-table{width:100%;border-collapse:collapse;}
-::-webkit-scrollbar{width:6px;}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
-*{box-sizing:border-box;}
-::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
-.tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:#6a6050;padding:0.6rem 1rem;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;}
-.tab-btn.active{color:#c9a84c;border-bottom-color:#c9a84c;}
-@keyframes spin{to{transform:rotate(360deg);}}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-/* ═══════════════════════════════════════════
-   MOBILE APP STYLES — iOS/Android optimisé
-   ═══════════════════════════════════════════ */
-@media(max-width:768px){
+<!-- SEO Principal -->
+<title>Rénovation Sol Marbre Travertin Granito Parquet | Maison Sol Noble — Côte d'Azur, Île-de-France, Côte Basque</title>
+<meta name="description" content="Maison Sol Noble — Artisan expert en rénovation de sols en marbre, travertin, granito et parquet massif. Polissage, cristallisation, vitrification. Intervention Côte d'Azur, Île-de-France et Côte Basque. Devis gratuit sous 24h.">
+<meta name="keywords" content="rénovation sol marbre Côte d'Azur, rénovation travertin Île-de-France, rénovation granito, vitrification parquet, parquet ciré, polissage marbre Nice Cannes, cristallisation marbre Paris, rénovation sol Biarritz, entreprise rénovation sol prestige">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="author" content="Maison Sol Noble">
+<link rel="canonical" href="https://www.maisonsolnoble.com/">
 
-  /* ── BASE ── */
-  *{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-  body{padding:0;margin:0;overflow-x:hidden;}
-  input,select,textarea{font-size:16px!important;} /* bloque zoom iOS */
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.maisonsolnoble.com/">
+<meta property="og:title" content="Maison Sol Noble — Rénovation Sols Marbre, Travertin & Parquet">
+<meta property="og:description" content="Artisan expert en rénovation de sols en pierre naturelle et parquet massif. Côte d'Azur, Île-de-France, Côte Basque. Devis gratuit sous 24h.">
+<meta property="og:image" content="https://www.maisonsolnoble.com/images/og-image.jpg">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="Maison Sol Noble">
 
-  /* ── HEADER FIXE ── */
-  .mob-header{
-    position:fixed;top:0;left:0;right:0;
-    height:56px;
-    background:#090909;
-    border-bottom:1px solid rgba(201,168,76,0.15);
-    display:flex;align-items:center;justify-content:space-between;
-    padding:0 16px;
-    padding-top:env(safe-area-inset-top);
-    z-index:100;
-  }
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Maison Sol Noble — Rénovation Sols Pierre & Parquet">
+<meta name="twitter:description" content="Rénovation marbre, travertin, granito, parquet massif. Côte d'Azur, Île-de-France, Côte Basque. Devis gratuit.">
+<meta name="twitter:image" content="https://www.maisonsolnoble.com/images/og-image.jpg">
 
-  /* ── CONTENU PRINCIPAL ── */
-  .mob-body{
-    padding-top:calc(56px + env(safe-area-inset-top) + 12px);
-    padding-bottom:calc(72px + env(safe-area-inset-bottom) + 12px);
-    padding-left:14px;
-    padding-right:14px;
-    min-height:100vh;
-  }
-
-  /* ── TAB BAR iOS ── */
-  .mob-nav{
-    position:fixed;bottom:0;left:0;right:0;
-    background:#090909;
-    border-top:0.5px solid rgba(201,168,76,0.2);
-    padding-bottom:env(safe-area-inset-bottom);
-    display:flex!important;
-    z-index:200;
-  }
-  .mob-tab{
-    flex:1;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    gap:3px;padding:8px 2px 6px;
-    background:none;border:none;cursor:pointer;
-    min-height:50px;
-  }
-  .mob-tab-icon{font-size:20px;line-height:1;}
-  .mob-tab-label{font-size:9px;font-family:Inter,sans-serif;letter-spacing:0.02em;}
-
-  /* ── FAB BOUTON ── */
-  .mob-fab{
-    position:fixed;
-    bottom:calc(66px + env(safe-area-inset-bottom));
-    right:16px;
-    width:52px;height:52px;
-    background:#c9a84c;
-    border:none;border-radius:50%;
-    font-size:26px;color:#111;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 4px 20px rgba(201,168,76,0.4);
-    cursor:pointer;z-index:150;
-    transition:transform 0.15s;
-  }
-  .mob-fab:active{transform:scale(0.9);}
-
-  /* ── KPI GRID ── */
-  .mob-kpi-grid{
-    display:grid;grid-template-columns:1fr 1fr;
-    gap:8px;margin-bottom:14px;
-  }
-  .mob-kpi{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:12px;padding:12px 14px;
-  }
-  .mob-kpi-label{font-size:10px;color:#5a5040;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;}
-  .mob-kpi-val{font-family:'Cormorant Garamond',serif;font-size:24px;color:#f0ece4;font-weight:400;line-height:1;}
-  .mob-kpi-val.gold{color:#c9a84c;}
-
-  /* ── CARDS DEVIS ── */
-  .mob-devis-card{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:14px;padding:14px 16px;
-    margin-bottom:8px;
-  }
-  .mob-devis-card:active{background:#161616;transform:scale(0.99);}
-  .mob-devis-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
-  .mob-devis-nom{font-size:15px;color:#e0d8cc;font-weight:500;}
-  .mob-devis-num{font-size:11px;color:#c9a84c;font-weight:600;}
-  .mob-devis-mid{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
-  .mob-devis-tag{font-size:11px;color:#6a6050;background:#0a0a0a;padding:3px 9px;border-radius:20px;border:1px solid #1e1e1e;}
-  .mob-devis-bot{display:flex;justify-content:space-between;align-items:center;}
-  .mob-devis-prix{font-size:17px;color:#f0ece4;font-weight:600;font-family:'Cormorant Garamond',serif;}
-
-  /* ── BOTTOM SHEET ── */
-  .mob-sheet-overlay{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,0.65);
-    z-index:1000;
-    display:flex;align-items:flex-end;
-  }
-  .mob-sheet{
-    background:#141414;
-    border-radius:20px 20px 0 0;
-    width:100%;max-height:92vh;
-    overflow-y:auto;
-    padding-bottom:calc(16px + env(safe-area-inset-bottom));
-  }
-  .mob-sheet-handle{
-    width:36px;height:4px;background:#2a2a2a;
-    border-radius:2px;margin:12px auto 0;
-  }
-  .mob-sheet-header{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 18px;border-bottom:1px solid #1e1e1e;
-    position:sticky;top:0;background:#141414;z-index:1;
-  }
-  .mob-sheet-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#f0ece4;font-weight:400;}
-  .mob-sheet-body{padding:16px 18px;}
-
-  /* ── FORMULAIRE ── */
-  .mob-form-group{margin-bottom:14px;}
-  .mob-form-group label{display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#6a6050;margin-bottom:6px;}
-  .mob-form-group input,.mob-form-group select,.mob-form-group textarea{
-    background:#0d0d0d;border:1px solid #2a2a2a;color:#e0d8cc;
-    padding:13px 14px;border-radius:10px;width:100%;
-    font-family:Inter,sans-serif;
-  }
-  .mob-form-group input:focus,.mob-form-group select:focus{border-color:#c9a84c;outline:none;}
-
-  /* ── RECAP PRIX ── */
-  .mob-recap{
-    background:#0a0a0a;border:1px solid rgba(201,168,76,0.2);
-    border-radius:12px;padding:14px 16px;margin:12px 0;
-  }
-  .mob-recap-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;}
-  .mob-recap-label{font-size:13px;color:#7a7060;}
-  .mob-recap-val{font-size:14px;color:#f0ece4;font-weight:500;}
-  .mob-recap-ttc{font-size:22px;color:#c9a84c;font-weight:700;font-family:'Cormorant Garamond',serif;}
-
-  /* ── PLANNING ── */
-  .mob-planning-day{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:12px;padding:10px 12px;
-    min-height:80px;
-  }
-  .mob-planning-date{margin-bottom:6px;}
-  .mob-planning-day-name{font-size:10px;color:#5a5040;text-transform:uppercase;letter-spacing:0.1em;}
-  .mob-planning-day-num{font-family:'Cormorant Garamond',serif;font-size:22px;color:#7a7060;}
-  .mob-planning-day-num.today{color:#c9a84c;}
-
-  /* ── CLIENTS ── */
-  .mob-client-card{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:14px;padding:14px 16px;
-    margin-bottom:8px;display:flex;align-items:center;gap:14px;
-  }
-  .mob-avatar{
-    width:44px;height:44px;border-radius:50%;
-    background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);
-    display:flex;align-items:center;justify-content:center;
-    font-size:14px;color:#c9a84c;font-weight:600;flex-shrink:0;
-  }
-
-  /* ── FICHES TECH ── */
-  .mob-etape{
-    background:#111;border-left:3px solid rgba(201,168,76,0.3);
-    border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:8px;
-  }
-  .mob-etape-num{font-size:11px;color:#c9a84c;font-weight:600;letter-spacing:0.1em;margin-bottom:4px;}
-  .mob-etape-titre{font-size:14px;color:#e0d8cc;font-weight:500;margin-bottom:4px;}
-  .mob-etape-desc{font-size:13px;color:#7a7060;line-height:1.5;}
-
-  /* ── MASQUER DESKTOP ── */
-  .desktop-only{display:none!important;}
-
-  /* ── RECHERCHE ── */
-  .mob-search{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:12px;padding:11px 14px;
-    display:flex;align-items:center;gap:10px;margin-bottom:12px;
-  }
-  .mob-search input{background:none;border:none;color:#e0d8cc;font-size:15px;font-family:Inter,sans-serif;width:100%;outline:none;}
-
-  /* ── DETAIL DEVIS ── */
-  .mob-detail-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #1a1a1a;}
-  .mob-detail-row:last-child{border-bottom:none;}
-  .mob-detail-label{font-size:12px;color:#5a5040;text-transform:uppercase;letter-spacing:0.08em;}
-  .mob-detail-val{font-size:14px;color:#e0d8cc;font-weight:400;text-align:right;max-width:60%;}
-
-  /* ── BOUTONS ACTION ── */
-  .mob-btn-full{
-    width:100%;background:#c9a84c;color:#111;border:none;
-    padding:15px 16px;font-size:14px;font-weight:700;
-    letter-spacing:0.06em;text-transform:uppercase;
-    border-radius:12px;cursor:pointer;margin-bottom:8px;
-    transition:opacity 0.15s;
-  }
-  .mob-btn-full:active{opacity:0.8;transform:scale(0.98);}
-  .mob-btn-outline{
-    width:100%;background:transparent;color:#a09080;
-    border:1px solid #2a2a2a;padding:14px 16px;
-    font-size:14px;border-radius:12px;cursor:pointer;margin-bottom:8px;
-  }
-  .mob-btn-danger{
-    width:100%;background:transparent;color:#e07070;
-    border:1px solid rgba(163,45,45,0.3);padding:14px 16px;
-    font-size:14px;border-radius:12px;cursor:pointer;margin-bottom:8px;
-  }
+<!-- Données structurées Schema.org -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HomeAndConstructionBusiness",
+  "name": "Maison Sol Noble",
+  "description": "Artisan spécialisé en rénovation de sols en pierre naturelle (marbre, travertin, granito) et parquet massif. Intervention Côte d'Azur, Île-de-France et Côte Basque.",
+  "url": "https://www.maisonsolnoble.com",
+  "telephone": "+33554542864",
+  "email": "contact@maisonsolnoble.com",
+  "logo": "https://www.maisonsolnoble.com/images/logo.png",
+  "image": "https://www.maisonsolnoble.com/images/og-image.jpg",
+  "areaServed": [
+    {"@type": "State", "name": "Provence-Alpes-Côte d'Azur"},
+    {"@type": "State", "name": "Île-de-France"},
+    {"@type": "City", "name": "Biarritz"},
+    {"@type": "City", "name": "Bayonne"},
+    {"@type": "City", "name": "Saint-Jean-de-Luz"}
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Services de rénovation de sols",
+    "itemListElement": [
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Rénovation sol en marbre", "description": "Polissage, cristallisation, bouche-porage et protection de sols en marbre"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Rénovation sol en travertin", "description": "Nettoyage, bouchage des pores, ponçage et huilage de travertin"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Rénovation granito", "description": "Ponçage multi-grain, cristallisation et brillantage de granito"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Rénovation parquet massif", "description": "Ponçage, vitrification ou cirage de parquet massif"}}
+    ]
+  },
+  "sameAs": [
+    "https://www.instagram.com/maisonsolnoble",
+    "https://www.facebook.com/maisonsolnoble"
+  ],
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+      "opens": "08:00",
+      "closes": "19:00"
+    }
+  ]
 }
-</style>
+</script>
+
+<!-- FAQ Schema pour la page d accueil -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Intervenez-vous partout en France ?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Oui, Maison Sol Noble intervient sur tout le territoire français, du Nord au Sud et de l Est à l Ouest. Le déplacement est inclus dans votre devis."}
+    },
+    {
+      "@type": "Question",
+      "name": "Combien coûte la rénovation d un sol en marbre ?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Le prix dépend de la surface, de l état du sol et du type de traitement souhaité. Contactez-nous pour un devis gratuit personnalisé sous 24h."}
+    },
+    {
+      "@type": "Question",
+      "name": "Quelle est la différence entre vitrification et parquet ciré ?",
+      "acceptedAnswer": {"@type": "Answer", "text": "La vitrification applique un vernis synthétique brillant très résistant. Le cire donne un aspect mat naturel et authentique. Nos artisans vous conseillent selon votre style et usage."}
+    },
+    {
+      "@type": "Question",
+      "name": "Combien de temps dure une rénovation de sol ?",
+      "acceptedAnswer": {"@type": "Answer", "text": "Un chantier standard de 50 à 100m² dure généralement 1 à 3 jours selon le type de sol et les traitements appliqués."}
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="app" style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;">
-  <div style="font-size:11px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;">Maison</div>
-  <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:#f0ece4;">Sol Noble</div>
-  <div style="width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div>
+
+<!-- BARRE URGENCE -->
+<div class="urgence-bar">
+  <span>Réponse sous 24h · Devis 100% gratuit · Côte d'Azur · Île-de-France · Côte Basque</span>
+  <a href="tel:0554542864" class="urgence-tel">05 54 54 28 64</a>
 </div>
-<script>
-const SUPA_URL="https://gwcrschnztnyqvfsjpdd.supabase.co";
-const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE";
 
-// ── COMPTE TECHNIQUE SUPABASE AUTH ──────────────────────────────
-// Ce compte permet à l'app de s'authentifier auprès de Supabase
-// (nécessaire pour que les policies RLS "authenticated only" laissent
-// passer les requêtes). Ce n'est PAS le login visible des employés —
-// ça reste le PIN. Ce compte est juste la "carte d'accès" technique.
-const APP_AUTH_EMAIL="contact@maisonsolnoble.com";
-const APP_AUTH_PASSWORD="Klea.louisa31"; // ⚠️ à remplacer avant déploiement
+<!-- NAVIGATION -->
+<nav class="navbar" id="navbar">
+  <a href="#" class="nav-logo">
+    <img src="/images/logo.png" alt="Maison Sol Noble" class="nav-logo-img">
+    <span class="nav-logo-text">
+      <span class="logo-maison">Maison</span>
+      <span class="logo-sol">Sol Noble</span>
+    </span>
+  </a>
+  <div class="nav-links">
+    <a href="#services">Nos services</a>
+    <a href="#realisations">Réalisations</a>
+    <a href="#temoignages">Avis clients</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="#contact" class="nav-cta">Devis gratuit</a>
+  <button class="burger" id="burger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-let _appAuthToken=null;
-let _appAuthPromise=null;
+<!-- MENU MOBILE -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#services" onclick="closeMobile()">Nos services</a>
+  <a href="#realisations" onclick="closeMobile()">Réalisations</a>
+  <a href="#temoignages" onclick="closeMobile()">Avis clients</a>
+  <a href="#contact" onclick="closeMobile()">Contact</a>
+  <a href="tel:0554542864" class="mobile-tel">05 54 54 28 64</a>
+</div>
 
-async function getAppAuthToken(){
-  if(_appAuthToken)return _appAuthToken;
-  if(_appAuthPromise)return _appAuthPromise;
-  _appAuthPromise=(async()=>{
-    try{
-      const r=await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`,{
-        method:"POST",
-        headers:{apikey:SUPA_KEY,"Content-Type":"application/json"},
-        body:JSON.stringify({email:APP_AUTH_EMAIL,password:APP_AUTH_PASSWORD})
-      });
-      const data=await r.json();
-      if(data&&data.access_token){
-        _appAuthToken=data.access_token;
-        return _appAuthToken;
-      }
-      console.error("Échec auth app Supabase :",data);
-      return null;
-    }catch(e){
-      console.error("Erreur réseau auth app Supabase :",e);
-      return null;
-    }finally{
-      _appAuthPromise=null;
-    }
-  })();
-  return _appAuthPromise;
-}
+<!-- HERO -->
+<section class="hero" id="hero">
+    <div class="hero-bg">
+    <img src="/images/photo-01-hero.jpg" alt="Sol en marbre poli, illustration du rendu obtenu après rénovation" style="width:100%;height:100%;object-fit:cover;object-position:center;">
+  </div>
 
+  <div class="hero-content">
+    <div class="hero-eyebrow">Artisans rénovateurs — Côte d'Azur · Île-de-France · Côte Basque</div>
+    <h1 class="hero-title">
+      Vos sols retrouvent<br>
+      <em>leur éclat d'origine</em>
+    </h1>
+    <p class="hero-sub">Marbre · Travertin · Granito · Parquet massif<br>Rénovation haut de gamme sur la Côte d'Azur, en Île-de-France et sur la Côte Basque</p>
+    <div class="hero-badges">
+      <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Devis gratuit</span>
+      <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Sans engagement</span>
+      <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Réponse 24h</span>
+    </div>
+    <div class="hero-ctas">
+      <a href="#contact" class="btn-primary">Obtenir mon devis gratuit</a>
+      <a href="tel:0554542864" class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+        05 54 54 28 64
+      </a>
+    </div>
+  </div>
 
-// ── DÉTECTION MOBILE ──────────────────────────────────────────
-function isMobile(){return window.innerWidth<=768;}
-const INFO={nom:"Maison Sol Noble",forme:"SAS à associé unique",siret:"105 745 806 00015",tva:"FR3102.105745806",adresse:"6 place du Président Thomas Woodrow Wilson",cp:"31000",ville:"Toulouse",tel:"05 54 54 28 64",email:"contact@maisonsolnoble.com",president:"TAHAR Adam",capital:"50,00 €",site:"maisonsolnoble.com"};
+  <div class="hero-scroll">
+    <span>Découvrir</span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+</section>
 
-let TARIFS={
-  marbre:{label:"Marbre",trav:["Polissage simple","Rénovation complète","Cristallisation","Protection imperméabilisante"],prix:[30,55,45,14]},
-  travertin:{label:"Travertin",trav:["Bouchage + ponçage","Rénovation complète","Protection hydrofuge"],prix:[35,50,12]},
-  granito:{label:"Granito",trav:["Ponçage + cristallisation","Rénovation complète","Nettoyage professionnel"],prix:[40,48,14]},
-  parquet:{label:"Parquet massif",trav:["Ponçage + vitrification","Ponçage + cirage","Vitrification seule","Ponçage seul"],prix:[28,32,16,12]},
-};
+<!-- CHIFFRES CLÉS -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <span class="stat-number">10+</span>
+      <span class="stat-label">Années d'expérience artisanale</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">3</span>
+      <span class="stat-label">Régions d'intervention dédiées</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">100%</span>
+      <span class="stat-label">Devis gratuit & transparent</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">24h</span>
+      <span class="stat-label">Délai de réponse</span>
+    </div>
+  </div>
+</section>
 
-let FICHES={
-  marbre:{titre:"Rénovation sol en marbre",materiel:["Ponceuse à disques diamantés (grain 50→3000)","Cristalliseur professionnel","Produit de cristallisation (acide oxalique)","Imperméabilisant pénétrant","Monobrosse avec tampon de lustrage","Aspirateur eau et poussière","EPI : lunettes, gants nitrile, masque FFP2","Chiffons microfibre","Produit nettoyant pH neutre"],etapes:[{titre:"1. Nettoyage initial",desc:"Nettoyer avec produit alcalin pour éliminer cire, graisses et résidus. Rincer abondamment."},{titre:"2. Diagnostic",desc:"Évaluer profondeur des rayures, taches et fissures. Définir le grain de départ."},{titre:"3. Ponçage progressif",desc:"Disques diamantés du grain 50 au grain 400 pour éliminer les rayures. Chaque passe perpendiculaire à la précédente."},{titre:"4. Affinage",desc:"Grain 800 puis 1500 pour lisser la surface. Aspirer entre chaque grain."},{titre:"5. Rebouchage",desc:"Résine époxy teintée dans les fissures. Laisser sécher 2h."},{titre:"6. Polissage fin",desc:"Grain 3000 pour obtenir la brillance souhaitée."},{titre:"7. Cristallisation",desc:"Produit cristalliseur avec monobrosse. Friction à chaud crée couche de fluorure de calcium ultra-dure."},{titre:"8. Protection finale",desc:"Imperméabilisant pénétrant en 2 couches. Laisser sécher 4h avant circulation."}]},
-  travertin:{titre:"Rénovation sol en travertin",materiel:["Ponceuse à disques diamantés","Produit bouche-pores (résine époxy ou ciment fin)","Spatule et raclette","Imperméabilisant hydrofuge","Huile de protection pierre naturelle","Monobrosse","Aspirateur eau/poussière","EPI complets","Produit nettoyant pH neutre"],etapes:[{titre:"1. Nettoyage profond",desc:"Dégraisser et nettoyer les pores avec produit alcalin concentré. Brosser avec monobrosse."},{titre:"2. Séchage",desc:"Laisser sécher 24h minimum. Le travertin doit être parfaitement sec avant bouchage."},{titre:"3. Bouchage des pores",desc:"Appliquer résine époxy ou ciment en remplissant tous les pores et cavités. Étaler à la spatule."},{titre:"4. Ponçage d'arasage",desc:"Après séchage (4-6h), grain 100 pour araser le bouchage au niveau du sol."},{titre:"5. Ponçage progressif",desc:"Grains 200→400→800 pour lisser et préparer la surface."},{titre:"6. Adoucissage",desc:"Grain 1500→3000 pour le rendu final mat ou satiné."},{titre:"7. Protection",desc:"2 couches d'imperméabilisant hydrofuge ou huile naturelle selon le rendu souhaité."}]},
-  granito:{titre:"Rénovation sol en granito",materiel:["Ponceuse à disques diamantés (grain 50→3000)","Cristalliseur professionnel","Produit nettoyant granito","Résine époxy pour joints","Imperméabilisant","Monobrosse","Aspirateur eau/poussière","EPI complets"],etapes:[{titre:"1. Nettoyage dégraissant",desc:"Nettoyer à fond avec produit spécial granito. Éliminer toute cire ancienne."},{titre:"2. Réparation joints",desc:"Reprendre les joints dégradés avec résine époxy teintée assortie aux couleurs du granito."},{titre:"3. Ponçage grain 50-100",desc:"Première passe agressive pour descendre sous les rayures et révéler les granulats colorés."},{titre:"4. Ponçage progressif",desc:"Grains 200→400→800→1500→3000 en aspirant entre chaque passe."},{titre:"5. Nettoyage inter-passe",desc:"Nettoyer soigneusement entre les grains fins pour éviter les contaminations."},{titre:"6. Cristallisation",desc:"Appliquer le cristalliseur avec monobrosse pour durcir et faire briller la surface."},{titre:"7. Protection",desc:"Imperméabilisant pénétrant en 2 couches. Attendre 4h."}]},
-  parquet:{titre:"Rénovation parquet massif",materiel:["Ponceuse à bande (parquet à lames)","Ponceuse triangulaire pour coins","Aspirateur haute performance","Vitrificateur polyuréthane ou cire naturelle","Rouleaux et pinceaux spéciaux parquet","Mastic à bois pour rebouchage","Papier abrasif grain 40/60/80/120","EPI : masque, lunettes, genouillères","Produit nettoyant bois"],etapes:[{titre:"1. Préparation",desc:"Déplacer tous les meubles. Vérifier et renfoncer les clous affleurants. Reboucher lames manquantes."},{titre:"2. Premier ponçage grain 40",desc:"Passe dans le sens des lames pour enlever l'ancienne finition et les rayures profondes."},{titre:"3. Rebouchage",desc:"Mastic à bois teinté dans les interstices et fissures. Laisser sécher 2h."},{titre:"4. Ponçage grain 60-80",desc:"Affinage de la surface. Aspirer soigneusement entre chaque passe."},{titre:"5. Ponçage fin grain 120",desc:"Préparation finale avant application de la finition."},{titre:"6. Nettoyage minutieux",desc:"Aspirer et passer chiffon légèrement humide. Laisser sécher 1h. Aucune poussière ne doit rester."},{titre:"7A. Vitrification",desc:"Appliquer 1ère couche de vitrificateur. Séchage 4h. Ponçage léger grain 180. 2ème couche. Séchage 12h."},{titre:"7B. Cirage",desc:"Appliquer 1ère couche de cire en pâte avec tampon. Laisser pénétrer 30min. Lustrer à la monobrosse."}]}
-};
+<!-- PROBLÈME / SOLUTION -->
+<section class="problem-section">
+  <div class="container">
+    <div class="problem-grid">
+      <div class="problem-left">
+        <span class="section-eyebrow">Le constat</span>
+        <h2>Votre sol mérite mieux que l'abandon</h2>
+        <p>Les sols en pierre naturelle et les parquets massifs sont des matériaux nobles — mais sans entretien spécialisé, ils ternissent, se rayent, se porosent. Beaucoup de propriétaires pensent que le remplacement est la seule solution.</p>
+        <p class="problem-highlight">C'est faux. La rénovation coûte 3 à 5 fois moins cher que le remplacement — et le résultat est souvent supérieur.</p>
+      </div>
+      <div class="problem-right">
+        <div class="solution-card">
+          <div class="solution-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Notre engagement</h3>
+          <p>Redonner vie à vos sols avec des techniques professionnelles, des produits haut de gamme, et un savoir-faire artisanal transmis de génération en génération.</p>
+        </div>
+        <div class="solution-items">
+          <div class="solution-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Diagnostic gratuit sur devis</span>
+          </div>
+          <div class="solution-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Matériaux et machines professionnels</span>
+          </div>
+          <div class="solution-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Résultat garanti ou on revient</span>
+          </div>
+          <div class="solution-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Déplacement partout en France</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-const ROLES={directeur:{label:"Directeur",color:"#c9a84c",acces:["devis","planning","clients","employes","parametres","fiches"]},associe:{label:"Associé",color:"#3B8BD4",acces:["devis","planning","clients","fiches"]},chef_equipe:{label:"Chef d'équipe",color:"#8B3A8B",acces:["planning","fiches"]},secretaire:{label:"Secrétaire",color:"#EF9F27",acces:["devis","clients","fiches"]},employe:{label:"Employé",color:"#3B6D11",acces:["planning","fiches"]}};
-const COEFF={bon:1,moyen:1.2,mauvais:1.5};
-const STATUTS=["Nouveau","Contacté","Devis envoyé","Gagné","Perdu"];
-const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagné:"#3B6D11",Perdu:"#A32D2D"};
-// Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
-function isLead(d){return d.source==="site_vitrine";}
+<!-- SERVICES -->
+<section class="services-section" id="services">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Nos expertises</span>
+      <h2>Des solutions pour chaque type de sol</h2>
+    </div>
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",prix_m2:30}};
+    <div class="services-grid">
 
-function set(patch){S={...S,...patch};render();}
+      <!-- MARBRE -->
+      <div class="service-card" data-aos>
+        <div class="service-visual">
+          <div style="display:grid;grid-template-columns:1fr 1fr;position:relative;">
+            <div style="position:relative;overflow:hidden;">
+              <img src="/images/photo-02-marbre-avant.png" alt="Sol en marbre avant rénovation" style="width:100%;height:220px;object-fit:cover;display:block;">
+              <div style="position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.6);color:#e0d8cc;font-size:10px;letter-spacing:2px;padding:3px 8px;text-transform:uppercase;">Avant</div>
+            </div>
+            <div style="position:relative;overflow:hidden;">
+              <img src="/images/photo-03-marbre-apres.png" alt="Sol en marbre après cristallisation" style="width:100%;height:220px;object-fit:cover;display:block;">
+              <div style="position:absolute;bottom:8px;right:8px;background:rgba(201,168,76,0.85);color:#111;font-size:10px;letter-spacing:2px;padding:3px 8px;text-transform:uppercase;font-weight:600;">Après</div>
+            </div>
+            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#c9a84c;color:#111;font-size:11px;font-weight:700;padding:5px 10px;border-radius:3px;z-index:2;">→</div>
+          </div>
+        </div>
+        <div class="service-content">
+          <div class="service-tag">Pierre naturelle</div>
+          <h3>Marbre</h3>
+          <p>Cristallisation, polissage, bouche-porage et protection. Nous redonnons au marbre sa brillance d'origine, qu'il soit blanc, noir, rosé ou coloré.</p>
+          <ul class="service-list">
+            <li>Polissage et lustrage professionnel</li>
+            <li>Élimination des rayures et taches</li>
+            <li>Traitement imperméabilisant</li>
+            <li>Rebouchage des fissures</li>
+          </ul>
+        </div>
+      </div>
 
-async function api(path,opts={},token=null){
-  try{
-    const authToken=token||await getAppAuthToken()||SUPA_KEY;
-    const r=await fetch(`${SUPA_URL}/rest/v1/${path}`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${authToken}`,"Content-Type":"application/json",Prefer:"return=representation"},...opts});
-    const t=await r.text();return t?JSON.parse(t):null;
-  }catch{return null;}
-}
+      <!-- TRAVERTIN -->
+      <div class="service-card" data-aos>
+        <div class="service-visual">
+          <div style="display:grid;grid-template-columns:1fr 1fr;position:relative;">
+            <div style="position:relative;overflow:hidden;">
+              <img src="/images/photo-04-travertin-avant.png" alt="Sol en travertin avant rénovation" style="width:100%;height:220px;object-fit:cover;display:block;">
+              <div style="position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.6);color:#e0d8cc;font-size:10px;letter-spacing:2px;padding:3px 8px;text-transform:uppercase;">Avant</div>
+            </div>
+            <div style="position:relative;overflow:hidden;">
+              <img src="/images/photo-05-travertin-apres.png" alt="Sol en travertin après rénovation" style="width:100%;height:220px;object-fit:cover;display:block;">
+              <div style="position:absolute;bottom:8px;right:8px;background:rgba(201,168,76,0.85);color:#111;font-size:10px;letter-spacing:2px;padding:3px 8px;text-transform:uppercase;font-weight:600;">Après</div>
+            </div>
+            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#c9a84c;color:#111;font-size:11px;font-weight:700;padding:5px 10px;border-radius:3px;z-index:2;">→</div>
+          </div>
+        </div>
+        <div class="service-content">
+          <div class="service-tag">Pierre naturelle</div>
+          <h3>Travertin</h3>
+          <p>Nettoyage en profondeur, bouchage des pores, ponçage et huilage. Le travertin retrouve sa chaleur naturelle et devient imperméable.</p>
+          <ul class="service-list">
+            <li>Bouchage des cavités et pores</li>
+            <li>Ponçage et adoucissage</li>
+            <li>Protection hydrofuge longue durée</li>
+            <li>Ravivage des tons naturels</li>
+          </ul>
+        </div>
+      </div>
 
-async function loadDevisFromSupabase(){
-  const remote=await api("devis?order=created_at.desc&limit=500");
-  if(remote&&Array.isArray(remote)&&remote.length){
-    localStorage.setItem("msn_devis",JSON.stringify(remote));
-    return remote;
-  }
-  // fallback localStorage
-  try{return JSON.parse(localStorage.getItem("msn_devis")||"[]");}catch{return [];}
-}
+      <!-- GRANITO -->
+      <div class="service-card" data-aos>
+        <div class="service-visual">
+          <div style="position:relative;overflow:hidden;">
+            <img src="/images/photo-10-granito.jpg" alt="Sol en granito coloré rénové" style="width:100%;height:220px;object-fit:cover;display:block;">
+            <div style="position:absolute;bottom:8px;right:8px;background:rgba(201,168,76,0.85);color:#111;font-size:10px;letter-spacing:2px;padding:3px 8px;text-transform:uppercase;font-weight:600;">Résultat</div>
+          </div>
+        </div>
+        <div class="service-content">
+          <div class="service-tag">Pierre naturelle</div>
+          <h3>Granito</h3>
+          <p>Ponçage progressif, cristallisation et mise en brillance. Le granito révèle ses couleurs d'origine et retrouve son aspect mosaïque caractéristique.</p>
+          <ul class="service-list">
+            <li>Ponçage multi-grain progressif</li>
+            <li>Révélation des granulats colorés</li>
+            <li>Cristallisation et brillantage</li>
+            <li>Jointoiement et nettoyage profond</li>
+          </ul>
+        </div>
+      </div>
 
-async function saveDevisToSupabase(payload){
-  // Upsert en Supabase
-  const r=await api("devis",{method:"POST",body:JSON.stringify(payload)});
-  // Toujours sauvegarder en local aussi
-  const local=JSON.parse(localStorage.getItem("msn_devis")||"[]");
-  const updated=[payload,...local.filter(d=>d.numero!==payload.numero)];
-  localStorage.setItem("msn_devis",JSON.stringify(updated));
-  return r;
-}
+      <!-- PARQUET -->
+      <div class="service-card" data-aos>
+        <div class="service-visual">
+          <div style="display:grid;grid-template-columns:1fr 1fr;position:relative;">
+            <div style="position:relative;overflow:hidden;">
+              <img src="/images/photo-06-parquet-avant.png" alt="Parquet chêne massif avant rénovation" style="width:100%;height:220px;object-fit:cover;display:block;object-position:center 30%;">
+              <div style="position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.6);color:#e0d8cc;font-size:10px;letter-spacing:2px;padding:3px 8px;text-transform:uppercase;">Avant</div>
+            </div>
+            <div style="position:relative;overflow:hidden;">
+              <img src="/images/photo-07-parquet-apres.png" alt="Parquet chêne massif après ponçage vitrification" style="width:100%;height:220px;object-fit:cover;display:block;object-position:center 30%;">
+              <div style="position:absolute;bottom:8px;right:8px;background:rgba(201,168,76,0.85);color:#111;font-size:10px;letter-spacing:2px;padding:3px 8px;text-transform:uppercase;font-weight:600;">Après</div>
+            </div>
+            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#c9a84c;color:#111;font-size:11px;font-weight:700;padding:5px 10px;border-radius:3px;z-index:2;">→</div>
+          </div>
+        </div>
+        <div class="service-content">
+          <div class="service-tag">Parquet massif</div>
+          <h3>Parquet massif</h3>
+          <p>Ponçage, vitrification ou cirage. Nous traitons tous types de parquets massifs pour leur redonner chaleur, brillance et durabilité.</p>
+          <ul class="service-list">
+            <li>Ponçage et rabotage professionnel</li>
+            <li>Vitrification mat, satiné ou brillant</li>
+            <li>Parquet ciré à l'ancienne</li>
+            <li>Rebouchage et remplacement de lames</li>
+          </ul>
+        </div>
+      </div>
 
-async function updateDevisSupabase(numero,patch){
-  await api(`devis?numero=eq.${encodeURIComponent(numero)}`,{method:"PATCH",body:JSON.stringify(patch)});
-  const local=JSON.parse(localStorage.getItem("msn_devis")||"[]");
-  const updated=local.map(d=>d.numero===numero?{...d,...patch}:d);
-  localStorage.setItem("msn_devis",JSON.stringify(updated));
-}
+    </div>
+  </div>
+</section>
 
-// ── SYSTÈME AUTH PIN LOCAL ────────────────────────────────────
-// Les comptes sont stockés en localStorage
-// Format: {email, nom, role, pin_hash, actif, created_at}
+<!-- ZONE INTERVENTION -->
+<section class="zone-section">
+  <div class="container">
+    <div class="zone-grid">
+      <div class="zone-left">
+        <span class="section-eyebrow">Nos zones d'intervention</span>
+        <h2>Côte d'Azur, Île-de-France & Côte Basque</h2>
+        <p>Nous concentrons notre savoir-faire sur trois zones d'exception : la Côte d'Azur, l'Île-de-France et la Côte Basque. Villas, appartements de prestige, résidences secondaires — le déplacement est inclus dans votre devis, sans surprise.</p>
+        <div class="zone-regions">
+          <div class="region-pill">Nice</div>
+          <div class="region-pill">Cannes</div>
+          <div class="region-pill">Antibes</div>
+          <div class="region-pill">Saint-Tropez</div>
+          <div class="region-pill">Monaco</div>
+          <div class="region-pill">Paris</div>
+          <div class="region-pill">Neuilly-sur-Seine</div>
+          <div class="region-pill">Versailles</div>
+          <div class="region-pill">Saint-Germain-en-Laye</div>
+          <div class="region-pill">Biarritz</div>
+          <div class="region-pill">Bayonne</div>
+          <div class="region-pill">Saint-Jean-de-Luz</div>
+        </div>
+        <a href="#contact" class="btn-primary" style="margin-top:2rem;display:inline-block;">Vérifier ma zone</a>
+      </div>
+      <div class="zone-right">
+        <div id="map-france" style="width:100%;height:420px;border-radius:8px;overflow:hidden;border:1px solid rgba(201,168,76,0.25);"></div>
+        <p style="text-align:center;font-size:0.72rem;letter-spacing:0.15em;color:#c9a84c;margin-top:12px;text-transform:uppercase;">Toute la France couverte</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-function getComptes(){
-  try{return JSON.parse(localStorage.getItem("msn_comptes")||"[]");}catch{return[];}
-}
-
-function saveComptes(comptes){
-  localStorage.setItem("msn_comptes",JSON.stringify(comptes));
-}
-
-function hashPin(pin){
-  // Hash simple du PIN (suffisant pour usage local)
-  let h=0;
-  const str=pin+"MSN2026SALT";
-  for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}
-  return h.toString(36);
-}
-
-function loginPin(email,pin){
-  const comptes=getComptes();
-  const compte=comptes.find(c=>c.email.toLowerCase()===email.toLowerCase()&&c.actif!==false);
-  if(!compte)throw new Error("Compte introuvable ou désactivé");
-  if(compte.pin_hash!==hashPin(pin))throw new Error("PIN incorrect");
-  // Générer un token de session local
-  const token="msn_"+Date.now()+"_"+Math.random().toString(36).slice(2);
-  localStorage.setItem("msn_token",token);
-  localStorage.setItem("msn_session",JSON.stringify({token,email:compte.email,nom:compte.nom,role:compte.role,exp:Date.now()+86400000*7}));
-  return compte;
-}
-
-function getSession(){
-  try{
-    const s=JSON.parse(localStorage.getItem("msn_session")||"null");
-    if(!s||Date.now()>s.exp)return null;
-    return s;
-  }catch{return null;}
-}
-
-function logoutLocal(){
-  localStorage.removeItem("msn_token");
-  localStorage.removeItem("msn_session");
-}
-
-function creerCompte(email,nom,role){
-  const comptes=getComptes();
-  if(comptes.find(c=>c.email.toLowerCase()===email.toLowerCase())){
-    throw new Error("Ce compte existe déjà");
-  }
-  const id="id_"+Date.now();
-  const compte={
-    id,
-    email:email.toLowerCase().trim(),
-    nom,role,
-    pin_hash:null,
-    actif:true,
-    token_activation:null,
-    created_at:new Date().toISOString()
-  };
-  comptes.push(compte);
-  saveComptes(comptes);
-  // Encoder toutes les infos dans le lien (fonctionne sur n'importe quel appareil)
-  const data=btoa(JSON.stringify({id,email:email.toLowerCase().trim(),nom,role,created_at:compte.created_at}));
-  const lien=window.location.origin+"/crm/?newuser="+encodeURIComponent(data);
-  return {compte,lien};
-}
-
-function activerCompte(data_encoded,pin){
-  try{
-    // Décoder les données du lien
-    const data=JSON.parse(atob(decodeURIComponent(data_encoded)));
-    const comptes=getComptes();
-    // Vérifier si le compte existe déjà (même appareil)
-    const existing=comptes.findIndex(c=>c.email===data.email);
-    if(existing!==-1){
-      // Mettre à jour le PIN
-      comptes[existing].pin_hash=hashPin(pin);
-      saveComptes(comptes);
-      return comptes[existing];
-    }
-    // Créer le compte sur cet appareil
-    const compte={...data,pin_hash:hashPin(pin),actif:true,token_activation:null};
-    comptes.push(compte);
-    saveComptes(comptes);
-    return compte;
-  }catch(e){
-    throw new Error("Lien invalide ou corrompu");
-  }
-}
-
-function setupDirecteurPin(pin){
-  // Setup spécial pour le directeur sans token
-  const comptes=getComptes();
-  const idx=comptes.findIndex(c=>c.role==="directeur");
-  if(idx===-1)throw new Error("Compte directeur introuvable");
-  comptes[idx].pin_hash=hashPin(pin);
-  comptes[idx].token_activation=null;
-  saveComptes(comptes);
-  return comptes[idx];
-}
-
-function getCompteByEmail(email){
-  return getComptes().find(c=>c.email.toLowerCase()===email.toLowerCase());
-}
-
-function updateCompte(id,patch){
-  const comptes=getComptes();
-  const idx=comptes.findIndex(c=>c.id===id);
-  if(idx!==-1){comptes[idx]={...comptes[idx],...patch};saveComptes(comptes);}
-}
-
-function deleteCompte(id){
-  const comptes=getComptes().filter(c=>c.id!==id);
-  saveComptes(comptes);
-}
-
-// Initialiser compte directeur par défaut si vide
-function initDirecteur(){
-  const comptes=getComptes();
-  const idx=comptes.findIndex(c=>c.role==="directeur");
-  if(idx===-1){
-    // Pas de directeur — créer sans PIN (setup au 1er lancement)
-    comptes.push({
-      id:"id_directeur",
-      email:"contact@maisonsolnoble.com",
-      nom:"TAHAR Adam",
-      role:"directeur",
-      pin_hash:null,
-      actif:true,
-      token_activation:null,
-      created_at:new Date().toISOString()
-    });
-    saveComptes(comptes);
-  } else if(comptes[idx].pin_hash===hashPin("0000")){
-    // Ancien compte avec PIN par défaut — reset pour forcer setup
-    comptes[idx].pin_hash=null;
-    saveComptes(comptes);
-  }
-}
-
-function genPDF(dv,type="devis"){
-  const ht=dv.montant_ht||0,tva=(ht*0.2).toFixed(2),ttc=(ht*1.2).toFixed(2),titre=type==="devis"?"DEVIS":"FACTURE",num=type==="facture"?"FAC-"+dv.numero.replace("MSN-",""):dv.numero;
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:40px;}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #c9a84c;}.lm{font-size:9px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;}.ls{font-size:20px;font-weight:300;}.dt{font-size:26px;font-weight:700;letter-spacing:4px;}.bl{display:flex;justify-content:space-between;margin:25px 0;}.bl h3{font-size:9px;letter-spacing:2px;color:#c9a84c;text-transform:uppercase;margin-bottom:6px;}.bl p{line-height:1.7;}table{width:100%;border-collapse:collapse;margin:20px 0;}th{background:#1a1a1a;color:#fff;padding:9px 12px;text-align:left;font-size:11px;}td{padding:9px 12px;border-bottom:1px solid #eee;}.tot{margin-left:auto;width:260px;margin-top:15px;}.tr{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;}.ttc{border-top:2px solid #1a1a1a;font-size:15px;font-weight:700;padding-top:8px;margin-top:3px;}.gold{color:#c9a84c;font-weight:700;}.ft{margin-top:40px;padding-top:15px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;}.nt{background:#f9f7f3;border-left:3px solid #c9a84c;padding:10px 14px;margin:15px 0;font-size:11px;color:#555;}</style></head><body><div class="hd"><div><div class="lm">Maison</div><div class="ls">Sol Noble</div><div style="font-size:11px;color:#888;margin-top:4px;">${INFO.adresse}, ${INFO.cp} ${INFO.ville}</div><div style="font-size:11px;color:#888;">${INFO.tel} · ${INFO.email}</div></div><div style="text-align:right"><div class="dt">${titre}</div><div style="font-size:12px;color:#888">N° ${num}</div><div style="font-size:11px;color:#888;margin-top:3px">Date : ${new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR")}</div><div style="font-size:11px;color:#888">${type==="devis"?"Valable 30 jours":"Échéance : "+new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR")}</div></div></div><div class="bl"><div><h3>Émetteur</h3><p><strong>${INFO.nom}</strong><br>${INFO.forme}<br>SIRET : ${INFO.siret}<br>TVA : ${INFO.tva}</p></div><div><h3>Client</h3><p><strong>${dv.client_nom}</strong><br>${dv.client_tel||""}<br>${dv.client_email||""}<br>${dv.ville||""}</p></div></div><table><thead><tr><th>Description</th><th>Type de sol</th><th>Surface</th><th>Prix/m²</th><th>Total HT</th></tr></thead><tbody><tr><td>${dv.travaux}</td><td>${TARIFS[dv.type_sol]?.label||dv.type_sol}</td><td>${dv.surface} m²</td><td>${dv.prix_m2} €</td><td><strong>${ht.toFixed(2)} €</strong></td></tr>${dv.description?`<tr><td colspan="5" style="font-size:11px;color:#666;font-style:italic">${dv.description}</td></tr>`:""}</tbody></table><div class="tot"><div class="tr"><span>Montant HT</span><span>${ht.toFixed(2)} €</span></div><div class="tr"><span>TVA 20%</span><span>${tva} €</span></div><div class="tr ttc"><span>TOTAL TTC</span><span class="gold">${ttc} €</span></div></div><div class="nt">${type==="devis"?"<strong>Conditions :</strong> Devis valable 30 jours. Déplacement inclus. Acompte 30% à la commande.":"<strong>Règlement :</strong> Paiement à réception. Pénalités de retard : 3x le taux légal."}</div><div class="ft">${INFO.nom} · SIRET ${INFO.siret} · TVA ${INFO.tva}<br>${INFO.adresse}, ${INFO.cp} ${INFO.ville} · ${INFO.email} · ${INFO.site}</div></body></html>`;
-  const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();w.print();}
-}
-
-function el(tag,props,...kids){
-  const e=document.createElement(tag);
-  if(props)Object.entries(props).forEach(([k,v])=>{if(k==="style"&&typeof v==="object")Object.assign(e.style,v);else if(k.startsWith("on"))e.addEventListener(k.slice(2).toLowerCase(),v);else if(k==="className")e.className=v;else e.setAttribute(k,v);});
-  kids.flat(99).forEach(c=>{if(c!=null&&c!==false)e.appendChild(typeof c==="string"||typeof c==="number"?document.createTextNode(String(c)):c);});
-  return e;
-}
-
-const BP={background:"#c9a84c",color:"#111",border:"none",padding:"0.65rem 1.3rem",fontSize:"13px",fontWeight:"600",letterSpacing:"0.08em",borderRadius:"4px",textTransform:"uppercase"};
-const BS={background:"transparent",color:"#a09080",border:"1px solid #2a2a2a",padding:"0.55rem 1.1rem",fontSize:"12px",borderRadius:"4px"};
-function badge(s){return el("span",{style:{background:SCOL[s]+"22",color:SCOL[s],border:`1px solid ${SCOL[s]}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500",whiteSpace:"nowrap"}},s);}
-function roleBadge(r){const ro=ROLES[r];if(!ro)return el("span",{},"—");return el("span",{style:{background:ro.color+"22",color:ro.color,border:`1px solid ${ro.color}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500"}},ro.label);}
-function lbl(txt){return el("label",{style:{display:"block",fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#6a6050",marginBottom:"6px"}},txt);}
-function grp(l,input,mb="1rem"){
-  const g=el("div",{style:{marginBottom:isMobile()?"14px":mb}});
-  if(isMobile())g.className="mob-form-group";
-  g.appendChild(lbl(l));g.appendChild(input);return g;
-}
-function hasAccess(a){return ROLES[S.role]?.acces.includes(a);}
-
-function renderLogin(){
-  const wrap=el("div",{style:{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#0d0d0d",padding:"1rem"}});
-  const box=el("div",{style:{width:"100%",maxWidth:"380px"}});
-  // Logo
-  const logo=el("div",{style:{textAlign:"center",marginBottom:"2.5rem"}});
-  logo.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.25em",color:"#c9a84c",textTransform:"uppercase"}},"Maison"));
-  logo.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",color:"#f0ece4",fontWeight:"300"}},"Sol Noble"));
-  logo.appendChild(el("div",{style:{fontSize:"11px",color:"#3a3020",marginTop:"6px",letterSpacing:"0.15em",textTransform:"uppercase"}},"Espace de gestion"));
-  const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"12px",padding:"2rem"}});
-  card.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#f0ece4",fontWeight:"400",marginBottom:"1.5rem",textAlign:"center"}},"Connexion"));
-  const form=el("form",{});
-  // Email
-  const ie=el("input",{type:"email",placeholder:"votre@email.com",required:"true",value:S.loginEmail||""});
-  ie.addEventListener("input",e=>S.loginEmail=e.target.value);
-  form.appendChild(grp("Email",ie));
-  // PIN - 4 chiffres avec cases visuelles
-  const pinWrap=el("div",{style:{marginBottom:"1.5rem"}});
-  pinWrap.appendChild(lbl("Code PIN"));
-  const pinCases=el("div",{style:{display:"flex",gap:"10px",justifyContent:"center",margin:"10px 0"}});
-  const pinInputHidden=el("input",{type:"password",maxlength:"4",style:{position:"absolute",opacity:"0",pointerEvents:"none"}});
-  const dots=[];
-  for(let i=0;i<4;i++){
-    const dot=el("div",{style:{width:"60px",height:"64px",background:"#0d0d0d",border:"1px solid #2a2a2a",borderRadius:"12px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"24px",color:"#c9a84c",cursor:"pointer",transition:"border-color 0.2s"}});
-    dot.addEventListener("click",()=>pinInputHidden.focus());
-    dots.push(dot);pinCases.appendChild(dot);
-  }
-  // Clavier PIN
-  const keypad=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px",marginTop:"12px"}});
-  let pinVal="";
-  function updateDots(){
-    dots.forEach((d,i)=>{
-      d.textContent=i<pinVal.length?"●":"";
-      d.style.borderColor=i<pinVal.length?"rgba(201,168,76,0.5)":"#2a2a2a";
-    });
-  }
-  function addDigit(d){
-    if(pinVal.length<4){pinVal+=d;updateDots();S.loginPin=pinVal;}
-  }
-  function delDigit(){
-    if(pinVal.length>0){pinVal=pinVal.slice(0,-1);updateDots();S.loginPin=pinVal;}
-  }
-  [1,2,3,4,5,6,7,8,9,"",0,"⌫"].forEach(k=>{
-    if(k===""){keypad.appendChild(el("div",{}));return;}
-    const btn=el("button",{type:"button",style:{background:"#141414",border:"1px solid #1e1e1e",color:k==="⌫"?"#c9a84c":"#e0d8cc",fontSize:k==="⌫"?"20px":"22px",fontWeight:"500",padding:"16px 10px",borderRadius:"12px",cursor:"pointer",transition:"background 0.1s",minHeight:"56px"}});
-    btn.textContent=String(k);
-    btn.addEventListener("click",()=>k==="⌫"?delDigit():addDigit(String(k)));
-    btn.addEventListener("mousedown",e=>{e.preventDefault();btn.style.background="#1e1e1e";});
-    btn.addEventListener("mouseup",()=>btn.style.background="#141414");
-    keypad.appendChild(btn);
-  });
-  pinWrap.appendChild(pinCases);pinWrap.appendChild(keypad);
-  form.appendChild(pinWrap);
-  if(S.loginError)form.appendChild(el("div",{style:{background:"rgba(163,45,45,0.15)",border:"1px solid rgba(163,45,45,0.3)",borderRadius:"6px",padding:"0.7rem 1rem",marginBottom:"1rem",fontSize:"13px",color:"#e07070",textAlign:"center"}},S.loginError));
-  const btn=el("button",{type:"submit",style:{...BP,width:"100%",padding:"0.9rem",opacity:S.loginLoading?"0.7":"1"}},S.loginLoading?"Connexion...":"Se connecter");
-  form.appendChild(btn);
-  form.addEventListener("submit",e=>{
-    e.preventDefault();
-    set({loginLoading:true,loginError:""});
-    try{
-      const compte=loginPin(S.loginEmail,S.loginPin||pinVal);
-      set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true,loginLoading:false,loginPin:"",loginError:""});
-      loadDevisFromSupabase().then(devis=>{
-        set({devis:devis.length?devis:DEMO_DEVIS,loading:false});
-      });
-      pinVal="";updateDots();
-    }catch(err){
-      pinVal="";updateDots();S.loginPin="";
-      set({loginLoading:false,loginError:err.message});
-    }
-  });
-  card.appendChild(form);
-  box.appendChild(logo);box.appendChild(card);
-  box.appendChild(el("p",{style:{textAlign:"center",fontSize:"11px",color:"#3a3020",marginTop:"1.5rem"}},"Accès réservé — Maison Sol Noble"));
-  // Lien reset urgence
-  const resetLink=el("p",{style:{textAlign:"center",marginTop:"0.8rem"}});
-  const rl=el("button",{style:{background:"none",border:"none",color:"#3a3020",fontSize:"11px",cursor:"pointer",textDecoration:"underline"}},"Problème de connexion ? Réinitialiser");
-  rl.addEventListener("click",()=>{
-    if(confirm("Réinitialiser tous les comptes ? Vos devis seront conservés.")){
-      const devis=localStorage.getItem("msn_devis");
-      localStorage.clear();
-      if(devis)localStorage.setItem("msn_devis",devis);
-      window.location.reload();
-    }
-  });
-  resetLink.appendChild(rl);
-  box.appendChild(resetLink);
-  wrap.appendChild(box);return wrap;
-}
-
-// Écran de setup PIN (premier accès depuis lien)
-function renderSetup(){
-  const wrap=el("div",{style:{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#0d0d0d",padding:"1rem"}});
-  const box=el("div",{style:{width:"100%",maxWidth:"380px"}});
-  const logo=el("div",{style:{textAlign:"center",marginBottom:"2rem"}});
-  logo.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.25em",color:"#c9a84c",textTransform:"uppercase"}},"Maison"));
-  logo.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",color:"#f0ece4",fontWeight:"300"}},"Sol Noble"));
-  const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"12px",padding:"2rem"}});
-  card.appendChild(el("div",{style:{textAlign:"center",marginBottom:"1.5rem"}},[
-    el("div",{style:{fontSize:"32px",marginBottom:"8px"}},"🔐"),
-    el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#f0ece4",fontWeight:"400",marginBottom:"6px"}},"Créez votre PIN"),
-    el("p",{style:{fontSize:"13px",color:"#6a6050"}},S.setupEmail?"Compte : "+S.setupEmail:"Choisissez un code PIN à 4 chiffres")
-  ]));
-  let pin1="",pin2="",etape=1;
-  const titre=el("div",{style:{fontSize:"12px",color:"#c9a84c",textAlign:"center",marginBottom:"10px",letterSpacing:"0.1em",textTransform:"uppercase"}},"Choisissez votre PIN");
-  card.appendChild(titre);
-  // Cases PIN
-  const pinCases=el("div",{style:{display:"flex",gap:"10px",justifyContent:"center",marginBottom:"12px"}});
-  const dots=[];
-  for(let i=0;i<4;i++){
-    const dot=el("div",{style:{width:"52px",height:"56px",background:"#0d0d0d",border:"1px solid #2a2a2a",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"22px",color:"#c9a84c"}});
-    dots.push(dot);pinCases.appendChild(dot);
-  }
-  card.appendChild(pinCases);
-  let current="";
-  function updateDots2(){dots.forEach((d,i)=>{d.textContent=i<current.length?"●":"";d.style.borderColor=i<current.length?"rgba(201,168,76,0.5)":"#2a2a2a";});}
-  const msgDiv=el("div",{style:{textAlign:"center",fontSize:"13px",color:"#3B6D11",marginBottom:"10px",minHeight:"20px"}});
-  card.appendChild(msgDiv);
-  const errDiv=el("div",{style:{textAlign:"center",fontSize:"13px",color:"#e07070",marginBottom:"10px",minHeight:"20px"}});
-  card.appendChild(errDiv);
-  // Keypad
-  const keypad=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px"}});
-  function addDigit2(d){
-    if(current.length<4){current+=d;updateDots2();}
-    if(current.length===4){
-      setTimeout(()=>{
-        if(etape===1){
-          pin1=current;current="";etape=2;
-          titre.textContent="Confirmez votre PIN";
-          updateDots2();msgDiv.textContent="";
-        }else{
-          pin2=current;
-          if(pin1===pin2){
-            try{
-              let compte;
-              if(!S.setupToken||S.setupToken==="DIRECTEUR_SETUP"){
-                compte=setupDirecteurPin(pin1);
-              }else{
-                compte=activerCompte(S.setupToken,pin1);
-              }
-              msgDiv.textContent="✓ PIN créé ! Redirection...";
-              errDiv.textContent="";
-              setTimeout(()=>{
-                loginPin(compte.email,pin1);
-                set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true});
-              loadDevisFromSupabase().then(devis=>{set({devis:devis.length?devis:DEMO_DEVIS,loading:false});});
-              },1000);
-            }catch(e){errDiv.textContent="Erreur: "+e.message;}
-          }else{
-            errDiv.textContent="Les PINs ne correspondent pas. Recommencez.";
-            pin1="";pin2="";current="";etape=1;
-            titre.textContent="Choisissez votre PIN";
-            updateDots2();
-          }
-        }
-      },300);
-    }
-  }
-  function delDigit2(){if(current.length>0){current=current.slice(0,-1);updateDots2();}}
-  [1,2,3,4,5,6,7,8,9,"",0,"⌫"].forEach(k=>{
-    if(k===""){keypad.appendChild(el("div",{}));return;}
-    const btn=el("button",{type:"button",style:{background:"#141414",border:"1px solid #1e1e1e",color:k==="⌫"?"#c9a84c":"#e0d8cc",fontSize:k==="⌫"?"18px":"20px",fontWeight:"500",padding:"14px",borderRadius:"6px",cursor:"pointer"}});
-    btn.textContent=String(k);
-    btn.addEventListener("click",()=>k==="⌫"?delDigit2():addDigit2(String(k)));
-    keypad.appendChild(btn);
-  });
-  card.appendChild(keypad);
-  box.appendChild(logo);box.appendChild(card);
-  wrap.appendChild(box);return wrap;
-}
-
-function renderCRM(){
-  const navItems=[
-    ...(hasAccess("devis")?[["📄","devis","Devis"]]:[]),
-    ...(hasAccess("planning")?[["📅","planning","Planning"]]:[]),
-    ...(hasAccess("clients")?[["👥","clients","Clients"]]:[]),
-    ...(hasAccess("employes")?[["👤","employes","Équipe"]]:[]),
-    ...(hasAccess("fiches")?[["🔧","fiches","Fiches tech."]]:[]),
-    ...(hasAccess("parametres")?[["⚙️","parametres","Paramètres"]]:[]),
-  ];
-  const app=el("div",{style:{minHeight:"100vh",background:"#0d0d0d",display:"flex",overflow:"hidden"}});
-  const sb=el("div",{style:{position:"fixed",top:0,left:0,bottom:0,width:"220px",background:"#090909",borderRight:"1px solid #1a1a1a",display:"flex",flexDirection:"column",zIndex:"100",overflowY:"auto"}});
-  const sh=el("div",{style:{padding:"1.5rem 1.5rem 1rem"}});
-  sh.appendChild(el("div",{style:{fontSize:"0.6rem",letterSpacing:"0.25em",color:"#c9a84c",textTransform:"uppercase",marginBottom:"1px"}},"Maison"));
-  sh.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#f0ece4",fontWeight:"300",lineHeight:"1.1"}},"Sol Noble"));
-  sh.appendChild(el("div",{style:{fontSize:"9px",color:"#2a2010",marginTop:"6px",letterSpacing:"0.15em",textTransform:"uppercase",background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.15)",borderRadius:"3px",padding:"2px 8px",display:"inline-block"}},"Espace de gestion"));
-  sb.appendChild(sh);
-  const nav=el("nav",{style:{flex:"1",padding:"0.5rem 0"}});
-  navItems.forEach(([icon,id,label])=>{
-    const active=S.onglet===id;
-    const btn=el("button",{style:{width:"100%",display:"flex",alignItems:"center",gap:"12px",padding:"0.65rem 1.5rem",background:active?"rgba(201,168,76,0.1)":"transparent",border:"none",borderLeft:`2px solid ${active?"#c9a84c":"transparent"}`,color:active?"#c9a84c":"#5a5040",fontSize:"13px",fontWeight:active?"500":"300",textAlign:"left",transition:"all 0.15s",borderRadius:"0 6px 6px 0",marginRight:"8px"}},el("span",{style:{fontSize:"15px",opacity:active?"1":"0.6"}},icon),label);
-    btn.addEventListener("mouseenter",()=>{if(!active)btn.style.background="rgba(201,168,76,0.05)";btn.style.color=active?"#c9a84c":"#9a9080";});
-    btn.addEventListener("mouseleave",()=>{if(!active)btn.style.background="transparent";btn.style.color=active?"#c9a84c":"#5a5040";});
-    btn.addEventListener("click",()=>set({onglet:id}));nav.appendChild(btn);
-  });
-  sb.appendChild(nav);
-  const sf=el("div",{style:{padding:"1rem 1.5rem",borderTop:"1px solid #1a1a1a",background:"#060606"}});
-  const userRow=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}});
-  const avatar=el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(S.session?.nom||"?").split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase());
-  const userInfo=el("div",{});
-  userInfo.appendChild(el("div",{style:{fontSize:"12px",color:"#e0d8cc",fontWeight:"500",lineHeight:"1.2"}},S.session?.nom||S.session?.email||""));
-  userInfo.appendChild(roleBadge(S.role));
-  userRow.appendChild(avatar);userRow.appendChild(userInfo);
-  sf.appendChild(userRow);
-  const bo=el("button",{style:{background:"none",border:"1px solid #1e1e1e",borderRadius:"4px",color:"#5a5040",fontSize:"11px",padding:"5px 10px",display:"flex",alignItems:"center",gap:"5px",cursor:"pointer",width:"100%",justifyContent:"center",transition:"all 0.15s"}});
-  bo.textContent="⏻ Déconnexion";
-  bo.addEventListener("mouseenter",()=>{bo.style.borderColor="#2a2a2a";bo.style.color="#8a8070";});
-  bo.addEventListener("mouseleave",()=>{bo.style.borderColor="#1e1e1e";bo.style.color="#5a5040";});
-  bo.addEventListener("click",()=>{logoutLocal();set({page:"login",session:null,loginEmail:"",loginPin:"",loginError:""});});
-  sf.appendChild(bo);sb.appendChild(sf);if(!isMobile())app.appendChild(sb);
-  const main=el("div",{style:{marginLeft:isMobile()?"0":"220px",flex:"1",minHeight:"100vh",maxWidth:isMobile()?"100vw":"calc(100vw - 220px)",overflowX:"hidden"}});
-  const titles={devis:"Devis",planning:"Planning",clients:"Clients",employes:"Équipe",fiches:"Fiches tech.",parametres:"Paramètres"};
-  const hdr=el("div",{style:{background:"rgba(10,10,10,0.95)",backdropFilter:"blur(10px)",borderBottom:"1px solid #1a1a1a",padding:"0.85rem 2rem",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:"0",zIndex:"50"},className:"desktop-only"});
-  const hdrLeft=el("div",{style:{display:"flex",alignItems:"center",gap:"12px"}});
-  hdrLeft.appendChild(el("h1",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#f0ece4",fontWeight:"400",letterSpacing:"0.02em"}},titles[S.onglet]||"CRM"));
-  hdr.appendChild(hdrLeft);
-  const hr=el("div",{style:{display:"flex",gap:"0.5rem",alignItems:"center"}});
-  hr.appendChild(el("span",{style:{fontSize:"11px",color:"#4a4030"}},new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})));
-  if(hasAccess("devis")){const bn=el("button",{style:{...BP,padding:"0.5rem 1rem",fontSize:"12px"}},"+  Devis rapide");bn.addEventListener("click",()=>set({onglet:"devis",modal:"nouveau"}));hr.appendChild(bn);}
-  hdr.appendChild(hr);main.appendChild(hdr);
-  // Header mobile
-  const mobHdr=el("div",{className:"mob-header"});
-  const mobLeft=el("div",{style:{display:"flex",flexDirection:"column",gap:"1px"}});
-  mobLeft.appendChild(el("div",{style:{fontSize:"8px",letterSpacing:"0.22em",color:"#c9a84c",textTransform:"uppercase",lineHeight:"1"}},"Maison Sol Noble"));
-  mobLeft.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"17px",color:"#f0ece4",fontWeight:"300",lineHeight:"1.2"}},titles[S.onglet]||"CRM"));
-  mobHdr.appendChild(mobLeft);
-  const mobRight=el("div",{style:{display:"flex",gap:"8px",alignItems:"center"}});
-  // Bouton déconnexion compact
-  const mobLogout=el("button",{style:{background:"none",border:"1px solid #2a2a2a",borderRadius:"8px",color:"#5a5040",fontSize:"11px",padding:"5px 10px",cursor:"pointer"}});
-  mobLogout.textContent="⏻";
-  mobLogout.addEventListener("click",()=>{logoutLocal();set({page:"login",session:null,loginEmail:"",loginPin:"",loginError:""});});
-  mobRight.appendChild(roleBadge(S.role));
-  mobRight.appendChild(mobLogout);
-  mobHdr.appendChild(mobRight);
-  main.appendChild(mobHdr);
-  if(hasAccess("devis")){
-    const fabBtn=el("button",{className:"mob-fab"},"＋");
-    fabBtn.addEventListener("click",()=>set({modal:"nouveau"}));
-    app.appendChild(fabBtn);
-  }
-  const body=el("div",{style:{padding:isMobile()?"0":"2rem 2.5rem"},className:"mob-body"});
-  if(S.onglet==="devis")body.appendChild(renderDevis());
-  else if(S.onglet==="planning")body.appendChild(renderPlanning());
-  else if(S.onglet==="clients")body.appendChild(renderClients());
-  else if(S.onglet==="employes")body.appendChild(renderEmployes());
-  else if(S.onglet==="fiches")body.appendChild(renderFiches());
-  else if(S.onglet==="parametres")body.appendChild(renderParametres());
-  main.appendChild(body);
-  if(S.modal)main.appendChild(renderModal());
-  app.appendChild(main);
-  // Tab bar iOS style
-  const mob=el("div",{className:"mob-nav"});
-  navItems.slice(0,5).forEach(([icon,id,label])=>{
-    const active=S.onglet===id;
-    const b=el("button",{className:"mob-tab"+(active?" active":"")});
-    b.appendChild(el("span",{className:"mob-tab-icon",style:{filter:active?"none":"grayscale(0.3)",opacity:active?"1":"0.5",transition:"transform 0.2s"},id:"tab-icon-"+id},icon));
-    b.appendChild(el("span",{className:"mob-tab-label",style:{color:active?"#c9a84c":"#4a4030",fontWeight:active?"500":"300",fontSize:"9px",letterSpacing:"0.02em"}},label));
-    b.addEventListener("click",()=>set({onglet:id}));
-    mob.appendChild(b);
-  });
-  app.appendChild(mob);
-  const st=document.createElement("style");
-  st.textContent=`@media(max-width:768px){.mob-sidebar-hide{display:none!important;}.mob-main-full{margin-left:0!important;}}`;
-  sb.classList.add("mob-sidebar-hide");
-  main.style.cssText+="";
-  app.appendChild(st);
-  return app;
-}
-
-function renderDevis(){
-  const wrap=el("div",{});
-  const dvs=S.devis;
-  const ca=dvs.filter(d=>d.statut==="Gagné").reduce((s,d)=>s+(d.montant_ht||0),0);
-  const kpis=el("div",{className:isMobile()?"mob-kpi-grid":"",style:isMobile()?{}:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"1rem",marginBottom:"1.5rem"}});
-  const leads=dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length;
-  [{l:"Leads site",v:leads,alert:leads>0},{l:"Total devis",v:dvs.length},{l:"Gagnés",v:dvs.filter(d=>d.statut==="Gagné").length},{l:"CA HT",v:ca.toFixed(0)+" €"}].forEach((k,i)=>{
-    const c=el("div",{className:isMobile()?"mob-kpi":"",style:isMobile()?{}:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1rem 1.2rem"}});
-    c.appendChild(el("div",{className:isMobile()?"mob-kpi-label":"",style:isMobile()?{}:{fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",marginBottom:"6px"}},k.l));
-    const alertColor=k.alert?"#E24B4A":(i===3?"#c9a84c":"#f0ece4");
-    c.appendChild(el("div",{className:isMobile()?"mob-kpi-val"+(i===3?" gold":""):"",style:isMobile()?{}:{fontFamily:"'Cormorant Garamond',serif",fontSize:"24px",color:alertColor,fontWeight:"400"}},String(k.v)));
-    kpis.appendChild(c);
-  });
-  wrap.appendChild(kpis);
-  if(!isMobile()){
-    const bar=el("div",{style:{display:"flex",gap:"0.8rem",marginBottom:"1rem",flexWrap:"wrap",alignItems:"center"}});
-    const bn=el("button",{style:BP},"+ Nouveau devis");bn.addEventListener("click",()=>set({modal:"nouveau"}));bar.appendChild(bn);
-    if(dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length>0){
-      const bl=el("button",{style:{...BP,background:"#E24B4A",marginLeft:"4px"}},`🔔 Leads (${dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length})`);
-      bl.addEventListener("click",()=>set({filterStatut:"Nouveau",search:""}));bar.appendChild(bl);
-    }
-    const si=el("input",{type:"text",placeholder:"Rechercher...",style:{maxWidth:"200px"},value:S.search});si.addEventListener("input",e=>{S.search=e.target.value;render();});bar.appendChild(si);
-    const sf=el("select",{style:{maxWidth:"160px",padding:"0.55rem 0.8rem"}});
-    ["Tous",...STATUTS].forEach(s=>{const o=el("option",{},s);if(s===S.filterStatut)o.selected=true;sf.appendChild(o);});
-    sf.addEventListener("change",e=>{S.filterStatut=e.target.value;render();});bar.appendChild(sf);
-    wrap.appendChild(bar);
-  }else{
-    // Barre recherche mobile
-    const sb=el("div",{className:"mob-search"});
-    sb.appendChild(el("span",{style:{color:"#5a5040",fontSize:"16px"}},"🔍"));
-    const si=el("input",{placeholder:"Rechercher un client...",value:S.search,style:{fontSize:"16px"}});
-    si.addEventListener("input",e=>{S.search=e.target.value;render();});
-    sb.appendChild(si);
-    wrap.appendChild(sb);
-    // Filtre statut mobile
-    const sf=el("select",{style:{width:"100%",fontSize:"16px",marginBottom:"1rem",padding:"0.7rem 1rem",background:"#111",border:"1px solid #1e1e1e",color:"#e0d8cc",borderRadius:"10px"}});
-    ["Tous les statuts",...STATUTS].forEach((s,i)=>{const o=el("option",{value:i===0?"Tous":s},s);if((i===0&&S.filterStatut==="Tous")||s===S.filterStatut)o.selected=true;sf.appendChild(o);});
-    sf.addEventListener("change",e=>{S.filterStatut=e.target.value;render();});
-    wrap.appendChild(sf);
-  }
-  const q=S.search.toLowerCase();
-  const filtered=dvs.filter(d=>{const ms=!q||d.client_nom?.toLowerCase().includes(q)||d.ville?.toLowerCase().includes(q)||d.numero?.includes(q);const mf=S.filterStatut==="Tous"||d.statut===S.filterStatut;return ms&&mf;});
-  if(isMobile()){
-    // ── MOBILE: Cards layout ──
-    if(!filtered.length){
-      const empty=el("div",{style:{textAlign:"center",color:"#4a4030",fontSize:"14px",padding:"3rem 1rem"}});
-      empty.textContent='Aucun devis — appuie sur + pour créer';
-      wrap.appendChild(empty);
-    }
-    filtered.forEach(d=>{
-      const card=el("div",{className:"mob-devis-card"});
-      card.addEventListener("click",()=>set({modal:"detail",selected:d}));
-      const top=el("div",{className:"mob-devis-top"});
-      top.appendChild(el("span",{className:"mob-devis-nom"},d.client_nom));
-      const numWrap=el("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}});
-      numWrap.appendChild(el("span",{className:"mob-devis-num"},d.numero||"—"));
-      if(isLead(d)){numWrap.appendChild(el("span",{style:{background:"rgba(226,75,74,0.15)",color:"#E24B4A",border:"1px solid rgba(226,75,74,0.3)",padding:"1px 6px",borderRadius:"10px",fontSize:"9px",fontWeight:"700"}},"LEAD"));}
-      top.appendChild(numWrap);
-      card.appendChild(top);
-      const mid=el("div",{className:"mob-devis-mid"});
-      mid.appendChild(el("span",{className:"mob-devis-tag"},TARIFS[d.type_sol]?.label||d.type_sol));
-      if(d.ville)mid.appendChild(el("span",{className:"mob-devis-tag"},d.ville));
-      if(d.surface)mid.appendChild(el("span",{className:"mob-devis-tag"},d.surface+" m²"));
-      card.appendChild(mid);
-      const bot=el("div",{className:"mob-devis-bot"});
-      bot.appendChild(badge(d.statut));
-      bot.appendChild(el("span",{className:"mob-devis-prix"},((d.montant_ht||0)*1.2).toFixed(0)+" € TTC"));
-      card.appendChild(bot);
-      wrap.appendChild(card);
-    });
-    return wrap;
-  }
-  // ── DESKTOP: Table layout ──
-  const tbl=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",overflow:"hidden",overflowX:"auto"}});
-  const t=el("table",{});
-  const trh=el("tr",{style:{borderBottom:"1px solid #1e1e1e"}});
-  ["N°","Client","Ville","Sol","Montant HT","Statut","Actions"].forEach(h=>trh.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",fontWeight:"500"}},h)));
-  t.appendChild(el("thead",{},[trh]));
-  const tbody=el("tbody",{});
-  if(!filtered.length){const tr=el("tr",{});tr.appendChild(el("td",{colSpan:"7",style:{padding:"2rem",textAlign:"center",color:"#4a4030",fontSize:"13px"}},'Aucun devis — clique sur "+ Nouveau devis"'));tbody.appendChild(tr);}
-  filtered.forEach(d=>{
-    const tr=el("tr",{style:{borderBottom:"1px solid #1a1a1a"}});
-    tr.addEventListener("mouseenter",()=>tr.style.background="#161616");tr.addEventListener("mouseleave",()=>tr.style.background="");
-    const numCell=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#c9a84c",fontWeight:"600"}});
-    numCell.appendChild(document.createTextNode(d.numero||"—"));
-    if(isLead(d)){const lb=el("span",{style:{marginLeft:"6px",background:"rgba(226,75,74,0.15)",color:"#E24B4A",border:"1px solid rgba(226,75,74,0.3)",padding:"1px 6px",borderRadius:"10px",fontSize:"10px",fontWeight:"600"}},"LEAD");numCell.appendChild(lb);}
-    tr.appendChild(numCell);
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#e0d8cc",fontWeight:"500"}},d.client_nom));
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#7a7060"}},d.ville||"—"));
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#7a7060"}},TARIFS[d.type_sol]?.label||d.type_sol));
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#f0ece4",fontWeight:"600"}},((d.montant_ht||0).toFixed(0))+" €"));
-    const tds=el("td",{style:{padding:"0.8rem 1rem"}});tds.appendChild(badge(d.statut));tr.appendChild(tds);
-    const tda=el("td",{style:{padding:"0.8rem 1rem"}});
-    const acts=el("div",{style:{display:"flex",gap:"6px"}});
-    const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
-    if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);genPDF(f,"facture");render();});acts.appendChild(bf);}
-    tda.appendChild(acts);tr.appendChild(tda);tbody.appendChild(tr);
-  });
-  t.appendChild(tbody);tbl.appendChild(t);wrap.appendChild(tbl);return wrap;
-}
-
-function renderModal(){
-  if(isMobile()){
-    // ── BOTTOM SHEET MOBILE ──
-    const ov=el("div",{className:"mob-sheet-overlay"});
-    ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
-    const sheet=el("div",{className:"mob-sheet"});
-    sheet.appendChild(el("div",{className:"mob-sheet-handle"}));
-    const titles={nouveau:"Nouveau devis",detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte"};
-    const hdr=el("div",{className:"mob-sheet-header"});
-    hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
-    const bx=el("button",{style:{background:"rgba(255,255,255,0.06)",border:"none",color:"#888",fontSize:"20px",lineHeight:"1",padding:"6px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
-    bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);
-    sheet.appendChild(hdr);
-    const body=el("div",{className:"mob-sheet-body"});
-    if(S.modal==="nouveau")body.appendChild(renderFormDevis());
-    else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
-    else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
-    sheet.appendChild(body);ov.appendChild(sheet);return ov;
-  }
-  // ── MODAL DESKTOP ──
-  const ov=el("div",{style:{position:"fixed",inset:"0",background:"rgba(0,0,0,0.75)",zIndex:"1000",display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",overflowY:"auto"}});
-  ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
-  const box=el("div",{style:{background:"#141414",border:"1px solid #2a2a2a",borderRadius:"8px",width:"100%",maxWidth:"640px"}});
-  const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #1e1e1e"}});
-  const titles={nouveau:"Nouveau devis",detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte employé"};
-  hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#f0ece4",fontWeight:"400"}},titles[S.modal]||""));
-  const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);box.appendChild(hdr);
-  const body=el("div",{style:{padding:"1.5rem"}});
-  if(S.modal==="nouveau")body.appendChild(renderFormDevis());
-  else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
-  else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
-  box.appendChild(body);ov.appendChild(box);return ov;
-}
-
-function renderFormDevis(){
-  const f=S.form,tarif=TARIFS[f.type_sol];
-  const ht=f.surface?Math.round(f.prix_m2*parseFloat(f.surface)*COEFF[f.etat]):0;
-  const form=el("form",{});
-  function row(...items){
-    if(isMobile()){
-      // Sur mobile: empiler les champs verticalement
-      const g=el("div",{});items.forEach(i=>g.appendChild(i));return g;
-    }
-    const g=el("div",{style:{display:"grid",gridTemplateColumns:`repeat(${items.length},1fr)`,gap:"1rem",marginBottom:"1rem"}});items.forEach(i=>g.appendChild(i));return g;
-  }
-  function inp(name,placeholder,type="text"){
-    const i=el("input",{type,placeholder,value:f[name]||"",style:{fontSize:"16px"}}); // 16px évite zoom iOS
-    i.addEventListener("input",e=>{S.form[name]=e.target.value;if(name==="surface"||name==="prix_m2")render();});
-    return i;
-  }
-  function sel(name,options){
-    const s=el("select",{style:{fontSize:"16px"}});
-    options.forEach(([v,l])=>{const o=el("option",{value:v},l);if(f[name]===v)o.selected=true;s.appendChild(o);});
-    s.addEventListener("change",e=>{S.form[name]=e.target.value;if(name==="type_sol"){S.form.travaux=TARIFS[e.target.value].trav[0];S.form.prix_m2=TARIFS[e.target.value].prix[0];}if(name==="travaux"){const idx=TARIFS[S.form.type_sol].trav.indexOf(e.target.value);S.form.prix_m2=TARIFS[S.form.type_sol].prix[idx]||S.form.prix_m2;}render();});
-    return s;
-  }
-  form.appendChild(row(grp("Nom client *",inp("client_nom","Jean Dupont"),0),grp("Téléphone",inp("client_tel","06 12 34 56 78"),0)));
-  form.appendChild(row(grp("Email",inp("client_email","client@email.com"),0),grp("Ville",inp("ville","Paris"),0)));
-  form.appendChild(el("div",{style:{height:"1px",background:"#1e1e1e",margin:"0.5rem 0 1rem"}}));
-  form.appendChild(row(grp("Type de sol *",sel("type_sol",Object.entries(TARIFS).map(([k,v])=>[k,v.label])),0),grp("État du sol",sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]]),0)));
-  form.appendChild(row(grp("Travaux *",sel("travaux",tarif.trav.map((t,i)=>[t,`${t} — ${tarif.prix[i]} €/m²`])),0),grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
-  const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
-  form.appendChild(grp("Notes",ta));
-  if(f.surface>0){
-    const rc=el("div",{style:{background:"#0a0a0a",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"1rem",marginBottom:"1.2rem"}});
-    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#7a7060",fontSize:"13px"}},`${f.surface} m² × ${f.prix_m2} €/m² × coeff. ${COEFF[f.etat]}`)]));
-    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#a09080",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#f0ece4",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
-    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}},[el("span",{style:{color:"#a09080",fontSize:"13px"}},"TTC (TVA 20%)"),el("span",{style:{color:"#c9a84c",fontSize:"17px",fontWeight:"700"}},(ht*1.2).toFixed(2)+" €")]));
-    form.appendChild(rc);
-  }
-  const btns=el("div",{style:{display:"flex",gap:"0.8rem",justifyContent:isMobile()?"stretch":"flex-end",flexDirection:isMobile()?"column":"row",marginTop:"8px"}});
-  if(!isMobile()){const ba=el("button",{type:"button",style:BS},"Annuler");ba.addEventListener("click",()=>set({modal:null}));btns.appendChild(ba);}
-  const bsub=el("button",{type:"submit",style:isMobile()?{}:BP},isMobile()?"":"Créer le devis");
-  if(isMobile()){bsub.className="mob-btn-full";bsub.textContent="Créer le devis";}
-  btns.appendChild(bsub);form.appendChild(btns);
-  form.addEventListener("submit",async e=>{
-    e.preventDefault();
-    const num=`MSN-${Date.now().toString().slice(-6)}`;
-    const payload={...S.form,numero:num,montant_ht:ht,statut:"Devis envoyé",created_at:new Date().toISOString()};
-    await saveDevisToSupabase(payload);
-    S.devis=[payload,...S.devis];
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",prix_m2:30};
-    set({modal:null});
-  });
-  return form;
-}
-
-function renderDetailDevis(d){
-  const wrap=el("div",{});
-  // Infos client
-  [["Client",d.client_nom],["Téléphone",d.client_tel],["Email",d.client_email],["Ville",d.ville],["Type de sol",TARIFS[d.type_sol]?.label],["Surface",d.surface+" m²"],["Travaux",d.travaux],["Prix/m²",d.prix_m2+" €"]].forEach(([k,v])=>{
-    if(!v&&v!==0)return;
-    const row=el("div",{className:"mob-detail-row"});
-    row.appendChild(el("span",{className:"mob-detail-label"},k));
-    row.appendChild(el("span",{className:"mob-detail-val"},String(v)));
-    wrap.appendChild(row);
-  });
-  // Montant TTC
-  const ttc=el("div",{style:{background:"#0a0a0a",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"10px",padding:"1rem",display:"flex",justifyContent:"space-between",alignItems:"center",margin:"1rem 0"}});
-  ttc.appendChild(el("span",{style:{color:"#a09080",fontSize:"13px"}},"Montant TTC"));
-  ttc.appendChild(el("span",{style:{color:"#c9a84c",fontSize:"24px",fontFamily:"'Cormorant Garamond',serif"}},((d.montant_ht||0)*1.2).toFixed(2)+" €"));
-  wrap.appendChild(ttc);
-  // Statut
-  wrap.appendChild(lbl("Statut"));
-  const ss=el("select",{style:{fontSize:"16px",marginBottom:"1rem"}});
-  STATUTS.forEach(s=>{const o=el("option",{},s);if(s===d.statut)o.selected=true;ss.appendChild(o);});
-  ss.addEventListener("change",e=>{const ns=e.target.value;S.devis=S.devis.map(x=>x.numero===d.numero?{...x,statut:ns}:x);S.selected={...d,statut:ns};updateDevisSupabase(d.numero,{statut:ns});render();});
-  wrap.appendChild(ss);
-  // Boutons
-  const bpdf=el("button",{className:"mob-btn-full"},"🖨 Imprimer devis PDF");
-  bpdf.addEventListener("click",()=>genPDF(d,"devis"));wrap.appendChild(bpdf);
-  if(d.statut!=="Gagné"){
-    const bf=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff"}},"✓ Convertir en facture");
-    bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);updateDevisSupabase(d.numero,{statut:"Gagné"});genPDF(f,"facture");set({modal:null,selected:null});});
-    wrap.appendChild(bf);
-  }
-  const bc=el("button",{className:"mob-btn-outline"},"Fermer");
-  bc.addEventListener("click",()=>set({modal:null,selected:null}));
-  wrap.appendChild(bc);
-  // Espace pour le safe area en bas
-  wrap.appendChild(el("div",{style:{height:"8px"}}));
-  return wrap;
-}
-
-function renderPlanning(){
-  const wrap=el("div",{});
-  const today=new Date(),jours=["Lun","Mar","Mer","Jeu","Ven","Sam"];
-  const debut=new Date(today);debut.setDate(today.getDate()-today.getDay()+1+S.semaine*7);
-  const nav=el("div",{style:{display:"flex",gap:"0.8rem",marginBottom:"1.5rem",alignItems:"center",flexWrap:"wrap"}});
-  const bp=el("button",{style:BS},"← Précédente");bp.addEventListener("click",()=>set({semaine:S.semaine-1}));nav.appendChild(bp);
-  nav.appendChild(el("span",{style:{color:"#e0d8cc",fontSize:"14px",fontWeight:"500"}},`Semaine du ${debut.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`));
-  const bn=el("button",{style:BS},"Suivante →");bn.addEventListener("click",()=>set({semaine:S.semaine+1}));nav.appendChild(bn);
-  const bt=el("button",{style:{...BS,marginLeft:"auto"}},"Aujourd'hui");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);
-  wrap.appendChild(nav);
-  const grid=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"repeat(3,1fr)":"repeat(6,1fr)",gap:isMobile()?"6px":"4px",marginBottom:"1.5rem"}});
-  const chantiers=S.devis.filter(d=>d.statut==="Devis envoyé"||d.statut==="Gagné");
-  jours.forEach((jour,i)=>{
-    const date=new Date(debut);date.setDate(debut.getDate()+i);
-    const isToday=date.toDateString()===today.toDateString();
-    const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":"#111",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#1e1e1e"}`,borderRadius:"10px",padding:isMobile()?"8px 10px":"0.8rem",minHeight:isMobile()?"70px":"120px"}});
-    cell.appendChild(el("div",{style:{fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:isToday?"#c9a84c":"#5a5040",marginBottom:"4px"}},jour));
-    cell.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"16px",color:isToday?"#c9a84c":"#7a7060",marginBottom:"8px"}},String(date.getDate())));
-    if(chantiers[i]){cell.appendChild(el("div",{style:{background:"rgba(59,139,212,0.15)",border:"1px solid rgba(59,139,212,0.3)",borderRadius:"4px",padding:"4px 6px",fontSize:"11px",color:"#3B8BD4"}},chantiers[i].client_nom));}
-    grid.appendChild(cell);
-  });
-  wrap.appendChild(grid);
-  wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"18px",fontWeight:"400",marginBottom:"1rem"}},"Chantiers à planifier"));
-  if(!chantiers.length)wrap.appendChild(el("p",{style:{color:"#4a4030",fontSize:"13px"}},"Aucun chantier."));
-  chantiers.forEach(d=>{
-    const row=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"0.9rem 1.2rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"0.5rem",marginBottom:"8px"}});
-    row.appendChild(el("div",{},[el("span",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"14px"}},d.client_nom),el("span",{style:{color:"#5a5040",fontSize:"12px",marginLeft:"10px"}},d.ville||"")]));
-    row.appendChild(el("div",{style:{fontSize:"12px",color:"#7a7060"}},`${TARIFS[d.type_sol]?.label} · ${d.surface} m²`));
-    row.appendChild(el("div",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},((d.montant_ht||0)*1.2).toFixed(0)+" € TTC"));
-    row.appendChild(badge(d.statut));wrap.appendChild(row);
-  });
-  return wrap;
-}
-
-function renderClients(){
-  const map={};
-  S.devis.forEach(d=>{if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0};map[d.client_nom].nb++;if(d.statut==="Gagné")map[d.client_nom].ca+=d.montant_ht||0;});
-  const clients=Object.values(map);
-  const grid=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"1fr":"repeat(3,1fr)",gap:isMobile()?"8px":"1rem"}});
-  if(!clients.length)grid.appendChild(el("p",{style:{color:"#4a4030",fontSize:"13px",gridColumn:"1/-1"}},"Aucun client."));
-  clients.forEach(c=>{
-    const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:isMobile()?"14px":"8px",padding:isMobile()?"14px 16px":"1.2rem"}});
-    const top=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"0.8rem"}});
-    top.appendChild(el("div",{style:{width:"38px",height:"38px",borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},c.nom.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()));
-    top.appendChild(el("div",{},[el("div",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"14px"}},c.nom),el("div",{style:{color:"#5a5040",fontSize:"11px"}},c.ville||"")]));
-    card.appendChild(top);
-    card.appendChild(el("div",{style:{fontSize:"12px",color:"#6a6050",marginBottom:"4px"}},c.tel||"—"));
-    card.appendChild(el("div",{style:{fontSize:"12px",color:"#6a6050",marginBottom:"0.8rem"}},c.email||"—"));
-    const bot=el("div",{style:{display:"flex",justifyContent:"space-between",padding:"0.6rem 0",borderTop:"1px solid #1a1a1a"}});
-    bot.appendChild(el("span",{style:{fontSize:"11px",color:"#5a5040"}},c.nb+" devis"));
-    bot.appendChild(el("span",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},c.ca.toFixed(0)+" € CA"));
-    card.appendChild(bot);
-    const bnd=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Nouveau devis");
-    bnd.addEventListener("click",()=>{S.form.client_nom=c.nom;S.form.client_tel=c.tel||"";S.form.client_email=c.email||"";S.form.ville=c.ville||"";set({onglet:"devis",modal:"nouveau"});});
-    card.appendChild(bnd);grid.appendChild(card);
-  });
-  return grid;
-}
-
-function renderEmployes(){
-  const wrap=el("div",{});
-  
-  // Header avec bouton créer
-  const bar=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.5rem",flexWrap:"wrap",gap:"0.8rem"}});
-  bar.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"20px",fontWeight:"400"}},"Gestion de l'équipe"));
-  const bn=el("button",{style:BP},"+ Nouveau compte");
-  bn.addEventListener("click",()=>set({modal:"employe_new"}));
-  bar.appendChild(bn);
-  wrap.appendChild(bar);
-
-  // Tableau des comptes
-  const profiles=getComptes();
-  const tbl=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",overflow:"hidden",marginBottom:"2rem"}});
-  const t=el("table",{});
-  const th=el("tr",{style:{borderBottom:"1px solid #1e1e1e"}});
-  ["Nom","Email","Rôle","Statut","Actions"].forEach(h=>th.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",fontWeight:"500"}},h)));
-  t.appendChild(el("thead",{},[th]));
-  const tbody=el("tbody",{});
-  
-  if(!profiles.length){
-    const tr=el("tr",{});
-    tr.appendChild(el("td",{colSpan:"5",style:{padding:"2rem",textAlign:"center",color:"#4a4030",fontSize:"13px"}},"Aucun compte — clique sur + Nouveau compte pour créer le premier."));
-    tbody.appendChild(tr);
-  }
-  
-  profiles.forEach(p=>{
-    const isMe=p.email?.toLowerCase()===S.session?.email?.toLowerCase();
-    const tr=el("tr",{style:{borderBottom:"1px solid #1a1a1a"}});
-    tr.addEventListener("mouseenter",()=>tr.style.background="#161616");
-    tr.addEventListener("mouseleave",()=>tr.style.background="");
-    
-    // Nom
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#e0d8cc",fontWeight:"500",fontSize:"13px"}},
-      el("div",{style:{display:"flex",alignItems:"center",gap:"8px"}},[
-        el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"12px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(p.nom||p.email||"?").slice(0,2).toUpperCase()),
-        el("span",{},p.nom||"—")
-      ])
-    ));
-    
-    // Email
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#7a7060",fontSize:"12px"}},p.email||"—"));
-    
-    // Rôle — dropdown si directeur et pas soi-même
-    const tdR=el("td",{style:{padding:"0.8rem 1rem"}});
-    if(!isMe){
-      const rs=el("select",{style:{background:"#0d0d0d",border:"1px solid #2a2a2a",color:"#e0d8cc",padding:"4px 8px",fontSize:"12px",borderRadius:"4px",cursor:"pointer"}});
-      Object.entries(ROLES).forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===p.role)o.selected=true;rs.appendChild(o);});
-      rs.addEventListener("change",e=>{
-        updateCompte(p.id,{role:e.target.value});
-        render();
-      });
-      tdR.appendChild(rs);
-    }else{tdR.appendChild(roleBadge(p.role));}
-    tr.appendChild(tdR);
-    
-    // Statut
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem"}},
-      el("span",{style:{color:p.actif!==false?"#3B6D11":"#A32D2D",fontSize:"12px"}},(p.actif!==false?"● Actif":"○ Inactif"))
-    ));
-    
-    // Actions
-    const tdA=el("td",{style:{padding:"0.8rem 1rem"}});
-    const acts=el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap"}});
-    
-    if(!isMe){
-      // Activer/Désactiver
-      const bT=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:p.actif!==false?"#A32D2D":"#3B6D11",borderColor:p.actif!==false?"#A32D2D44":"#3B6D1144"}},p.actif!==false?"Désactiver":"Activer");
-      bT.addEventListener("click",async()=>{
-        const na=!(p.actif!==false);
-        await updateProfile(S.token,p.id,{actif:na});
-        S.profiles=S.profiles.map(x=>x.id===p.id?{...x,actif:na}:x);
-        render();
-      });
-      acts.appendChild(bT);
-      
-      // Reset mot de passe
-      const bR=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"🔑 Reset PIN");
-      bR.addEventListener("click",()=>{
-        updateCompte(p.id,{pin_hash:null});
-        const data=btoa(JSON.stringify({id:p.id,email:p.email,nom:p.nom,role:p.role,created_at:p.created_at}));
-        const lien=window.location.origin+"/crm/?newuser="+encodeURIComponent(data);
-        navigator.clipboard.writeText(lien).catch(()=>{});
-        bR.textContent="✓ Lien copié !";bR.style.color="#3B6D11";
-        setTimeout(()=>{bR.textContent="🔑 Reset PIN";bR.style.color="";},3000);
-      });
-      acts.appendChild(bR);
-      // Bouton supprimer
-      const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑 Supprimer");
-      bDel.addEventListener("click",()=>{
-        if(confirm("Supprimer le compte de "+p.nom+" ? Cette action est irréversible.")){
-          deleteCompte(p.id);
-          render();
-        }
-      });
-      acts.appendChild(bDel);
-    }else{
-      acts.appendChild(el("span",{style:{color:"#4a4030",fontSize:"12px",padding:"3px 8px"}},"Vous"));
-    }
-    
-    tdA.appendChild(acts);tr.appendChild(tdA);tbody.appendChild(tr);
-  });
-  
-  t.appendChild(tbody);tbl.appendChild(t);wrap.appendChild(tbl);
-
-  // Légende des rôles
-  const legend=el("div",{});
-  legend.appendChild(el("h4",{style:{color:"#c9a84c",fontSize:"12px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem",fontWeight:"500"}},"Accès par rôle"));
-  const rolesGrid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px"}});
-  Object.entries(ROLES).forEach(([key,r])=>{
-    const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"0.9rem"}});
-    const top=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"0.5rem"}});
-    top.appendChild(el("div",{style:{width:"8px",height:"8px",borderRadius:"50%",background:r.color}}));
-    top.appendChild(el("div",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"13px"}},r.label));
-    card.appendChild(top);
-    r.acces.forEach(a=>card.appendChild(el("div",{style:{fontSize:"11px",color:"#5a5040",padding:"1px 0"}},"✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a])));
-    rolesGrid.appendChild(card);
-  });
-  legend.appendChild(rolesGrid);
-  wrap.appendChild(legend);
-  return wrap;
-}
-
-function renderFormEmploye(){
-  let nomVal="",emailVal="",roleVal="employe";
-  const wrap=el("div",{});
-  wrap.appendChild(el("p",{style:{color:"#8a8070",fontSize:"13px",marginBottom:"1.5rem"}},"Remplis les infos et clique Générer le lien. Un lien de connexion direct est créé — tu l'envoies par SMS ou WhatsApp à l'employé. Il clique et accède directement au CRM."));
-  const form=el("form",{});
-  
-  function inp2(placeholder,type="text",onInput){const i=el("input",{type,placeholder});i.addEventListener("input",e=>onInput(e.target.value));return i;}
-  
-  form.appendChild(grp("Nom complet *",inp2("Prénom Nom","text",v=>nomVal=v)));
-  form.appendChild(grp("Email *",inp2("employe@email.com","email",v=>emailVal=v)));
-
-  
-  const rg=el("div",{style:{marginBottom:"1rem"}});
-  rg.appendChild(lbl("Rôle *"));
-  const rs=el("select",{});
-  Object.entries(ROLES).filter(([k])=>k!=="directeur").forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===roleVal)o.selected=true;rs.appendChild(o);});
-  rs.addEventListener("change",e=>{roleVal=e.target.value;updateAcces();});
-  rg.appendChild(rs);form.appendChild(rg);
-  
-  // Affichage accès
-  const accBox=el("div",{style:{background:"#0a0a0a",border:"1px solid #2a2a2a",borderRadius:"6px",padding:"0.8rem 1rem",marginBottom:"1.5rem"}});
-  accBox.appendChild(el("div",{style:{fontSize:"11px",color:"#5a5040",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"6px"}},"Accès de ce rôle"));
-  const accDiv=el("div",{style:{fontSize:"12px",color:"#7a7060"}});
-  function updateAcces(){
-    accDiv.innerHTML="";
-    ROLES[roleVal||"employe"].acces.forEach(a=>{
-      const d=document.createElement("div");
-      d.textContent="✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a];
-      accDiv.appendChild(d);
-    });
-  }
-  updateAcces();
-  accBox.appendChild(accDiv);form.appendChild(accBox);
-  
-  // Message résultat
-  const msgDiv=el("div",{style:{display:"none",borderRadius:"6px",padding:"0.7rem 1rem",marginBottom:"1rem",fontSize:"13px"}});
-  form.appendChild(msgDiv);
-  
-  const btns=el("div",{style:{display:"flex",gap:"0.8rem",justifyContent:"flex-end"}});
-  const ba=el("button",{type:"button",style:BS},"Annuler");ba.addEventListener("click",()=>set({modal:null}));btns.appendChild(ba);
-  const bs=el("button",{type:"submit",style:BP},"Générer le lien");btns.appendChild(bs);form.appendChild(btns);
-  
-  form.addEventListener("submit",async e=>{
-    e.preventDefault();
-    if(!emailVal||!nomVal){msgDiv.style.display="block";msgDiv.style.background="rgba(163,45,45,0.15)";msgDiv.style.border="1px solid rgba(163,45,45,0.3)";msgDiv.style.color="#e07070";msgDiv.textContent="Remplis le nom et l'email.";return;}
-
-    bs.disabled=true;bs.textContent="Création en cours...";
-    try{
-      const {compte,lien}=creerCompte(emailVal,nomVal,roleVal||"employe");
-      // Afficher le lien à copier
-      msgDiv.style.display="flex";
-      msgDiv.style.background="rgba(59,109,17,0.15)";
-      msgDiv.style.border="1px solid rgba(59,109,17,0.3)";
-      msgDiv.style.color="#7acc50";
-      msgDiv.style.flexDirection="column";
-      msgDiv.style.gap="8px";
-      msgDiv.innerHTML="";
-      const titre=document.createElement("div");
-      titre.style.fontWeight="600";titre.style.fontSize="14px";
-      titre.textContent="✓ Compte créé pour "+nomVal+" !";
-      msgDiv.appendChild(titre);
-      const desc=document.createElement("div");
-      desc.style.fontSize="12px";desc.style.color="#a0c880";
-      desc.textContent="Envoie ce lien par SMS ou WhatsApp. Il cliquera dessus et choisira son PIN :";
-      msgDiv.appendChild(desc);
-      const lienBox=document.createElement("div");
-      lienBox.style.cssText="background:#0a0a0a;border:1px solid rgba(59,109,17,0.4);border-radius:4px;padding:10px 12px;font-size:11px;color:#c9a84c;word-break:break-all;cursor:pointer;line-height:1.5;";
-      lienBox.textContent=lien;
-      lienBox.title="Cliquer pour copier";
-      lienBox.addEventListener("click",()=>{
-        navigator.clipboard.writeText(lien).then(()=>{
-          lienBox.style.background="rgba(59,109,17,0.15)";
-          lienBox.textContent="✓ Copié dans le presse-papier !";
-          setTimeout(()=>{lienBox.style.background="";lienBox.textContent=lien;},2500);
-        }).catch(()=>{
-          prompt("Copie ce lien :",lien);
-        });
-      });
-      msgDiv.appendChild(lienBox);
-      const hint=document.createElement("div");
-      hint.style.cssText="font-size:11px;color:#5a7040;";
-      hint.textContent="Il clique → choisit son PIN → accède au CRM. Clique sur le lien pour copier.";
-      msgDiv.appendChild(hint);
-      bs.textContent="Lien généré ✓";
-      const bClose=document.createElement("button");
-      bClose.style.cssText="background:#c9a84c;color:#111;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;margin-top:4px;align-self:flex-start;";
-      bClose.textContent="Fermer";
-      bClose.addEventListener("click",()=>set({modal:null,onglet:"employes"}));
-      msgDiv.appendChild(bClose);
-    }catch(err){
-      msgDiv.style.display="block";msgDiv.style.background="rgba(163,45,45,0.15)";msgDiv.style.border="1px solid rgba(163,45,45,0.3)";msgDiv.style.color="#e07070";msgDiv.textContent="Erreur : "+err.message;
-      bs.disabled=false;bs.textContent="Générer le lien";
-    }
-  });
-  
-  wrap.appendChild(form);return wrap;
-}
+<!-- POURQUOI NOUS -->
+<section class="why-section" id="pourquoi">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Notre différence</span>
+      <h2>Pourquoi choisir Maison Sol Noble ?</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>Rapidité d'exécution</h3>
+        <p>Nos équipes mobilisées rapidement, chantier propre et livraison dans les délais annoncés. Votre quotidien perturbé le moins longtemps possible.</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/></svg>
+        </div>
+        <h3>Matériaux haut de gamme</h3>
+        <p>Produits professionnels italiens et allemands, machines de dernière génération. La qualité de nos fournitures garantit un résultat durable dans le temps.</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Garantie résultat</h3>
+        <p>Nous sommes confiants dans notre travail. Si le résultat ne correspond pas à vos attentes définies ensemble, nous revenons sans frais supplémentaires.</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3>Artisans passionnés</h3>
+        <p>Une équipe de véritables artisans qui aiment leur métier. Chaque chantier est traité avec la même exigence, qu'il s'agisse de 10m² ou de 500m².</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <h3>Déplacement France entière</h3>
+        <p>Nous nous déplaçons sans supplément excessif sur tout le territoire. Un devis clair et transparent, déplacement inclus, dès le premier contact.</p>
+      </div>
+      <div class="why-card" data-aos>
+        <div class="why-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <h3>Tarifs transparents</h3>
+        <p>Pas de mauvaise surprise. Devis détaillé et fixe, sans coût caché. Vous savez exactement ce que vous payez avant que nous commencions.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 
-function renderFiches(){
-  const wrap=el("div",{});
-  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #1e1e1e",marginBottom:"2rem"}});
-  Object.entries(TARIFS).forEach(([key,t])=>{const btn=el("button",{className:"tab-btn"+(S.ficheTab===key?" active":""),style:{fontFamily:"Inter,sans-serif"}},t.label);btn.addEventListener("click",()=>set({ficheTab:key}));tabs.appendChild(btn);});
-  wrap.appendChild(tabs);
-  const fiche=FICHES[S.ficheTab];
-  if(!fiche)return wrap;
-  wrap.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"24px",fontWeight:"400",marginBottom:"2rem"}},fiche.titre));
-  const matSection=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1.5rem",marginBottom:"2rem"}});
-  matSection.appendChild(el("h3",{style:{color:"#c9a84c",fontSize:"12px",fontWeight:"500",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}},"Matériel nécessaire"));
-  const matGrid=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px"}});
-  fiche.materiel.forEach(m=>{const row=el("div",{style:{display:"flex",alignItems:"flex-start",gap:"8px",padding:"6px 0",borderBottom:"1px solid #1a1a1a",fontSize:"13px",color:"#8a8070"}});row.appendChild(el("span",{style:{color:"#c9a84c",flexShrink:"0"}},"○"));row.appendChild(el("span",{},m));matGrid.appendChild(row);});
-  matSection.appendChild(matGrid);wrap.appendChild(matSection);
-  const etSection=el("div",{});
-  etSection.appendChild(el("h3",{style:{color:"#c9a84c",fontSize:"12px",fontWeight:"500",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}},"Étapes de réalisation"));
-  fiche.etapes.forEach((et,i)=>{
-    if(isMobile()){
-      const mc=el("div",{className:"mob-etape"});
-      mc.appendChild(el("div",{className:"mob-etape-num"},"ÉTAPE "+(i+1)));
-      mc.appendChild(el("div",{className:"mob-etape-titre"},et.titre));
-      mc.appendChild(el("div",{className:"mob-etape-desc"},et.desc));
-      etSection.appendChild(mc);
-    } else {
-      const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1.2rem",marginBottom:"8px",display:"flex",gap:"1rem",alignItems:"flex-start"}});
-      card.appendChild(el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},String(i+1)));
-      const txt=el("div",{});txt.appendChild(el("div",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"14px",marginBottom:"4px"}},et.titre));txt.appendChild(el("div",{style:{color:"#7a7060",fontSize:"13px",lineHeight:"1.6"}},et.desc));card.appendChild(txt);etSection.appendChild(card);
-    }
-  });
-  wrap.appendChild(etSection);return wrap;
-}
+<!-- GALERIE ILLUSTRATIONS -->
+<section class="galerie-section" id="realisations">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Nos finitions</span>
+      <h2>Les rendus que nous savons obtenir</h2>
+      <p style="color:#8a8070;font-size:0.85rem;margin-top:0.5rem;max-width:600px;">Illustrations de nos finitions et traitements. Les photos de vos futurs chantiers viendront enrichir cette galerie au fil de nos réalisations.</p>
+    </div>
+    <div class="galerie-grid">
 
-function renderParametres(){
-  const wrap=el("div",{style:{maxWidth:"700px"}});
-  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #1e1e1e",marginBottom:"2rem"}});
-  [["infos","Entreprise"],["tarifs","Tarifs"]].forEach(([id,label])=>{const btn=el("button",{className:"tab-btn"+(S.paramTab===id?" active":""),style:{fontFamily:"Inter,sans-serif"}},label);btn.addEventListener("click",()=>set({paramTab:id}));tabs.appendChild(btn);});
-  wrap.appendChild(tabs);
-  if(S.paramTab==="infos"){
-    wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"20px",fontWeight:"400",marginBottom:"1.5rem"}},"Informations entreprise"));
-    [["Raison sociale","nom"],["Forme juridique","forme"],["SIRET","siret"],["N° TVA","tva"],["Adresse","adresse"],["Code postal","cp"],["Ville","ville"],["Téléphone","tel"],["Email","email"],["Président","president"],["Site web","site"]].forEach(([label,key])=>{
-      const i=el("input",{value:INFO[key]||""});i.addEventListener("input",e=>INFO[key]=e.target.value);wrap.appendChild(grp(label,i));
-    });
-    const bs=el("button",{style:{...BP,marginTop:"0.5rem"}},"Sauvegarder");bs.addEventListener("click",()=>{bs.textContent="✓ Sauvegardé !";setTimeout(()=>bs.textContent="Sauvegarder",2000);});wrap.appendChild(bs);
-  }else if(S.paramTab==="tarifs"){
-    wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"20px",fontWeight:"400",marginBottom:"0.5rem"}},"Tarifs par défaut"));
-    wrap.appendChild(el("p",{style:{color:"#5a5040",fontSize:"13px",marginBottom:"1.5rem"}},"Ces tarifs sont pré-remplis lors de la création d'un devis."));
-    Object.entries(TARIFS).forEach(([key,sol])=>{
-      const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1.2rem",marginBottom:"1rem"}});
-      card.appendChild(el("div",{style:{color:"#c9a84c",fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem",fontWeight:"500"}},sol.label));
-      sol.trav.forEach((t,i)=>{
-        const row=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 120px",gap:"1rem",alignItems:"center",marginBottom:"8px"}});
-        const ti=el("input",{value:t,style:{padding:"0.5rem 0.8rem",fontSize:"13px"}});ti.addEventListener("input",e=>TARIFS[key].trav[i]=e.target.value);
-        const pw=el("div",{style:{position:"relative"}});
-        const pi=el("input",{type:"number",value:sol.prix[i],style:{padding:"0.5rem 0.8rem",fontSize:"13px"}});pi.addEventListener("input",e=>TARIFS[key].prix[i]=parseFloat(e.target.value)||0);
-        pw.appendChild(pi);pw.appendChild(el("span",{style:{position:"absolute",right:"8px",top:"50%",transform:"translateY(-50%)",color:"#5a5040",fontSize:"12px",pointerEvents:"none"}},"€/m²"));
-        row.appendChild(ti);row.appendChild(pw);card.appendChild(row);
-      });
-      const badd=el("button",{type:"button",style:{...BS,fontSize:"12px",marginTop:"8px",padding:"0.4rem 0.8rem"}},"+ Ajouter une prestation");
-      badd.addEventListener("click",()=>{TARIFS[key].trav.push("Nouvelle prestation");TARIFS[key].prix.push(0);set({paramTab:"tarifs"});});
-      card.appendChild(badd);wrap.appendChild(card);
-    });
-    const bs=el("button",{style:BP},"Sauvegarder les tarifs");bs.addEventListener("click",()=>{bs.textContent="✓ Sauvegardé !";setTimeout(()=>bs.textContent="Sauvegarder les tarifs",2000);});wrap.appendChild(bs);
-  }
-  return wrap;
-}
+      <!-- Grande photo hero -->
+      <div class="galerie-item galerie-large">
+        <img src="/images/photo-11-salon-aerien.png" alt="Illustration finition marbre poli haut de gamme" loading="lazy">
+        <div class="galerie-overlay"><span>Finition marbre poli · Illustration</span></div>
+      </div>
 
-const DEMO_DEVIS=[
-  // Mode démo — vide. Tes vrais devis apparaîtront ici une fois connecté à Supabase.
-];
+      <!-- Marbre reflet -->
+      <div class="galerie-item">
+        <img src="/images/photo-09-marbre-reflet.png" alt="Illustration finition marbre reflet miroir après cristallisation" loading="lazy">
+        <div class="galerie-overlay"><span>Marbre · Reflet miroir · Illustration</span></div>
+      </div>
 
-function render(){
-  const app=document.getElementById("app");app.innerHTML="";
-  if(S.page==="setup")app.appendChild(renderSetup());
-  else if(S.page==="login")app.appendChild(renderLogin());
-  else app.appendChild(renderCRM());
-}
+      <!-- Escalier marbre -->
+      <div class="galerie-item">
+        <img src="/images/photo-12-escalier-marbre.png" alt="Illustration finition marbre type escalier prestige" loading="lazy">
+        <div class="galerie-overlay"><span>Marbre prestige · Illustration</span></div>
+      </div>
 
-(function(){
-  // Version check — si nouvelle version déployée, reset les comptes corrompus
-  const VERSION="v4";
-  if(localStorage.getItem("msn_version")!==VERSION){
-    // Garder les devis mais reset les comptes pour repartir propre
-    const devis=localStorage.getItem("msn_devis");
-    localStorage.clear();
-    if(devis)localStorage.setItem("msn_devis",devis);
-    localStorage.setItem("msn_version",VERSION);
-  }
-  initDirecteur();
-  // Vérifier si lien d'activation (?setup=TOKEN)
-  const params = new URLSearchParams(window.location.search);
-  const newuser = params.get("newuser");
-  const setupToken = params.get("setup");
-  const emailParam = params.get("email");
-  if(newuser){
-    // Nouveau compte employé — décoder les infos
-    try{
-      const data=JSON.parse(atob(decodeURIComponent(newuser)));
-      S.page="setup";S.setupMode=true;S.setupToken=newuser;S.setupEmail=data.email||"";
-    }catch{
-      S.page="login";
-    }
-    render();return;
-  }
-  if(setupToken){
-    S.page="setup";S.setupMode=true;S.setupToken=setupToken;S.setupEmail=emailParam||"";
-    render();return;
-  }
-  // Vérifier session existante
-  const session=getSession();
-  if(session){
-    S={...S,page:"crm",session,role:session.role,devis:[],loading:true};
-    loadDevisFromSupabase().then(devis=>{S.devis=devis.length?devis:DEMO_DEVIS;S.loading=false;render();});
-  }else{
-    // Vérifier si le directeur n'a pas encore de PIN
-    const comptes=getComptes();
-    const directeur=comptes.find(c=>c.role==="directeur");
-    if(directeur&&!directeur.pin_hash){
-      // Premier lancement - setup du directeur
-      S.page="setup";S.setupMode=true;
-      S.setupToken="DIRECTEUR_SETUP";
-      S.setupEmail=directeur.email;
-      render();return;
-    }
-    if(emailParam)S.loginEmail=emailParam;
-  }
-  render();
-})();
-</script>
+      <!-- Entrée villa travertin -->
+      <div class="galerie-item galerie-large">
+        <img src="/images/photo-13-entree-villa.png" alt="Illustration finition parquet massif poli" loading="lazy">
+        <div class="galerie-overlay"><span>Parquet massif · Illustration</span></div>
+      </div>
+
+      <!-- Granito -->
+      <div class="galerie-item">
+        <img src="/images/photo-10-granito.jpg" alt="Illustration finition granito rénové" loading="lazy">
+        <div class="galerie-overlay"><span>Granito · Illustration</span></div>
+      </div>
+
+    </div>
+
+    <!-- Ligne 2 : avant/après côte à côte -->
+    <div class="section-header" style="margin-top:4rem;margin-bottom:2rem;">
+      <span class="section-eyebrow">Le principe</span>
+      <h2>Avant · Après</h2>
+      <p style="color:#8a8070;font-size:0.85rem;margin-top:0.5rem;max-width:600px;">Illustration du principe de nos traitements — un sol terne et poreux retrouve éclat et brillance.</p>
+    </div>
+    <div class="avant-apres-grid">
+
+      <!-- Marbre avant/après -->
+      <div class="aa-card">
+        <div class="aa-pair">
+          <div class="aa-img">
+            <img src="/images/photo-02-marbre-avant.png" alt="Illustration marbre terne avant traitement" loading="lazy">
+            <div class="aa-label aa-avant">Avant</div>
+          </div>
+          <div class="aa-arrow">→</div>
+          <div class="aa-img">
+            <img src="/images/photo-03-marbre-apres.png" alt="Illustration marbre poli après cristallisation" loading="lazy">
+            <div class="aa-label aa-apres">Après</div>
+          </div>
+        </div>
+        <div class="aa-desc">Marbre · Polissage & cristallisation (illustration)</div>
+      </div>
+
+      <!-- Travertin avant/après -->
+      <div class="aa-card">
+        <div class="aa-pair">
+          <div class="aa-img">
+            <img src="/images/photo-04-travertin-avant.png" alt="Illustration travertin avant traitement" loading="lazy">
+            <div class="aa-label aa-avant">Avant</div>
+          </div>
+          <div class="aa-arrow">→</div>
+          <div class="aa-img">
+            <img src="/images/photo-05-travertin-apres.png" alt="Illustration travertin après traitement" loading="lazy">
+            <div class="aa-label aa-apres">Après</div>
+          </div>
+        </div>
+        <div class="aa-desc">Travertin · Bouchage & huilage (illustration)</div>
+      </div>
+
+      <!-- Parquet avant/après -->
+      <div class="aa-card">
+        <div class="aa-pair">
+          <div class="aa-img">
+            <img src="/images/photo-06-parquet-avant.png" alt="Illustration parquet chêne avant traitement" loading="lazy" style="object-position:center 30%;">
+            <div class="aa-label aa-avant">Avant</div>
+          </div>
+          <div class="aa-arrow">→</div>
+          <div class="aa-img">
+            <img src="/images/photo-07-parquet-apres.png" alt="Illustration parquet chêne après vitrification" loading="lazy" style="object-position:center 30%;">
+            <div class="aa-label aa-apres">Après</div>
+          </div>
+        </div>
+        <div class="aa-desc">Parquet chêne massif · Ponçage & vitrification (illustration)</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- NOTRE HISTOIRE -->
+<section class="temoignages-section" id="temoignages">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Notre histoire</span>
+      <h2>Un savoir-faire de 10 ans, une nouvelle structure</h2>
+    </div>
+    <div class="temoignages-grid">
+      <div class="temoignage-card" data-aos>
+        <p class="temoignage-text">« J'ai appris ce métier pendant 10 ans au sein d'une entreprise familiale spécialisée dans la rénovation de sols en pierre naturelle. Aujourd'hui, je lance Maison Sol Noble pour proposer ce savoir-faire directement, avec toute l'exigence d'un artisan qui engage son nom. »</p>
+        <div class="temoignage-author">
+          <div class="author-avatar">MSN</div>
+          <div>
+            <p class="author-name">Fondateur de Maison Sol Noble</p>
+            <p class="author-loc">SASU · SIRET 105 745 806 00015</p>
+          </div>
+        </div>
+      </div>
+      <div class="temoignage-card" data-aos>
+        <div class="solution-icon" style="margin-bottom:1rem;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <p class="temoignage-text">Nouvelle structure ne veut pas dire débutant. Chaque devis est établi avec la même rigueur que sur les chantiers réalisés ces 10 dernières années — diagnostic précis, méthode professionnelle, matériel haut de gamme.</p>
+      </div>
+      <div class="temoignage-card" data-aos>
+        <div class="solution-icon" style="margin-bottom:1rem;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <p class="temoignage-text">Les premiers chantiers Maison Sol Noble seront documentés en photos et vidéos, avant/après réels — disponibles directement sur nos réseaux sociaux au fil des réalisations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FORMULAIRE CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-left">
+        <span class="section-eyebrow">Devis gratuit</span>
+        <h2>Parlez-nous de votre projet</h2>
+        <p>Réponse garantie sous 24h. Notre expert analyse votre situation et vous propose une solution adaptée, sans engagement.</p>
+        <div class="contact-infos">
+          <a href="tel:0554542864" class="contact-info-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+            <span>05 54 54 28 64</span>
+          </a>
+          <a href="mailto:contact@maisonsolnoble.com" class="contact-info-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>contact@maisonsolnoble.com</span>
+          </a>
+          <div class="contact-info-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Réponse sous 24h</span>
+          </div>
+        </div>
+      </div>
+      <div class="contact-right">
+        <form class="contact-form" id="contactForm" onsubmit="handleSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nom">Nom complet *</label>
+              <input type="text" id="nom" name="nom" placeholder="Jean Dupont" required>
+            </div>
+            <div class="form-group">
+              <label for="tel">Téléphone *</label>
+              <input type="tel" id="tel" name="tel" placeholder="06 12 34 56 78" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" placeholder="votre@email.com" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ville">Ville *</label>
+              <input type="text" id="ville" name="ville" placeholder="Paris" required>
+            </div>
+            <div class="form-group">
+              <label for="type">Type de sol *</label>
+              <select id="type" name="type" required>
+                <option value="">Sélectionner</option>
+                <option>Marbre</option>
+                <option>Travertin</option>
+                <option>Granito</option>
+                <option>Parquet massif</option>
+                <option>Autre pierre naturelle</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="surface">Surface approximative (m²)</label>
+            <input type="text" id="surface" name="surface" placeholder="Ex: 50 m²">
+          </div>
+          <div class="form-group">
+            <label for="message">Décrivez votre projet</label>
+            <textarea id="message" name="message" rows="4" placeholder="État actuel du sol, type d'intervention souhaitée, délais..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span id="btnText">Envoyer ma demande de devis</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+          <p class="form-mention">* Champs obligatoires · Vos données sont protégées et ne seront jamais partagées</p>
+          <div id="formSuccess" class="form-success" style="display:none;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <p>Votre demande a bien été envoyée ! Nous vous répondons sous 24h.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FAQ SECTION SEO -->
+<section class="faq-section" id="faq">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Questions fréquentes</span>
+      <h2>Tout ce que vous voulez savoir</h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Intervenez-vous sur la Côte d'Azur, en Île-de-France et sur la Côte Basque ?</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>Maison Sol Noble concentre son savoir-faire sur trois zones d'exception : la Côte d'Azur, l'Île-de-France et la Côte Basque. Le coût du déplacement est intégré dans votre devis de manière transparente.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Quel est le prix d'une rénovation de sol en marbre ?</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>Le prix varie selon la surface, l'état du sol et le traitement souhaité. En moyenne, comptez entre 25€ et 60€/m² pour une rénovation complète incluant polissage, cristallisation et protection. Contactez-nous pour un devis gratuit et personnalisé sous 24h.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Vitrification ou parquet ciré — quelle différence ?</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>La <strong>vitrification</strong> applique un vernis synthétique très résistant, idéal pour les zones à fort trafic. Rendu brillant ou satiné, entretien facile. Le <strong>parquet ciré</strong> donne un aspect mat chaleureux et authentique, parfait pour les intérieurs classiques. Il demande un entretien régulier mais le résultat est incomparable.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Combien de temps dure un chantier de rénovation ?</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>Pour une surface de 50 à 100m², comptez 1 à 3 jours selon le type de sol et les traitements. Nous travaillons efficacement pour minimiser la perturbation de votre quotidien. Votre sol est utilisable en général 24h après la fin du traitement.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Peut-on rénover un sol en très mauvais état ?</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>Dans la grande majorité des cas, oui. Des rayures profondes, des taches tenaces, un marbre terne depuis 20 ans, un parquet gris et abîmé — nous avons les machines et les produits professionnels pour redonner vie à des sols que l'on croyait perdus. Un diagnostic gratuit vous donnera une réponse précise.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>Travaillez-vous pour les particuliers et les professionnels ?</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>Oui, nous intervenons aussi bien chez les particuliers (maisons, appartements, villas) que pour les professionnels (hôtels, restaurants, bureaux, immeubles de prestige). Nos tarifs et délais s'adaptent à chaque type de projet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIENS INTERNES VILLES ET BLOG -->
+<section class="links-section">
+  <div class="container">
+    <div class="links-grid">
+      <div class="links-col">
+        <h3>Intervention par ville</h3>
+        <ul class="links-list">
+          <li><a href="/villes/renovation-sol-nice.html">Rénovation sol Nice</a></li>
+          <li><a href="/villes/renovation-sol-cannes.html">Rénovation sol Cannes</a></li>
+          <li><a href="/villes/renovation-sol-antibes.html">Rénovation sol Antibes</a></li>
+          <li><a href="/villes/renovation-sol-saint-tropez.html">Rénovation sol Saint-Tropez</a></li>
+          <li><a href="/villes/renovation-sol-monaco.html">Rénovation sol Monaco</a></li>
+          <li><a href="/villes/renovation-sol-paris.html">Rénovation sol Paris</a></li>
+          <li><a href="/villes/renovation-sol-neuilly-sur-seine.html">Rénovation sol Neuilly-sur-Seine</a></li>
+          <li><a href="/villes/renovation-sol-versailles.html">Rénovation sol Versailles</a></li>
+          <li><a href="/villes/renovation-sol-biarritz.html">Rénovation sol Biarritz</a></li>
+          <li><a href="/villes/renovation-sol-bayonne.html">Rénovation sol Bayonne</a></li>
+          <li><a href="/villes/renovation-sol-saint-jean-de-luz.html">Rénovation sol Saint-Jean-de-Luz</a></li>
+        </ul>
+      </div>
+      <div class="links-col">
+        <h3>Nos conseils & guides</h3>
+        <ul class="links-list">
+          <li><a href="/blog/comment-renover-sol-marbre.html">Comment rénover un sol en marbre ?</a></li>
+          <li><a href="/blog/prix-renovation-parquet-2026.html">Prix rénovation parquet massif 2026</a></li>
+          <li><a href="/blog/vitrification-ou-cire-parquet.html">Vitrification ou cire : que choisir ?</a></li>
+          <li><a href="/blog/entretien-travertin.html">Entretien et rénovation du travertin</a></li>
+          <li><a href="/blog/granito-sol-vintage.html">Granito : le sol vintage qui revient en force</a></li>
+        </ul>
+      </div>
+      <div class="links-col">
+        <h3>Nos services</h3>
+        <ul class="links-list">
+          <li><a href="#services">Rénovation marbre</a></li>
+          <li><a href="#services">Rénovation travertin</a></li>
+          <li><a href="#services">Rénovation granito</a></li>
+          <li><a href="#services">Vitrification parquet</a></li>
+          <li><a href="#services">Parquet ciré</a></li>
+          <li><a href="#contact">Demander un devis gratuit</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <img src="/images/logo.png" alt="Maison Sol Noble" class="footer-logo-img">
+          <span class="footer-logo-text">
+            <span class="logo-maison">Maison</span>
+            <span class="logo-sol">Sol Noble</span>
+          </span>
+        </div>
+        <p>Artisans rénovateurs de sols en pierre naturelle et parquet massif. Intervention partout en France.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Services</h4>
+        <a href="#services">Rénovation marbre</a>
+        <a href="#services">Rénovation travertin</a>
+        <a href="#services">Rénovation granito</a>
+        <a href="#services">Parquet massif</a>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <a href="tel:0554542864">05 54 54 28 64</a>
+        <a href="mailto:contact@maisonsolnoble.com">contact@maisonsolnoble.com</a>
+        <p>Du lundi au samedi<br>8h – 19h</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Maison Sol Noble · Tous droits réservés</p>
+      <div class="footer-legal">
+        <a href="/mentions-legales.html">Mentions légales</a>
+        <a href="/politique-confidentialite.html">Politique de confidentialité</a>
+        <a href="/cgv.html">CGV</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- BOUTONS FLOTTANTS -->
+<div class="float-buttons" id="floatCall">
+  <a href="https://wa.me/330630729858?text=Bonjour%2C%20je%20souhaite%20un%20devis%20pour%20la%20r%C3%A9novation%20de%20mon%20sol." class="float-btn float-whatsapp" aria-label="Contacter sur WhatsApp" target="_blank" rel="noopener">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    <span>WhatsApp</span>
+  </a>
+  <a href="tel:0554542864" class="float-btn float-phone" aria-label="Appeler Maison Sol Noble">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+    <span>Appeler</span>
+  </a>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

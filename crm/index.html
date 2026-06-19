@@ -248,6 +248,44 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
 const SUPA_URL="https://gwcrschnztnyqvfsjpdd.supabase.co";
 const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3Y3JzY2huenRueXF2ZnNqcGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTg5NTMsImV4cCI6MjA5NzI3NDk1M30.WeA47JrClXl0J8MAhbFZ0_o4waIZUT-ioZKSwd5PdVE";
 
+// ── COMPTE TECHNIQUE SUPABASE AUTH ──────────────────────────────
+// Ce compte permet à l'app de s'authentifier auprès de Supabase
+// (nécessaire pour que les policies RLS "authenticated only" laissent
+// passer les requêtes). Ce n'est PAS le login visible des employés —
+// ça reste le PIN. Ce compte est juste la "carte d'accès" technique.
+const APP_AUTH_EMAIL="contact@maisonsolnoble.com";
+const APP_AUTH_PASSWORD="Klea.louisa31"; // ⚠️ à remplacer avant déploiement
+
+let _appAuthToken=null;
+let _appAuthPromise=null;
+
+async function getAppAuthToken(){
+  if(_appAuthToken)return _appAuthToken;
+  if(_appAuthPromise)return _appAuthPromise;
+  _appAuthPromise=(async()=>{
+    try{
+      const r=await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`,{
+        method:"POST",
+        headers:{apikey:SUPA_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({email:APP_AUTH_EMAIL,password:APP_AUTH_PASSWORD})
+      });
+      const data=await r.json();
+      if(data&&data.access_token){
+        _appAuthToken=data.access_token;
+        return _appAuthToken;
+      }
+      console.error("Échec auth app Supabase :",data);
+      return null;
+    }catch(e){
+      console.error("Erreur réseau auth app Supabase :",e);
+      return null;
+    }finally{
+      _appAuthPromise=null;
+    }
+  })();
+  return _appAuthPromise;
+}
+
 
 // ── DÉTECTION MOBILE ──────────────────────────────────────────
 function isMobile(){return window.innerWidth<=768;}
@@ -279,7 +317,11 @@ let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:
 function set(patch){S={...S,...patch};render();}
 
 async function api(path,opts={},token=null){
-  try{const r=await fetch(`${SUPA_URL}/rest/v1/${path}`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token||SUPA_KEY}`,"Content-Type":"application/json",Prefer:"return=representation"},...opts});const t=await r.text();return t?JSON.parse(t):null;}catch{return null;}
+  try{
+    const authToken=token||await getAppAuthToken()||SUPA_KEY;
+    const r=await fetch(`${SUPA_URL}/rest/v1/${path}`,{headers:{apikey:SUPA_KEY,Authorization:`Bearer ${authToken}`,"Content-Type":"application/json",Prefer:"return=representation"},...opts});
+    const t=await r.text();return t?JSON.parse(t):null;
+  }catch{return null;}
 }
 
 async function loadDevisFromSupabase(){
