@@ -254,7 +254,7 @@ const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // passer les requêtes). Ce n'est PAS le login visible des employés —
 // ça reste le PIN. Ce compte est juste la "carte d'accès" technique.
 const APP_AUTH_EMAIL="contact@maisonsolnoble.com";
-const APP_AUTH_PASSWORD="Klea.louisa31"; // ⚠️ à remplacer avant déploiement
+const APP_AUTH_PASSWORD="__CRM_AUTH_PASSWORD__"; // ⚠️ remplacé automatiquement au build par Render (voir build.sh) — ne jamais mettre le vrai mot de passe ici
 
 let _appAuthToken=null;
 let _appAuthPromise=null;

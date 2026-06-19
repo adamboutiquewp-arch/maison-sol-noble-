@@ -1,6 +1,11 @@
 -- ============================================================
 -- SETUP SUPABASE — CRM Maison Sol Noble
 -- Copie-colle ce SQL dans Supabase > SQL Editor > New Query
+--
+-- ⚠️ Ce script sert à recréer la structure depuis zéro si besoin
+-- (nouvelle base, environnement de test...). Il ne contient PAS
+-- de données de démonstration et active une vraie protection RLS
+-- (authentifié uniquement), pas un accès libre.
 -- ============================================================
 
 -- Table devis
@@ -38,16 +43,16 @@ CREATE OR REPLACE TRIGGER devis_updated_at
 BEFORE UPDATE ON devis
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- Politique RLS (Row Level Security) — accès uniquement authentifié
+-- Politique RLS (Row Level Security) — accès réservé aux utilisateurs authentifiés uniquement.
+-- Le CRM s'authentifie via un compte technique Supabase Auth (voir crm/index.html,
+-- fonction getAppAuthToken). Sans ce token, aucune lecture ni écriture n'est possible.
 ALTER TABLE devis ENABLE ROW LEVEL SECURITY;
 
--- Pour un usage simple sans auth (à sécuriser en prod) :
-CREATE POLICY "Accès libre devis" ON devis FOR ALL USING (true);
+CREATE POLICY "Accès libre devis" ON devis
+  FOR ALL
+  TO authenticated
+  USING (auth.role() = 'authenticated');
 
--- Données de démo (optionnel — supprimer en prod)
-INSERT INTO devis (numero, client_nom, client_tel, client_email, ville, type_sol, travaux, surface, prix_m2, montant_ht, etat, statut) VALUES
-  ('MSN-001', 'Sophie L.', '06 12 34 56 78', 'sophie@email.com', 'Paris 16ème', 'marbre', 'Rénovation complète', 65, 55, 4290, 'mauvais', 'Gagné'),
-  ('MSN-002', 'Pierre M.', '07 98 76 54 32', 'pierre@email.com', 'Cannes', 'travertin', 'Rénovation complète', 120, 50, 7200, 'moyen', 'Devis envoyé'),
-  ('MSN-003', 'Marie R.', '06 55 44 33 22', 'marie@email.com', 'Lyon', 'parquet', 'Ponçage + vitrification', 80, 28, 2688, 'moyen', 'Contacté'),
-  ('MSN-004', 'A. Fontaine', '06 11 22 33 44', '', 'Monaco', 'marbre', 'Cristallisation', 200, 45, 10800, 'bon', 'Devis envoyé')
-ON CONFLICT (numero) DO NOTHING;
+-- Aucune donnée de démonstration n'est insérée par ce script.
+-- Les premiers devis doivent provenir de vrais clients, créés
+-- directement depuis le CRM une fois connecté.

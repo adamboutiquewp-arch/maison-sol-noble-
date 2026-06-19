@@ -1,35 +1,23 @@
 -- ============================================================
 -- CRÉER TON COMPTE ADMIN — Maison Sol Noble CRM
 -- Colle ce SQL dans Supabase > SQL Editor > New Query
--- Remplace l'email et le mot de passe avant de lancer !
+--
+-- ⚠️ NE JAMAIS écrire de vrai mot de passe dans ce fichier.
+-- Ce dépôt est public sur GitHub : tout ce qui est écrit ici
+-- est visible par n'importe qui sur internet.
+--
+-- Pour créer ou modifier ton compte CRM en toute sécurité,
+-- utilise l'interface Supabase directement :
+-- Authentication > Users > Add user / Reset password
+-- (ne passe jamais par ce script pour définir un vrai mot de passe)
 -- ============================================================
 
--- Crée le compte utilisateur admin
-SELECT supabase_admin.create_user(
-  '{"email": "contact@maisonsolnoble.com", "password": "TonMotDePasse2025!", "email_confirm": true}'::jsonb
-);
+-- Exemple de structure si tu veux créer un compte par script
+-- (remplace <EMAIL> et utilise le champ "Reset password" de
+-- l'interface Supabase pour le mot de passe, jamais ici) :
 
--- Si la fonction ci-dessus ne marche pas, utilise celle-ci à la place :
-INSERT INTO auth.users (
-  id,
-  email,
-  encrypted_password,
-  email_confirmed_at,
-  created_at,
-  updated_at,
-  raw_app_meta_data,
-  raw_user_meta_data,
-  is_super_admin,
-  role
-) VALUES (
-  gen_random_uuid(),
-  'contact@maisonsolnoble.com',
-  crypt('TonMotDePasse2025!', gen_salt('bf')),
-  now(),
-  now(),
-  now(),
-  '{"provider":"email","providers":["email"]}',
-  '{}',
-  false,
-  'authenticated'
-) ON CONFLICT (email) DO NOTHING;
+-- SELECT supabase_admin.create_user(
+--   '{"email": "<EMAIL>", "email_confirm": true}'::jsonb
+-- );
+-- Puis va dans Authentication > Users > [ton compte] > Reset password
+-- pour définir le mot de passe directement dans l'interface Supabase.
