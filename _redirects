@@ -1,9 +1,7 @@
 # Redirects Render.com — Maison Sol Noble
-
-# Forcer HTTPS + sans-www (version canonique unique, cohérente avec sitemap.xml)
-http://maisonsolnoble.com/* https://maisonsolnoble.com/:splat 301
-http://www.maisonsolnoble.com/* https://maisonsolnoble.com/:splat 301
-https://www.maisonsolnoble.com/* https://maisonsolnoble.com/:splat 301
+# Note : la redirection maisonsolnoble.com → www.maisonsolnoble.com
+# est déjà gérée nativement par Render au niveau du Custom Domain.
+# Ne pas dupliquer cette règle ici pour éviter tout conflit.
 
 # CRM — ne pas rediriger vers index.html
 /crm /crm/index.html 200

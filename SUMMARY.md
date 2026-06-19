@@ -1,23 +1,26 @@
 # Maison Sol Noble — v4 : Site corrigé + stratégie de lancement Meta Ads
 
-## ⚠️ Action requise immédiatement après déploiement
+## ⚠️ Résolution finale du problème sitemap (root cause trouvée)
 
-### 1. Render — fichiers ajoutés dans cette version
-- **`render.yaml`** : corrige le Content-Type du `sitemap.xml` (était servi en "binary data", empêchait Google de le lire). Render doit détecter ce fichier automatiquement au prochain déploiement.
-- **`_redirects`** : corrigé pour converger vers une seule URL canonique **`https://maisonsolnoble.com` (sans www)** — cohérent avec toutes les URLs déjà présentes dans `sitemap.xml` et `index.html`. Avant, le fichier redirigeait par erreur vers des versions contradictoires (boucle potentielle).
+### Le vrai problème, identifié après investigation
+Render impose une **redirection native au niveau du Custom Domain** : `maisonsolnoble.com` → `www.maisonsolnoble.com`. Cette redirection est gérée par l'infrastructure Render elle-même, **avant** que le fichier `_redirects` ou tout autre code du site ne s'exécute. C'est pour ça que :
+- Le fichier `.htaccess` (inutile sur Render, qui n'est pas Apache) n'avait aucun effet
+- Le `render.yaml` avec les headers personnalisés fonctionnait bien (Content-Type correct), mais ne réglait pas le problème de fond
+- Le fichier `_redirects` qui tentait de forcer la version sans-www était systématiquement ignoré, car la redirection Render prenait le dessus
 
-### 2. Google Search Console — à corriger côté toi
-Tu avais vérifié et soumis le sitemap sur la propriété **`www.maisonsolnoble.com`**. Comme la version canonique du site est **sans www**, il faut :
-1. Dans Search Console, passe sur la propriété **`maisonsolnoble.com`** (celle en haut de la liste, type "Domaine" — pas celle en `https://www...`)
-2. Soumets à nouveau `sitemap.xml` depuis cette propriété
-3. Une fois le nouveau `render.yaml` déployé, attends 24-48h puis vérifie que le sitemap passe en statut "Réussite" (pas "Impossible de récupérer")
+Résultat concret : Google demandait `https://maisonsolnoble.com/sitemap.xml`, se faisait rediriger en 301 vers `https://www.maisonsolnoble.com/sitemap.xml`, et cette étape de redirection perturbait la lecture du fichier par Googlebot (vu comme "fichier HTML" dans Search Console).
 
-### 3. Vérification technique (optionnelle mais recommandée)
-Après le déploiement Render, un développeur ou toi-même pouvez vérifier avec :
-```
-curl -I https://maisonsolnoble.com/sitemap.xml
-```
-La ligne `content-type:` doit afficher `application/xml` (pas `application/octet-stream` ni `text/html`).
+### La solution appliquée
+Plutôt que de lutter contre la redirection native de Render, **tout le code a été aligné sur la version `www`**, qui est la version réellement servie en HTTP 200 (sans redirection) :
+- `sitemap.xml` : les 27 URLs sont passées en `https://www.maisonsolnoble.com/...`
+- `robots.txt` : la ligne `Sitemap:` pointe vers la version www
+- `index.html` et les 28 fichiers HTML du site : canonical, og:url, og:image, Schema.org JSON-LD — tout en www
+- `_redirects` : simplifié, ne contient plus de règle www/non-www en doublon (pour éviter tout conflit avec la redirection native Render)
+
+### Action finale qu'il te reste à faire
+1. Dans **Google Search Console**, utilise la propriété **`https://www.maisonsolnoble.com/`** (celle que tu avais vérifiée en tout premier) — pas celle en `maisonsolnoble.com` sans www
+2. Si un sitemap y est déjà listé en erreur, supprime-le et resoumets `sitemap.xml`
+3. Vérifie sur httpstatus.io que `https://www.maisonsolnoble.com/sitemap.xml` retourne directement un **200** sans aucune redirection (0 redirect) — c'est le signe que tout est cohérent désormais
 
 ---
 
