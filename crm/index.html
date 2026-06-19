@@ -7,248 +7,142 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sol Noble CRM">
-<meta name="theme-color" content="#090909">
+<meta name="theme-color" content="#f5f4f0">
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0d0d0d;color:#e0d8cc;font-family:Inter,sans-serif;font-weight:300;}
-input,select,textarea{background:#0d0d0d;border:1px solid #2a2a2a;color:#e0d8cc;padding:0.7rem 0.9rem;font-family:Inter,sans-serif;font-size:14px;border-radius:4px;width:100%;outline:none;appearance:none;}
-input:focus,select:focus,textarea:focus{border-color:#c9a84c;}
-input::placeholder,textarea::placeholder{color:#3a3020;}
+body{background:#f5f4f0;color:#2a2520;font-family:Inter,sans-serif;font-weight:300;}
+input,select,textarea{background:#ffffff;border:1px solid #dddad2;color:#2a2520;padding:0.7rem 0.9rem;font-family:Inter,sans-serif;font-size:14px;border-radius:4px;width:100%;outline:none;appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:#c9a84c;box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
+input::placeholder,textarea::placeholder{color:#c0b8ae;}
 button{cursor:pointer;font-family:Inter,sans-serif;-webkit-appearance:none;appearance:none;background:transparent;}
 table{width:100%;border-collapse:collapse;}
 ::-webkit-scrollbar{width:6px;}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
-*{box-sizing:border-box;}
-::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
-.tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:#6a6050;padding:0.6rem 1rem;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;}
-.tab-btn.active{color:#c9a84c;border-bottom-color:#c9a84c;}
+::-webkit-scrollbar-thumb{background:#d4d0c8;border-radius:3px;}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:#9a9488;padding:0.6rem 1rem;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;}
+.tab-btn.active{color:#b08030;border-bottom-color:#b08030;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ═══════════════════════════════════════════
-   MOBILE APP STYLES — iOS/Android optimisé
-   ═══════════════════════════════════════════ */
 @media(max-width:768px){
-
-  /* ── BASE ── */
   *{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
   body{padding:0;margin:0;overflow-x:hidden;}
-  input,select,textarea{font-size:16px!important;} /* bloque zoom iOS */
+  input,select,textarea{font-size:16px!important;}
 
-  /* ── HEADER FIXE ── */
   .mob-header{
-    position:fixed;top:0;left:0;right:0;
-    height:56px;
-    background:#090909;
-    border-bottom:1px solid rgba(201,168,76,0.15);
+    position:fixed;top:0;left:0;right:0;height:56px;
+    background:#ffffff;border-bottom:1px solid #e8e4dc;
     display:flex;align-items:center;justify-content:space-between;
-    padding:0 16px;
-    padding-top:env(safe-area-inset-top);
-    z-index:100;
+    padding:0 16px;padding-top:env(safe-area-inset-top);
+    z-index:100;box-shadow:0 1px 8px rgba(0,0,0,0.06);
   }
 
-  /* ── CONTENU PRINCIPAL ── */
   .mob-body{
     padding-top:calc(56px + env(safe-area-inset-top) + 12px);
     padding-bottom:calc(72px + env(safe-area-inset-bottom) + 12px);
-    padding-left:14px;
-    padding-right:14px;
-    min-height:100vh;
+    padding-left:14px;padding-right:14px;min-height:100vh;
   }
 
-  /* ── TAB BAR iOS ── */
   .mob-nav{
     position:fixed;bottom:0;left:0;right:0;
-    background:#090909;
-    border-top:0.5px solid rgba(201,168,76,0.2);
+    background:#ffffff;border-top:1px solid #e8e4dc;
     padding-bottom:env(safe-area-inset-bottom);
-    display:flex!important;
-    z-index:200;
+    display:flex!important;z-index:200;
+    box-shadow:0 -1px 10px rgba(0,0,0,0.06);
   }
   .mob-tab{
     flex:1;display:flex;flex-direction:column;
     align-items:center;justify-content:center;
     gap:3px;padding:8px 2px 6px;
-    background:none;border:none;cursor:pointer;
-    min-height:50px;
+    background:none;border:none;cursor:pointer;min-height:50px;
+    -webkit-appearance:none;
   }
   .mob-tab-icon{font-size:20px;line-height:1;}
   .mob-tab-label{font-size:9px;font-family:Inter,sans-serif;letter-spacing:0.02em;}
 
-  /* ── FAB BOUTON ── */
   .mob-fab{
-    position:fixed;
-    bottom:calc(66px + env(safe-area-inset-bottom));
-    right:16px;
-    width:52px;height:52px;
-    background:#c9a84c;
-    border:none;border-radius:50%;
-    font-size:26px;color:#111;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 4px 20px rgba(201,168,76,0.4);
-    cursor:pointer;z-index:150;
-    transition:transform 0.15s;
+    position:fixed;bottom:calc(66px + env(safe-area-inset-bottom));right:16px;
+    width:52px;height:52px;background:#c9a84c;border:none;border-radius:50%;
+    font-size:26px;color:#ffffff;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 20px rgba(201,168,76,0.35);cursor:pointer;z-index:150;
+    transition:transform 0.15s;-webkit-appearance:none;
   }
   .mob-fab:active{transform:scale(0.9);}
 
-  /* ── KPI GRID ── */
-  .mob-kpi-grid{
-    display:grid;grid-template-columns:1fr 1fr;
-    gap:8px;margin-bottom:14px;
-  }
-  .mob-kpi{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:12px;padding:12px 14px;
-  }
-  .mob-kpi-label{font-size:10px;color:#5a5040;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;}
-  .mob-kpi-val{font-family:'Cormorant Garamond',serif;font-size:24px;color:#f0ece4;font-weight:400;line-height:1;}
-  .mob-kpi-val.gold{color:#c9a84c;}
+  .mob-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .mob-kpi{background:#ffffff;border:1px solid #e8e4dc;border-radius:14px;padding:14px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.05);}
+  .mob-kpi-label{font-size:10px;color:#9a9488;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;}
+  .mob-kpi-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:#1a1611;font-weight:400;line-height:1;}
+  .mob-kpi-val.gold{color:#b08030;}
 
-  /* ── CARDS DEVIS ── */
-  .mob-devis-card{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:14px;padding:14px 16px;
-    margin-bottom:8px;
-  }
-  .mob-devis-card:active{background:#161616;transform:scale(0.99);}
+  .mob-devis-card{background:#ffffff;border:1px solid #e8e4dc;border-radius:14px;padding:15px 16px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,0.05);transition:transform 0.1s;}
+  .mob-devis-card:active{background:#faf9f6;transform:scale(0.99);}
   .mob-devis-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
-  .mob-devis-nom{font-size:15px;color:#e0d8cc;font-weight:500;}
-  .mob-devis-num{font-size:11px;color:#c9a84c;font-weight:600;}
+  .mob-devis-nom{font-size:15px;color:#1a1611;font-weight:500;}
+  .mob-devis-num{font-size:11px;color:#b08030;font-weight:600;}
   .mob-devis-mid{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
-  .mob-devis-tag{font-size:11px;color:#6a6050;background:#0a0a0a;padding:3px 9px;border-radius:20px;border:1px solid #1e1e1e;}
+  .mob-devis-tag{font-size:11px;color:#7a7268;background:#f5f4f0;padding:3px 9px;border-radius:20px;border:1px solid #e8e4dc;}
   .mob-devis-bot{display:flex;justify-content:space-between;align-items:center;}
-  .mob-devis-prix{font-size:17px;color:#f0ece4;font-weight:600;font-family:'Cormorant Garamond',serif;}
+  .mob-devis-prix{font-size:17px;color:#1a1611;font-weight:600;font-family:'Cormorant Garamond',serif;}
 
-  /* ── BOTTOM SHEET ── */
-  .mob-sheet-overlay{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,0.65);
-    z-index:1000;
-    display:flex;align-items:flex-end;
-  }
-  .mob-sheet{
-    background:#141414;
-    border-radius:20px 20px 0 0;
-    width:100%;max-height:92vh;
-    overflow-y:auto;
-    padding-bottom:calc(16px + env(safe-area-inset-bottom));
-  }
-  .mob-sheet-handle{
-    width:36px;height:4px;background:#2a2a2a;
-    border-radius:2px;margin:12px auto 0;
-  }
-  .mob-sheet-header{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 18px;border-bottom:1px solid #1e1e1e;
-    position:sticky;top:0;background:#141414;z-index:1;
-  }
-  .mob-sheet-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#f0ece4;font-weight:400;}
+  .mob-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1000;display:flex;align-items:flex-end;}
+  .mob-sheet{background:#ffffff;border-radius:22px 22px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom));box-shadow:0 -4px 30px rgba(0,0,0,0.1);}
+  .mob-sheet-handle{width:36px;height:4px;background:#dddad2;border-radius:2px;margin:12px auto 0;}
+  .mob-sheet-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e8e4dc;position:sticky;top:0;background:#ffffff;z-index:1;}
+  .mob-sheet-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#1a1611;font-weight:400;}
   .mob-sheet-body{padding:16px 18px;}
 
-  /* ── FORMULAIRE ── */
   .mob-form-group{margin-bottom:14px;}
-  .mob-form-group label{display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#6a6050;margin-bottom:6px;}
-  .mob-form-group input,.mob-form-group select,.mob-form-group textarea{
-    background:#0d0d0d;border:1px solid #2a2a2a;color:#e0d8cc;
-    padding:13px 14px;border-radius:10px;width:100%;
-    font-family:Inter,sans-serif;
-  }
-  .mob-form-group input:focus,.mob-form-group select:focus{border-color:#c9a84c;outline:none;}
+  .mob-form-group label{display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8278;margin-bottom:6px;}
+  .mob-form-group input,.mob-form-group select,.mob-form-group textarea{background:#f8f7f3;border:1px solid #dddad2;color:#2a2520;padding:13px 14px;border-radius:10px;width:100%;font-family:Inter,sans-serif;}
+  .mob-form-group input:focus,.mob-form-group select:focus{border-color:#c9a84c;outline:none;background:#ffffff;box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
 
-  /* ── RECAP PRIX ── */
-  .mob-recap{
-    background:#0a0a0a;border:1px solid rgba(201,168,76,0.2);
-    border-radius:12px;padding:14px 16px;margin:12px 0;
-  }
+  .mob-recap{background:#f8f7f3;border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px 16px;margin:12px 0;}
   .mob-recap-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;}
-  .mob-recap-label{font-size:13px;color:#7a7060;}
-  .mob-recap-val{font-size:14px;color:#f0ece4;font-weight:500;}
-  .mob-recap-ttc{font-size:22px;color:#c9a84c;font-weight:700;font-family:'Cormorant Garamond',serif;}
+  .mob-recap-label{font-size:13px;color:#8a8278;}
+  .mob-recap-val{font-size:14px;color:#1a1611;font-weight:500;}
+  .mob-recap-ttc{font-size:22px;color:#b08030;font-weight:700;font-family:'Cormorant Garamond',serif;}
 
-  /* ── PLANNING ── */
-  .mob-planning-day{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:12px;padding:10px 12px;
-    min-height:80px;
-  }
+  .mob-planning-day{background:#ffffff;border:1px solid #e8e4dc;border-radius:12px;padding:10px 12px;min-height:80px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
   .mob-planning-date{margin-bottom:6px;}
-  .mob-planning-day-name{font-size:10px;color:#5a5040;text-transform:uppercase;letter-spacing:0.1em;}
-  .mob-planning-day-num{font-family:'Cormorant Garamond',serif;font-size:22px;color:#7a7060;}
-  .mob-planning-day-num.today{color:#c9a84c;}
+  .mob-planning-day-name{font-size:10px;color:#9a9488;text-transform:uppercase;letter-spacing:0.1em;}
+  .mob-planning-day-num{font-family:'Cormorant Garamond',serif;font-size:22px;color:#c0b8ae;}
+  .mob-planning-day-num.today{color:#b08030;}
 
-  /* ── CLIENTS ── */
-  .mob-client-card{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:14px;padding:14px 16px;
-    margin-bottom:8px;display:flex;align-items:center;gap:14px;
-  }
-  .mob-avatar{
-    width:44px;height:44px;border-radius:50%;
-    background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);
-    display:flex;align-items:center;justify-content:center;
-    font-size:14px;color:#c9a84c;font-weight:600;flex-shrink:0;
-  }
+  .mob-client-card{background:#ffffff;border:1px solid #e8e4dc;border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 6px rgba(0,0,0,0.05);}
+  .mob-avatar{width:44px;height:44px;border-radius:50%;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;font-size:14px;color:#b08030;font-weight:600;flex-shrink:0;}
 
-  /* ── FICHES TECH ── */
-  .mob-etape{
-    background:#111;border-left:3px solid rgba(201,168,76,0.3);
-    border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:8px;
-  }
-  .mob-etape-num{font-size:11px;color:#c9a84c;font-weight:600;letter-spacing:0.1em;margin-bottom:4px;}
-  .mob-etape-titre{font-size:14px;color:#e0d8cc;font-weight:500;margin-bottom:4px;}
-  .mob-etape-desc{font-size:13px;color:#7a7060;line-height:1.5;}
+  .mob-etape{background:#ffffff;border-left:3px solid #c9a84c;border-radius:0 12px 12px 0;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .mob-etape-num{font-size:11px;color:#b08030;font-weight:600;letter-spacing:0.1em;margin-bottom:4px;}
+  .mob-etape-titre{font-size:14px;color:#1a1611;font-weight:500;margin-bottom:4px;}
+  .mob-etape-desc{font-size:13px;color:#7a7268;line-height:1.5;}
 
-  /* ── MASQUER DESKTOP ── */
   .desktop-only{display:none!important;}
 
-  /* ── RECHERCHE ── */
-  .mob-search{
-    background:#111;border:1px solid #1e1e1e;
-    border-radius:12px;padding:11px 14px;
-    display:flex;align-items:center;gap:10px;margin-bottom:12px;
-  }
-  .mob-search input{background:none;border:none;color:#e0d8cc;font-size:15px;font-family:Inter,sans-serif;width:100%;outline:none;}
+  .mob-search{background:#ffffff;border:1px solid #e8e4dc;border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .mob-search input{background:none;border:none;color:#2a2520;font-size:15px;font-family:Inter,sans-serif;width:100%;outline:none;}
 
-  /* ── DETAIL DEVIS ── */
-  .mob-detail-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #1a1a1a;}
+  .mob-detail-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #eceae4;}
   .mob-detail-row:last-child{border-bottom:none;}
-  .mob-detail-label{font-size:12px;color:#5a5040;text-transform:uppercase;letter-spacing:0.08em;}
-  .mob-detail-val{font-size:14px;color:#e0d8cc;font-weight:400;text-align:right;max-width:60%;}
+  .mob-detail-label{font-size:12px;color:#9a9488;text-transform:uppercase;letter-spacing:0.08em;}
+  .mob-detail-val{font-size:14px;color:#2a2520;font-weight:400;text-align:right;max-width:60%;}
 
-  /* ── BOUTONS ACTION ── */
-  .mob-btn-full{
-    width:100%;background:#c9a84c;color:#111;border:none;
-    padding:15px 16px;font-size:14px;font-weight:700;
-    letter-spacing:0.06em;text-transform:uppercase;
-    border-radius:12px;cursor:pointer;margin-bottom:8px;
-    transition:opacity 0.15s;
-  }
-  .mob-btn-full:active{opacity:0.8;transform:scale(0.98);}
-  .mob-btn-outline{
-    width:100%;background:transparent;color:#a09080;
-    border:1px solid #2a2a2a;padding:14px 16px;
-    font-size:14px;border-radius:12px;cursor:pointer;margin-bottom:8px;
-    -webkit-appearance:none;
-  }
-  .mob-btn-outline:active{background:#111;transform:scale(0.98);}
-  .mob-btn-danger{
-    width:100%;background:transparent;color:#e07070;
-    border:1px solid rgba(163,45,45,0.3);padding:14px 16px;
-    font-size:14px;border-radius:12px;cursor:pointer;margin-bottom:8px;
-    -webkit-appearance:none;
-  }
-  .mob-btn-danger:active{background:rgba(163,45,45,0.08);transform:scale(0.98);}
+  .mob-btn-full{width:100%;background:#c9a84c;color:#ffffff;border:none;padding:15px 16px;font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border-radius:12px;cursor:pointer;margin-bottom:10px;transition:opacity 0.15s;-webkit-appearance:none;}
+  .mob-btn-full:active{opacity:0.85;transform:scale(0.98);}
+  .mob-btn-outline{width:100%;background:#ffffff;color:#5a5450;border:1px solid #dddad2;padding:14px 16px;font-size:14px;border-radius:12px;cursor:pointer;margin-bottom:10px;-webkit-appearance:none;}
+  .mob-btn-outline:active{background:#f5f4f0;transform:scale(0.98);}
+  .mob-btn-danger{width:100%;background:#ffffff;color:#b84040;border:1px solid rgba(163,45,45,0.25);padding:14px 16px;font-size:14px;border-radius:12px;cursor:pointer;margin-bottom:10px;-webkit-appearance:none;}
+  .mob-btn-danger:active{background:#fff5f5;transform:scale(0.98);}
   .mob-tab{-webkit-appearance:none;}
-  .mob-fab{-webkit-appearance:none;}
 }
 </style>
 </head>
 <body>
 <div id="app" style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;">
-  <div style="font-size:11px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;">Maison</div>
-  <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:#f0ece4;">Sol Noble</div>
-  <div style="width:28px;height:28px;border:2px solid #1e1e1e;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div>
+  <div style="font-size:11px;letter-spacing:3px;color:#b08030;text-transform:uppercase;">Maison</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:#1a1611;">Sol Noble</div>
+  <div style="width:28px;height:28px;border:2px solid #e0dcd5;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:12px;"></div>
 </div>
 <script>
 const SUPA_URL="https://gwcrschnztnyqvfsjpdd.supabase.co";
@@ -511,11 +405,11 @@ function el(tag,props,...kids){
   return e;
 }
 
-const BP={background:"#c9a84c",color:"#111",border:"none",padding:"0.65rem 1.3rem",fontSize:"13px",fontWeight:"600",letterSpacing:"0.08em",borderRadius:"4px",textTransform:"uppercase",WebkitAppearance:"none"};
-const BS={background:"transparent",color:"#a09080",border:"1px solid #2a2a2a",padding:"0.55rem 1.1rem",fontSize:"12px",borderRadius:"4px",WebkitAppearance:"none"};
+const BP={background:"#c9a84c",color:"#ffffff",border:"none",padding:"0.65rem 1.3rem",fontSize:"13px",fontWeight:"600",letterSpacing:"0.08em",borderRadius:"6px",textTransform:"uppercase",WebkitAppearance:"none",boxShadow:"0 2px 8px rgba(201,168,76,0.3)"};
+const BS={background:"#ffffff",color:"#5a5450",border:"1px solid #dddad2",padding:"0.55rem 1.1rem",fontSize:"12px",borderRadius:"6px",WebkitAppearance:"none",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
 function badge(s){return el("span",{style:{background:SCOL[s]+"22",color:SCOL[s],border:`1px solid ${SCOL[s]}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500",whiteSpace:"nowrap"}},s);}
 function roleBadge(r){const ro=ROLES[r];if(!ro)return el("span",{},"—");return el("span",{style:{background:ro.color+"22",color:ro.color,border:`1px solid ${ro.color}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500"}},ro.label);}
-function lbl(txt){return el("label",{style:{display:"block",fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#6a6050",marginBottom:"6px"}},txt);}
+function lbl(txt){return el("label",{style:{display:"block",fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",marginBottom:"6px"}},txt);}
 function grp(l,input,mb="1rem"){
   const g=el("div",{style:{marginBottom:isMobile()?"14px":mb}});
   if(isMobile())g.className="mob-form-group";
@@ -524,15 +418,15 @@ function grp(l,input,mb="1rem"){
 function hasAccess(a){return ROLES[S.role]?.acces.includes(a);}
 
 function renderLogin(){
-  const wrap=el("div",{style:{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#0d0d0d",padding:"1rem"}});
+  const wrap=el("div",{style:{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#f5f4f0",padding:"1rem"}});
   const box=el("div",{style:{width:"100%",maxWidth:"380px"}});
   // Logo
   const logo=el("div",{style:{textAlign:"center",marginBottom:"2.5rem"}});
   logo.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.25em",color:"#c9a84c",textTransform:"uppercase"}},"Maison"));
-  logo.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",color:"#f0ece4",fontWeight:"300"}},"Sol Noble"));
-  logo.appendChild(el("div",{style:{fontSize:"11px",color:"#3a3020",marginTop:"6px",letterSpacing:"0.15em",textTransform:"uppercase"}},"Espace de gestion"));
-  const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"12px",padding:"2rem"}});
-  card.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#f0ece4",fontWeight:"400",marginBottom:"1.5rem",textAlign:"center"}},"Connexion"));
+  logo.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",color:"#1a1611",fontWeight:"300"}},"Sol Noble"));
+  logo.appendChild(el("div",{style:{fontSize:"11px",color:"#b0a898",marginTop:"6px",letterSpacing:"0.15em",textTransform:"uppercase"}},"Espace de gestion"));
+  const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"12px",padding:"2rem"}});
+  card.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#1a1611",fontWeight:"400",marginBottom:"1.5rem",textAlign:"center"}},"Connexion"));
   const form=el("form",{});
   // Email
   const ie=el("input",{type:"email",placeholder:"votre@email.com",required:"true",value:S.loginEmail||""});
@@ -545,7 +439,7 @@ function renderLogin(){
   const pinInputHidden=el("input",{type:"password",maxlength:"4",style:{position:"absolute",opacity:"0",pointerEvents:"none"}});
   const dots=[];
   for(let i=0;i<4;i++){
-    const dot=el("div",{style:{width:"60px",height:"64px",background:"#0d0d0d",border:"1px solid #2a2a2a",borderRadius:"12px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"24px",color:"#c9a84c",cursor:"pointer",transition:"border-color 0.2s"}});
+    const dot=el("div",{style:{width:"60px",height:"64px",background:"#f5f4f0",border:"1px solid #dddad2",borderRadius:"12px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"24px",color:"#c9a84c",cursor:"pointer",transition:"border-color 0.2s"}});
     dot.addEventListener("click",()=>pinInputHidden.focus());
     dots.push(dot);pinCases.appendChild(dot);
   }
@@ -555,7 +449,7 @@ function renderLogin(){
   function updateDots(){
     dots.forEach((d,i)=>{
       d.textContent=i<pinVal.length?"●":"";
-      d.style.borderColor=i<pinVal.length?"rgba(201,168,76,0.5)":"#2a2a2a";
+      d.style.borderColor=i<pinVal.length?"rgba(201,168,76,0.6)":"#dddad2";
     });
   }
   function addDigit(d){
@@ -566,11 +460,11 @@ function renderLogin(){
   }
   [1,2,3,4,5,6,7,8,9,"",0,"⌫"].forEach(k=>{
     if(k===""){keypad.appendChild(el("div",{}));return;}
-    const btn=el("button",{type:"button",style:{background:"#141414",border:"1px solid #1e1e1e",color:k==="⌫"?"#c9a84c":"#e0d8cc",fontSize:k==="⌫"?"20px":"22px",fontWeight:"500",padding:"16px 10px",borderRadius:"12px",cursor:"pointer",transition:"background 0.1s",minHeight:"56px"}});
+    const btn=el("button",{type:"button",style:{background:"#f8f7f3",border:"1px solid #e8e4dc",color:k==="⌫"?"#b08030":"#2a2520",fontSize:k==="⌫"?"20px":"22px",fontWeight:"500",padding:"16px 10px",borderRadius:"12px",cursor:"pointer",transition:"background 0.1s",minHeight:"56px"}});
     btn.textContent=String(k);
     btn.addEventListener("click",()=>k==="⌫"?delDigit():addDigit(String(k)));
-    btn.addEventListener("mousedown",e=>{e.preventDefault();btn.style.background="#1e1e1e";});
-    btn.addEventListener("mouseup",()=>btn.style.background="#141414");
+    btn.addEventListener("mousedown",e=>{e.preventDefault();btn.style.background="#e8e4dc";});
+    btn.addEventListener("mouseup",()=>btn.style.background="#f8f7f3");
     keypad.appendChild(btn);
   });
   pinWrap.appendChild(pinCases);pinWrap.appendChild(keypad);
@@ -595,10 +489,10 @@ function renderLogin(){
   });
   card.appendChild(form);
   box.appendChild(logo);box.appendChild(card);
-  box.appendChild(el("p",{style:{textAlign:"center",fontSize:"11px",color:"#3a3020",marginTop:"1.5rem"}},"Accès réservé — Maison Sol Noble"));
+  box.appendChild(el("p",{style:{textAlign:"center",fontSize:"11px",color:"#b0a898",marginTop:"1.5rem"}},"Accès réservé — Maison Sol Noble"));
   // Lien reset urgence
   const resetLink=el("p",{style:{textAlign:"center",marginTop:"0.8rem"}});
-  const rl=el("button",{style:{background:"none",border:"none",color:"#3a3020",fontSize:"11px",cursor:"pointer",textDecoration:"underline"}},"Problème de connexion ? Réinitialiser");
+  const rl=el("button",{style:{background:"none",border:"none",color:"#b0a898",fontSize:"11px",cursor:"pointer",textDecoration:"underline"}},"Problème de connexion ? Réinitialiser");
   rl.addEventListener("click",()=>{
     if(confirm("Réinitialiser tous les comptes ? Vos devis seront conservés.")){
       const devis=localStorage.getItem("msn_devis");
@@ -614,16 +508,16 @@ function renderLogin(){
 
 // Écran de setup PIN (premier accès depuis lien)
 function renderSetup(){
-  const wrap=el("div",{style:{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#0d0d0d",padding:"1rem"}});
+  const wrap=el("div",{style:{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#f5f4f0",padding:"1rem"}});
   const box=el("div",{style:{width:"100%",maxWidth:"380px"}});
   const logo=el("div",{style:{textAlign:"center",marginBottom:"2rem"}});
   logo.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.25em",color:"#c9a84c",textTransform:"uppercase"}},"Maison"));
-  logo.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",color:"#f0ece4",fontWeight:"300"}},"Sol Noble"));
-  const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"12px",padding:"2rem"}});
+  logo.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2rem",color:"#1a1611",fontWeight:"300"}},"Sol Noble"));
+  const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"12px",padding:"2rem"}});
   card.appendChild(el("div",{style:{textAlign:"center",marginBottom:"1.5rem"}},[
     el("div",{style:{fontSize:"32px",marginBottom:"8px"}},"🔐"),
-    el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#f0ece4",fontWeight:"400",marginBottom:"6px"}},"Créez votre PIN"),
-    el("p",{style:{fontSize:"13px",color:"#6a6050"}},S.setupEmail?"Compte : "+S.setupEmail:"Choisissez un code PIN à 4 chiffres")
+    el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#1a1611",fontWeight:"400",marginBottom:"6px"}},"Créez votre PIN"),
+    el("p",{style:{fontSize:"13px",color:"#8a8278"}},S.setupEmail?"Compte : "+S.setupEmail:"Choisissez un code PIN à 4 chiffres")
   ]));
   let pin1="",pin2="",etape=1;
   const titre=el("div",{style:{fontSize:"12px",color:"#c9a84c",textAlign:"center",marginBottom:"10px",letterSpacing:"0.1em",textTransform:"uppercase"}},"Choisissez votre PIN");
@@ -632,12 +526,12 @@ function renderSetup(){
   const pinCases=el("div",{style:{display:"flex",gap:"10px",justifyContent:"center",marginBottom:"12px"}});
   const dots=[];
   for(let i=0;i<4;i++){
-    const dot=el("div",{style:{width:"52px",height:"56px",background:"#0d0d0d",border:"1px solid #2a2a2a",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"22px",color:"#c9a84c"}});
+    const dot=el("div",{style:{width:"52px",height:"56px",background:"#f5f4f0",border:"1px solid #dddad2",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"22px",color:"#c9a84c"}});
     dots.push(dot);pinCases.appendChild(dot);
   }
   card.appendChild(pinCases);
   let current="";
-  function updateDots2(){dots.forEach((d,i)=>{d.textContent=i<current.length?"●":"";d.style.borderColor=i<current.length?"rgba(201,168,76,0.5)":"#2a2a2a";});}
+  function updateDots2(){dots.forEach((d,i)=>{d.textContent=i<current.length?"●":"";d.style.borderColor=i<current.length?"rgba(201,168,76,0.6)":"#dddad2";});}
   const msgDiv=el("div",{style:{textAlign:"center",fontSize:"13px",color:"#3B6D11",marginBottom:"10px",minHeight:"20px"}});
   card.appendChild(msgDiv);
   const errDiv=el("div",{style:{textAlign:"center",fontSize:"13px",color:"#e07070",marginBottom:"10px",minHeight:"20px"}});
@@ -683,7 +577,7 @@ function renderSetup(){
   function delDigit2(){if(current.length>0){current=current.slice(0,-1);updateDots2();}}
   [1,2,3,4,5,6,7,8,9,"",0,"⌫"].forEach(k=>{
     if(k===""){keypad.appendChild(el("div",{}));return;}
-    const btn=el("button",{type:"button",style:{background:"#141414",border:"1px solid #1e1e1e",color:k==="⌫"?"#c9a84c":"#e0d8cc",fontSize:k==="⌫"?"18px":"20px",fontWeight:"500",padding:"14px",borderRadius:"6px",cursor:"pointer"}});
+    const btn=el("button",{type:"button",style:{background:"#f8f7f3",border:"1px solid #e8e4dc",color:k==="⌫"?"#b08030":"#2a2520",fontSize:k==="⌫"?"18px":"20px",fontWeight:"500",padding:"14px",borderRadius:"6px",cursor:"pointer"}});
     btn.textContent=String(k);
     btn.addEventListener("click",()=>k==="⌫"?delDigit2():addDigit2(String(k)));
     keypad.appendChild(btn);
@@ -702,54 +596,54 @@ function renderCRM(){
     ...(hasAccess("fiches")?[["🔧","fiches","Fiches tech."]]:[]),
     ...(hasAccess("parametres")?[["⚙️","parametres","Paramètres"]]:[]),
   ];
-  const app=el("div",{style:{minHeight:"100vh",background:"#0d0d0d",display:"flex",overflow:"hidden"}});
-  const sb=el("div",{style:{position:"fixed",top:0,left:0,bottom:0,width:"220px",background:"#090909",borderRight:"1px solid #1a1a1a",display:"flex",flexDirection:"column",zIndex:"100",overflowY:"auto"}});
+  const app=el("div",{style:{minHeight:"100vh",background:"#f5f4f0",display:"flex",overflow:"hidden"}});
+  const sb=el("div",{style:{position:"fixed",top:0,left:0,bottom:0,width:"220px",background:"#ffffff",borderRight:"1px solid #eceae4",display:"flex",flexDirection:"column",zIndex:"100",overflowY:"auto"}});
   const sh=el("div",{style:{padding:"1.5rem 1.5rem 1rem"}});
   sh.appendChild(el("div",{style:{fontSize:"0.6rem",letterSpacing:"0.25em",color:"#c9a84c",textTransform:"uppercase",marginBottom:"1px"}},"Maison"));
-  sh.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#f0ece4",fontWeight:"300",lineHeight:"1.1"}},"Sol Noble"));
-  sh.appendChild(el("div",{style:{fontSize:"9px",color:"#2a2010",marginTop:"6px",letterSpacing:"0.15em",textTransform:"uppercase",background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.15)",borderRadius:"3px",padding:"2px 8px",display:"inline-block"}},"Espace de gestion"));
+  sh.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#1a1611",fontWeight:"300",lineHeight:"1.1"}},"Sol Noble"));
+  sh.appendChild(el("div",{style:{fontSize:"9px",color:"#9a8858",marginTop:"6px",letterSpacing:"0.15em",textTransform:"uppercase",background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.15)",borderRadius:"3px",padding:"2px 8px",display:"inline-block"}},"Espace de gestion"));
   sb.appendChild(sh);
   const nav=el("nav",{style:{flex:"1",padding:"0.5rem 0"}});
   navItems.forEach(([icon,id,label])=>{
     const active=S.onglet===id;
-    const btn=el("button",{style:{width:"100%",display:"flex",alignItems:"center",gap:"12px",padding:"0.65rem 1.5rem",background:active?"rgba(201,168,76,0.1)":"transparent",border:"none",borderLeft:`2px solid ${active?"#c9a84c":"transparent"}`,color:active?"#c9a84c":"#5a5040",fontSize:"13px",fontWeight:active?"500":"300",textAlign:"left",transition:"all 0.15s",borderRadius:"0 6px 6px 0",marginRight:"8px"}},el("span",{style:{fontSize:"15px",opacity:active?"1":"0.6"}},icon),label);
-    btn.addEventListener("mouseenter",()=>{if(!active)btn.style.background="rgba(201,168,76,0.05)";btn.style.color=active?"#c9a84c":"#9a9080";});
-    btn.addEventListener("mouseleave",()=>{if(!active)btn.style.background="transparent";btn.style.color=active?"#c9a84c":"#5a5040";});
+    const btn=el("button",{style:{width:"100%",display:"flex",alignItems:"center",gap:"12px",padding:"0.65rem 1.5rem",background:active?"rgba(201,168,76,0.1)":"transparent",border:"none",borderLeft:`2px solid ${active?"#c9a84c":"transparent"}`,color:active?"#b08030":"#8a8278",fontSize:"13px",fontWeight:active?"500":"300",textAlign:"left",transition:"all 0.15s",borderRadius:"0 6px 6px 0",marginRight:"8px"}},el("span",{style:{fontSize:"15px",opacity:active?"1":"0.6"}},icon),label);
+    btn.addEventListener("mouseenter",()=>{if(!active)btn.style.background="rgba(201,168,76,0.06)";btn.style.color=active?"#c9a84c":"#4a4440";});
+    btn.addEventListener("mouseleave",()=>{if(!active)btn.style.background="transparent";btn.style.color=active?"#c9a84c":"#8a8278";});
     btn.addEventListener("click",()=>set({onglet:id}));nav.appendChild(btn);
   });
   sb.appendChild(nav);
-  const sf=el("div",{style:{padding:"1rem 1.5rem",borderTop:"1px solid #1a1a1a",background:"#060606"}});
+  const sf=el("div",{style:{padding:"1rem 1.5rem",borderTop:"1px solid #eceae4",background:"#f5f4f0"}});
   const userRow=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}});
   const avatar=el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(S.session?.nom||"?").split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase());
   const userInfo=el("div",{});
-  userInfo.appendChild(el("div",{style:{fontSize:"12px",color:"#e0d8cc",fontWeight:"500",lineHeight:"1.2"}},S.session?.nom||S.session?.email||""));
+  userInfo.appendChild(el("div",{style:{fontSize:"12px",color:"#2a2520",fontWeight:"500",lineHeight:"1.2"}},S.session?.nom||S.session?.email||""));
   userInfo.appendChild(roleBadge(S.role));
   userRow.appendChild(avatar);userRow.appendChild(userInfo);
   sf.appendChild(userRow);
-  const bo=el("button",{style:{background:"none",border:"1px solid #1e1e1e",borderRadius:"4px",color:"#5a5040",fontSize:"11px",padding:"5px 10px",display:"flex",alignItems:"center",gap:"5px",cursor:"pointer",width:"100%",justifyContent:"center",transition:"all 0.15s"}});
+  const bo=el("button",{style:{background:"none",border:"1px solid #e8e4dc",borderRadius:"4px",color:"#8a8278",fontSize:"11px",padding:"5px 10px",display:"flex",alignItems:"center",gap:"5px",cursor:"pointer",width:"100%",justifyContent:"center",transition:"all 0.15s"}});
   bo.textContent="⏻ Déconnexion";
-  bo.addEventListener("mouseenter",()=>{bo.style.borderColor="#2a2a2a";bo.style.color="#8a8070";});
-  bo.addEventListener("mouseleave",()=>{bo.style.borderColor="#1e1e1e";bo.style.color="#5a5040";});
+  bo.addEventListener("mouseenter",()=>{bo.style.borderColor="#c9a84c";bo.style.color="#b08030";});
+  bo.addEventListener("mouseleave",()=>{bo.style.borderColor="#dddad2";bo.style.color="#8a8278";});
   bo.addEventListener("click",()=>{logoutLocal();set({page:"login",session:null,loginEmail:"",loginPin:"",loginError:""});});
   sf.appendChild(bo);sb.appendChild(sf);if(!isMobile())app.appendChild(sb);
   const main=el("div",{style:{marginLeft:isMobile()?"0":"220px",flex:"1",minHeight:"100vh",maxWidth:isMobile()?"100vw":"calc(100vw - 220px)",overflowX:"hidden"}});
   const titles={devis:"Devis",planning:"Planning",clients:"Clients",employes:"Équipe",fiches:"Fiches tech.",parametres:"Paramètres"};
-  const hdr=el("div",{style:{background:"rgba(10,10,10,0.95)",backdropFilter:"blur(10px)",borderBottom:"1px solid #1a1a1a",padding:"0.85rem 2rem",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:"0",zIndex:"50"},className:"desktop-only"});
+  const hdr=el("div",{style:{background:"rgba(255,255,255,0.97)",backdropFilter:"blur(10px)",borderBottom:"1px solid #eceae4",padding:"0.85rem 2rem",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:"0",zIndex:"50"},className:"desktop-only"});
   const hdrLeft=el("div",{style:{display:"flex",alignItems:"center",gap:"12px"}});
-  hdrLeft.appendChild(el("h1",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#f0ece4",fontWeight:"400",letterSpacing:"0.02em"}},titles[S.onglet]||"CRM"));
+  hdrLeft.appendChild(el("h1",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#1a1611",fontWeight:"400",letterSpacing:"0.02em"}},titles[S.onglet]||"CRM"));
   hdr.appendChild(hdrLeft);
   const hr=el("div",{style:{display:"flex",gap:"0.5rem",alignItems:"center"}});
-  hr.appendChild(el("span",{style:{fontSize:"11px",color:"#4a4030"}},new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})));
+  hr.appendChild(el("span",{style:{fontSize:"11px",color:"#9a9488"}},new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})));
   if(hasAccess("devis")){const bn=el("button",{style:{...BP,padding:"0.5rem 1rem",fontSize:"12px"}},"+  Devis rapide");bn.addEventListener("click",()=>set({onglet:"devis",modal:"nouveau"}));hr.appendChild(bn);}
   hdr.appendChild(hr);main.appendChild(hdr);
   // Header mobile
   const mobHdr=el("div",{className:"mob-header"});
   const mobLeft=el("div",{style:{display:"flex",flexDirection:"column",gap:"1px"}});
   mobLeft.appendChild(el("div",{style:{fontSize:"8px",letterSpacing:"0.22em",color:"#c9a84c",textTransform:"uppercase",lineHeight:"1"}},"Maison Sol Noble"));
-  mobLeft.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"17px",color:"#f0ece4",fontWeight:"300",lineHeight:"1.2"}},titles[S.onglet]||"CRM"));
+  mobLeft.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"17px",color:"#1a1611",fontWeight:"300",lineHeight:"1.2"}},titles[S.onglet]||"CRM"));
   mobHdr.appendChild(mobLeft);
   const mobRight=el("div",{style:{display:"flex",gap:"4px",alignItems:"center"}});
-  const mobLogout=el("button",{style:{background:"transparent",border:"none",color:"#3a3020",fontSize:"22px",padding:"6px 10px",cursor:"pointer",lineHeight:"1",borderRadius:"8px",WebkitAppearance:"none"}});
+  const mobLogout=el("button",{style:{background:"transparent",border:"none",color:"#b0a898",fontSize:"22px",padding:"6px 10px",cursor:"pointer",lineHeight:"1",borderRadius:"8px",WebkitAppearance:"none"}});
   mobLogout.textContent="⏻";
   mobLogout.addEventListener("touchstart",()=>mobLogout.style.color="#c9a84c",{passive:true});
   mobLogout.addEventListener("touchend",()=>mobLogout.style.color="#3a3020",{passive:true});
@@ -798,8 +692,8 @@ function renderDevis(){
   const kpis=el("div",{className:isMobile()?"mob-kpi-grid":"",style:isMobile()?{}:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"1rem",marginBottom:"1.5rem"}});
   const leads=dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length;
   [{l:"Leads site",v:leads,alert:leads>0},{l:"Total devis",v:dvs.length},{l:"Gagnés",v:dvs.filter(d=>d.statut==="Gagné").length},{l:"CA HT",v:ca.toFixed(0)+" €"}].forEach((k,i)=>{
-    const c=el("div",{className:isMobile()?"mob-kpi":"",style:isMobile()?{}:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1rem 1.2rem"}});
-    c.appendChild(el("div",{className:isMobile()?"mob-kpi-label":"",style:isMobile()?{}:{fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",marginBottom:"6px"}},k.l));
+    const c=el("div",{className:isMobile()?"mob-kpi":"",style:isMobile()?{}:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",padding:"1rem 1.2rem",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}});
+    c.appendChild(el("div",{className:isMobile()?"mob-kpi-label":"",style:isMobile()?{}:{fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",marginBottom:"6px"}},k.l));
     const alertColor=k.alert?"#E24B4A":(i===3?"#c9a84c":"#f0ece4");
     c.appendChild(el("div",{className:isMobile()?"mob-kpi-val"+(i===3?" gold":""):"",style:isMobile()?{}:{fontFamily:"'Cormorant Garamond',serif",fontSize:"24px",color:alertColor,fontWeight:"400"}},String(k.v)));
     kpis.appendChild(c);
@@ -820,13 +714,13 @@ function renderDevis(){
   }else{
     // Barre recherche mobile
     const sb=el("div",{className:"mob-search"});
-    sb.appendChild(el("span",{style:{color:"#5a5040",fontSize:"16px"}},"🔍"));
+    sb.appendChild(el("span",{style:{color:"#8a8278",fontSize:"16px"}},"🔍"));
     const si=el("input",{placeholder:"Rechercher un client...",value:S.search,style:{fontSize:"16px"}});
     si.addEventListener("input",e=>{S.search=e.target.value;render();});
     sb.appendChild(si);
     wrap.appendChild(sb);
     // Filtre statut mobile
-    const sf=el("select",{style:{width:"100%",fontSize:"16px",marginBottom:"1rem",padding:"0.7rem 1rem",background:"#111",border:"1px solid #1e1e1e",color:"#e0d8cc",borderRadius:"10px"}});
+    const sf=el("select",{style:{width:"100%",fontSize:"16px",marginBottom:"1rem",padding:"0.7rem 1rem",background:"#ffffff",border:"1px solid #e8e4dc",color:"#2a2520",borderRadius:"10px"}});
     ["Tous les statuts",...STATUTS].forEach((s,i)=>{const o=el("option",{value:i===0?"Tous":s},s);if((i===0&&S.filterStatut==="Tous")||s===S.filterStatut)o.selected=true;sf.appendChild(o);});
     sf.addEventListener("change",e=>{S.filterStatut=e.target.value;render();});
     wrap.appendChild(sf);
@@ -836,7 +730,7 @@ function renderDevis(){
   if(isMobile()){
     // ── MOBILE: Cards layout ──
     if(!filtered.length){
-      const empty=el("div",{style:{textAlign:"center",color:"#4a4030",fontSize:"14px",padding:"3rem 1rem"}});
+      const empty=el("div",{style:{textAlign:"center",color:"#9a9488",fontSize:"14px",padding:"3rem 1rem"}});
       empty.textContent='Aucun devis — appuie sur + pour créer';
       wrap.appendChild(empty);
     }
@@ -864,24 +758,24 @@ function renderDevis(){
     return wrap;
   }
   // ── DESKTOP: Table layout ──
-  const tbl=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",overflow:"hidden",overflowX:"auto"}});
+  const tbl=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",overflow:"hidden",overflowX:"auto",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}});
   const t=el("table",{});
-  const trh=el("tr",{style:{borderBottom:"1px solid #1e1e1e"}});
-  ["N°","Client","Ville","Sol","Montant HT","Statut","Actions"].forEach(h=>trh.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",fontWeight:"500"}},h)));
+  const trh=el("tr",{style:{borderBottom:"1px solid #e8e4dc"}});
+  ["N°","Client","Ville","Sol","Montant HT","Statut","Actions"].forEach(h=>trh.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",fontWeight:"500"}},h)));
   t.appendChild(el("thead",{},[trh]));
   const tbody=el("tbody",{});
-  if(!filtered.length){const tr=el("tr",{});tr.appendChild(el("td",{colSpan:"7",style:{padding:"2rem",textAlign:"center",color:"#4a4030",fontSize:"13px"}},'Aucun devis — clique sur "+ Nouveau devis"'));tbody.appendChild(tr);}
+  if(!filtered.length){const tr=el("tr",{});tr.appendChild(el("td",{colSpan:"7",style:{padding:"2rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},'Aucun devis — clique sur "+ Nouveau devis"'));tbody.appendChild(tr);}
   filtered.forEach(d=>{
-    const tr=el("tr",{style:{borderBottom:"1px solid #1a1a1a"}});
-    tr.addEventListener("mouseenter",()=>tr.style.background="#161616");tr.addEventListener("mouseleave",()=>tr.style.background="");
+    const tr=el("tr",{style:{borderBottom:"1px solid #eceae4"}});
+    tr.addEventListener("mouseenter",()=>tr.style.background="#f5f4f0");tr.addEventListener("mouseleave",()=>tr.style.background="");
     const numCell=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#c9a84c",fontWeight:"600"}});
     numCell.appendChild(document.createTextNode(d.numero||"—"));
     if(isLead(d)){const lb=el("span",{style:{marginLeft:"6px",background:"rgba(226,75,74,0.15)",color:"#E24B4A",border:"1px solid rgba(226,75,74,0.3)",padding:"1px 6px",borderRadius:"10px",fontSize:"10px",fontWeight:"600"}},"LEAD");numCell.appendChild(lb);}
     tr.appendChild(numCell);
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#e0d8cc",fontWeight:"500"}},d.client_nom));
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#7a7060"}},d.ville||"—"));
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#7a7060"}},TARIFS[d.type_sol]?.label||d.type_sol));
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#f0ece4",fontWeight:"600"}},((d.montant_ht||0).toFixed(0))+" €"));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#2a2520",fontWeight:"500"}},d.client_nom));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}},d.ville||"—"));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}},TARIFS[d.type_sol]?.label||d.type_sol));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#1a1611",fontWeight:"600"}},((d.montant_ht||0).toFixed(0))+" €"));
     const tds=el("td",{style:{padding:"0.8rem 1rem"}});tds.appendChild(badge(d.statut));tr.appendChild(tds);
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
@@ -903,7 +797,7 @@ function renderModal(){
     const titles={nouveau:"Nouveau devis",detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte"};
     const hdr=el("div",{className:"mob-sheet-header"});
     hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
-    const bx=el("button",{style:{background:"rgba(255,255,255,0.06)",border:"none",color:"#888",fontSize:"20px",lineHeight:"1",padding:"6px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
+    const bx=el("button",{style:{background:"rgba(0,0,0,0.06)",border:"none",color:"#9a9488",fontSize:"22px",lineHeight:"1",padding:"4px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
     bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);
     sheet.appendChild(hdr);
     const body=el("div",{className:"mob-sheet-body"});
@@ -913,12 +807,12 @@ function renderModal(){
     sheet.appendChild(body);ov.appendChild(sheet);return ov;
   }
   // ── MODAL DESKTOP ──
-  const ov=el("div",{style:{position:"fixed",inset:"0",background:"rgba(0,0,0,0.75)",zIndex:"1000",display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",overflowY:"auto"}});
+  const ov=el("div",{style:{position:"fixed",inset:"0",background:"rgba(0,0,0,0.32)",zIndex:"1000",display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",overflowY:"auto"}});
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
-  const box=el("div",{style:{background:"#141414",border:"1px solid #2a2a2a",borderRadius:"8px",width:"100%",maxWidth:"640px"}});
-  const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #1e1e1e"}});
+  const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px"}});
+  const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
   const titles={nouveau:"Nouveau devis",detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte employé"};
-  hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#f0ece4",fontWeight:"400"}},titles[S.modal]||""));
+  hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
   const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
   if(S.modal==="nouveau")body.appendChild(renderFormDevis());
@@ -951,16 +845,16 @@ function renderFormDevis(){
   }
   form.appendChild(row(grp("Nom client *",inp("client_nom","Jean Dupont"),0),grp("Téléphone",inp("client_tel","06 12 34 56 78"),0)));
   form.appendChild(row(grp("Email",inp("client_email","client@email.com"),0),grp("Ville",inp("ville","Paris"),0)));
-  form.appendChild(el("div",{style:{height:"1px",background:"#1e1e1e",margin:"0.5rem 0 1rem"}}));
+  form.appendChild(el("div",{style:{height:"1px",background:"#e8e4dc",margin:"0.5rem 0 1rem"}}));
   form.appendChild(row(grp("Type de sol *",sel("type_sol",Object.entries(TARIFS).map(([k,v])=>[k,v.label])),0),grp("État du sol",sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]]),0)));
   form.appendChild(row(grp("Travaux *",sel("travaux",tarif.trav.map((t,i)=>[t,`${t} — ${tarif.prix[i]} €/m²`])),0),grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
   const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
   form.appendChild(grp("Notes",ta));
   if(f.surface>0){
-    const rc=el("div",{style:{background:"#0a0a0a",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"1rem",marginBottom:"1.2rem"}});
-    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#7a7060",fontSize:"13px"}},`${f.surface} m² × ${f.prix_m2} €/m² × coeff. ${COEFF[f.etat]}`)]));
-    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#a09080",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#f0ece4",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
-    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}},[el("span",{style:{color:"#a09080",fontSize:"13px"}},"TTC (TVA 20%)"),el("span",{style:{color:"#c9a84c",fontSize:"17px",fontWeight:"700"}},(ht*1.2).toFixed(2)+" €")]));
+    const rc=el("div",{style:{background:"#f0eeea",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"1rem",marginBottom:"1.2rem"}});
+    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},`${f.surface} m² × ${f.prix_m2} €/m² × coeff. ${COEFF[f.etat]}`)]));
+    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#1a1611",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
+    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"TTC (TVA 20%)"),el("span",{style:{color:"#c9a84c",fontSize:"17px",fontWeight:"700"}},(ht*1.2).toFixed(2)+" €")]));
     form.appendChild(rc);
   }
   const btns=el("div",{style:{display:"flex",gap:"0.8rem",justifyContent:isMobile()?"stretch":"flex-end",flexDirection:isMobile()?"column":"row",marginTop:"8px"}});
@@ -991,8 +885,8 @@ function renderDetailDevis(d){
     wrap.appendChild(row);
   });
   // Montant TTC
-  const ttc=el("div",{style:{background:"#0a0a0a",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"10px",padding:"1rem",display:"flex",justifyContent:"space-between",alignItems:"center",margin:"1rem 0"}});
-  ttc.appendChild(el("span",{style:{color:"#a09080",fontSize:"13px"}},"Montant TTC"));
+  const ttc=el("div",{style:{background:"#f0eeea",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"10px",padding:"1rem",display:"flex",justifyContent:"space-between",alignItems:"center",margin:"1rem 0"}});
+  ttc.appendChild(el("span",{style:{color:"#706a62",fontSize:"13px"}},"Montant TTC"));
   ttc.appendChild(el("span",{style:{color:"#c9a84c",fontSize:"24px",fontFamily:"'Cormorant Garamond',serif"}},((d.montant_ht||0)*1.2).toFixed(2)+" €"));
   wrap.appendChild(ttc);
   // Statut
@@ -1022,9 +916,9 @@ function renderPlanning(){
   const today=new Date(),jours=["Lun","Mar","Mer","Jeu","Ven","Sam"];
   const debut=new Date(today);debut.setDate(today.getDate()-today.getDay()+1+S.semaine*7);
   const nav=el("div",{style:{display:"flex",gap:isMobile()?"6px":"0.8rem",marginBottom:"1.5rem",alignItems:"center",flexWrap:isMobile()?"nowrap":"wrap"}});
-  const bpStyle=isMobile()?{background:"#111",border:"1px solid #1e1e1e",color:"#a09080",padding:"10px 14px",fontSize:"16px",borderRadius:"10px",WebkitAppearance:"none",minWidth:"44px",display:"flex",alignItems:"center",justifyContent:"center"}:BS;
+  const bpStyle=isMobile()?{background:"#ffffff",border:"1px solid #e8e4dc",color:"#706a62",padding:"10px 14px",fontSize:"16px",borderRadius:"10px",WebkitAppearance:"none",minWidth:"44px",display:"flex",alignItems:"center",justifyContent:"center"}:BS;
   const bp=el("button",{style:bpStyle},isMobile()?"‹":"← Précédente");bp.addEventListener("click",()=>set({semaine:S.semaine-1}));nav.appendChild(bp);
-  nav.appendChild(el("span",{style:{color:"#e0d8cc",fontSize:isMobile()?"13px":"14px",fontWeight:"500",flex:isMobile()?"1":"",textAlign:isMobile()?"center":"left",padding:isMobile()?"0 4px":"0"}},`Semaine du ${debut.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`));
+  nav.appendChild(el("span",{style:{color:"#2a2520",fontSize:isMobile()?"13px":"14px",fontWeight:"500",flex:isMobile()?"1":"",textAlign:isMobile()?"center":"left",padding:isMobile()?"0 4px":"0"}},`Semaine du ${debut.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`));
   const bn=el("button",{style:bpStyle},isMobile()?"›":"Suivante →");bn.addEventListener("click",()=>set({semaine:S.semaine+1}));nav.appendChild(bn);
   if(!isMobile()){const bt=el("button",{style:{...BS,marginLeft:"auto"}},"Aujourd'hui");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);}
   else{const bt=el("button",{style:{...bpStyle,fontSize:"11px",padding:"10px 10px",color:"#c9a84c",borderColor:"rgba(201,168,76,0.25)"}},"Auj.");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);}
@@ -1034,19 +928,19 @@ function renderPlanning(){
   jours.forEach((jour,i)=>{
     const date=new Date(debut);date.setDate(debut.getDate()+i);
     const isToday=date.toDateString()===today.toDateString();
-    const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":"#111",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#1e1e1e"}`,borderRadius:"10px",padding:isMobile()?"8px 10px":"0.8rem",minHeight:isMobile()?"70px":"120px"}});
-    cell.appendChild(el("div",{style:{fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:isToday?"#c9a84c":"#5a5040",marginBottom:"4px"}},jour));
-    cell.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"16px",color:isToday?"#c9a84c":"#7a7060",marginBottom:"8px"}},String(date.getDate())));
+    const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"10px",padding:isMobile()?"8px 10px":"0.8rem",minHeight:isMobile()?"70px":"120px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}});
+    cell.appendChild(el("div",{style:{fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:isToday?"#b08030":"#9a9488",marginBottom:"4px"}},jour));
+    cell.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"16px",color:isToday?"#b08030":"#c0b8ae",marginBottom:"8px"}},String(date.getDate())));
     if(chantiers[i]){cell.appendChild(el("div",{style:{background:"rgba(59,139,212,0.15)",border:"1px solid rgba(59,139,212,0.3)",borderRadius:"4px",padding:"4px 6px",fontSize:"11px",color:"#3B8BD4"}},chantiers[i].client_nom));}
     grid.appendChild(cell);
   });
   wrap.appendChild(grid);
-  wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"18px",fontWeight:"400",marginBottom:"1rem"}},"Chantiers à planifier"));
-  if(!chantiers.length)wrap.appendChild(el("p",{style:{color:"#4a4030",fontSize:"13px"}},"Aucun chantier."));
+  wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"18px",fontWeight:"400",marginBottom:"1rem"}},"Chantiers à planifier"));
+  if(!chantiers.length)wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucun chantier."));
   chantiers.forEach(d=>{
-    const row=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"0.9rem 1.2rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"0.5rem",marginBottom:"8px"}});
-    row.appendChild(el("div",{},[el("span",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"14px"}},d.client_nom),el("span",{style:{color:"#5a5040",fontSize:"12px",marginLeft:"10px"}},d.ville||"")]));
-    row.appendChild(el("div",{style:{fontSize:"12px",color:"#7a7060"}},`${TARIFS[d.type_sol]?.label} · ${d.surface} m²`));
+    const row=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"0.9rem 1.2rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"0.5rem",marginBottom:"8px"}});
+    row.appendChild(el("div",{},[el("span",{style:{color:"#2a2520",fontWeight:"500",fontSize:"14px"}},d.client_nom),el("span",{style:{color:"#8a8278",fontSize:"12px",marginLeft:"10px"}},d.ville||"")]));
+    row.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278"}},`${TARIFS[d.type_sol]?.label} · ${d.surface} m²`));
     row.appendChild(el("div",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},((d.montant_ht||0)*1.2).toFixed(0)+" € TTC"));
     row.appendChild(badge(d.statut));wrap.appendChild(row);
   });
@@ -1058,17 +952,17 @@ function renderClients(){
   S.devis.forEach(d=>{if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0};map[d.client_nom].nb++;if(d.statut==="Gagné")map[d.client_nom].ca+=d.montant_ht||0;});
   const clients=Object.values(map);
   const grid=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"1fr":"repeat(3,1fr)",gap:isMobile()?"8px":"1rem"}});
-  if(!clients.length)grid.appendChild(el("p",{style:{color:"#4a4030",fontSize:"13px",gridColumn:"1/-1"}},"Aucun client."));
+  if(!clients.length)grid.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px",gridColumn:"1/-1"}},"Aucun client."));
   clients.forEach(c=>{
-    const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:isMobile()?"14px":"8px",padding:isMobile()?"14px 16px":"1.2rem"}});
+    const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:isMobile()?"14px":"8px",padding:isMobile()?"14px 16px":"1.2rem"}});
     const top=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"0.8rem"}});
     top.appendChild(el("div",{style:{width:"38px",height:"38px",borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},c.nom.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()));
-    top.appendChild(el("div",{},[el("div",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"14px"}},c.nom),el("div",{style:{color:"#5a5040",fontSize:"11px"}},c.ville||"")]));
+    top.appendChild(el("div",{},[el("div",{style:{color:"#2a2520",fontWeight:"500",fontSize:"14px"}},c.nom),el("div",{style:{color:"#8a8278",fontSize:"11px"}},c.ville||"")]));
     card.appendChild(top);
-    card.appendChild(el("div",{style:{fontSize:"12px",color:"#6a6050",marginBottom:"4px"}},c.tel||"—"));
-    card.appendChild(el("div",{style:{fontSize:"12px",color:"#6a6050",marginBottom:"0.8rem"}},c.email||"—"));
-    const bot=el("div",{style:{display:"flex",justifyContent:"space-between",padding:"0.6rem 0",borderTop:"1px solid #1a1a1a"}});
-    bot.appendChild(el("span",{style:{fontSize:"11px",color:"#5a5040"}},c.nb+" devis"));
+    card.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278",marginBottom:"4px"}},c.tel||"—"));
+    card.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278",marginBottom:"0.8rem"}},c.email||"—"));
+    const bot=el("div",{style:{display:"flex",justifyContent:"space-between",padding:"0.6rem 0",borderTop:"1px solid #eceae4"}});
+    bot.appendChild(el("span",{style:{fontSize:"11px",color:"#8a8278"}},c.nb+" devis"));
     bot.appendChild(el("span",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},c.ca.toFixed(0)+" € CA"));
     card.appendChild(bot);
     const bnd=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Nouveau devis");
@@ -1083,7 +977,7 @@ function renderEmployes(){
   
   // Header avec bouton créer
   const bar=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.5rem",flexWrap:"wrap",gap:"0.8rem"}});
-  bar.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"20px",fontWeight:"400"}},"Gestion de l'équipe"));
+  bar.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"20px",fontWeight:"400"}},"Gestion de l'équipe"));
   const bn=el("button",{style:BP},"+ Nouveau compte");
   bn.addEventListener("click",()=>set({modal:"employe_new"}));
   bar.appendChild(bn);
@@ -1091,27 +985,27 @@ function renderEmployes(){
 
   // Tableau des comptes
   const profiles=getComptes();
-  const tbl=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",overflow:"hidden",marginBottom:"2rem"}});
+  const tbl=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",overflow:"hidden",marginBottom:"2rem",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}});
   const t=el("table",{});
-  const th=el("tr",{style:{borderBottom:"1px solid #1e1e1e"}});
-  ["Nom","Email","Rôle","Statut","Actions"].forEach(h=>th.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a5040",fontWeight:"500"}},h)));
+  const th=el("tr",{style:{borderBottom:"1px solid #e8e4dc"}});
+  ["Nom","Email","Rôle","Statut","Actions"].forEach(h=>th.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",fontWeight:"500"}},h)));
   t.appendChild(el("thead",{},[th]));
   const tbody=el("tbody",{});
   
   if(!profiles.length){
     const tr=el("tr",{});
-    tr.appendChild(el("td",{colSpan:"5",style:{padding:"2rem",textAlign:"center",color:"#4a4030",fontSize:"13px"}},"Aucun compte — clique sur + Nouveau compte pour créer le premier."));
+    tr.appendChild(el("td",{colSpan:"5",style:{padding:"2rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},"Aucun compte — clique sur + Nouveau compte pour créer le premier."));
     tbody.appendChild(tr);
   }
   
   profiles.forEach(p=>{
     const isMe=p.email?.toLowerCase()===S.session?.email?.toLowerCase();
-    const tr=el("tr",{style:{borderBottom:"1px solid #1a1a1a"}});
-    tr.addEventListener("mouseenter",()=>tr.style.background="#161616");
+    const tr=el("tr",{style:{borderBottom:"1px solid #eceae4"}});
+    tr.addEventListener("mouseenter",()=>tr.style.background="#f5f4f0");
     tr.addEventListener("mouseleave",()=>tr.style.background="");
     
     // Nom
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#e0d8cc",fontWeight:"500",fontSize:"13px"}},
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#2a2520",fontWeight:"500",fontSize:"13px"}},
       el("div",{style:{display:"flex",alignItems:"center",gap:"8px"}},[
         el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"12px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(p.nom||p.email||"?").slice(0,2).toUpperCase()),
         el("span",{},p.nom||"—")
@@ -1119,12 +1013,12 @@ function renderEmployes(){
     ));
     
     // Email
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#7a7060",fontSize:"12px"}},p.email||"—"));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",color:"#8a8278",fontSize:"12px"}},p.email||"—"));
     
     // Rôle — dropdown si directeur et pas soi-même
     const tdR=el("td",{style:{padding:"0.8rem 1rem"}});
     if(!isMe){
-      const rs=el("select",{style:{background:"#0d0d0d",border:"1px solid #2a2a2a",color:"#e0d8cc",padding:"4px 8px",fontSize:"12px",borderRadius:"4px",cursor:"pointer"}});
+      const rs=el("select",{style:{background:"#f5f4f0",border:"1px solid #dddad2",color:"#2a2520",padding:"4px 8px",fontSize:"12px",borderRadius:"4px",cursor:"pointer"}});
       Object.entries(ROLES).forEach(([k,r])=>{const o=el("option",{value:k},r.label);if(k===p.role)o.selected=true;rs.appendChild(o);});
       rs.addEventListener("change",e=>{
         updateCompte(p.id,{role:e.target.value});
@@ -1175,7 +1069,7 @@ function renderEmployes(){
       });
       acts.appendChild(bDel);
     }else{
-      acts.appendChild(el("span",{style:{color:"#4a4030",fontSize:"12px",padding:"3px 8px"}},"Vous"));
+      acts.appendChild(el("span",{style:{color:"#9a9488",fontSize:"12px",padding:"3px 8px"}},"Vous"));
     }
     
     tdA.appendChild(acts);tr.appendChild(tdA);tbody.appendChild(tr);
@@ -1188,12 +1082,12 @@ function renderEmployes(){
   legend.appendChild(el("h4",{style:{color:"#c9a84c",fontSize:"12px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem",fontWeight:"500"}},"Accès par rôle"));
   const rolesGrid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px"}});
   Object.entries(ROLES).forEach(([key,r])=>{
-    const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"0.9rem"}});
+    const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"0.9rem"}});
     const top=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"0.5rem"}});
     top.appendChild(el("div",{style:{width:"8px",height:"8px",borderRadius:"50%",background:r.color}}));
-    top.appendChild(el("div",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"13px"}},r.label));
+    top.appendChild(el("div",{style:{color:"#2a2520",fontWeight:"500",fontSize:"13px"}},r.label));
     card.appendChild(top);
-    r.acces.forEach(a=>card.appendChild(el("div",{style:{fontSize:"11px",color:"#5a5040",padding:"1px 0"}},"✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a])));
+    r.acces.forEach(a=>card.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278",padding:"1px 0"}},"✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a])));
     rolesGrid.appendChild(card);
   });
   legend.appendChild(rolesGrid);
@@ -1204,7 +1098,7 @@ function renderEmployes(){
 function renderFormEmploye(){
   let nomVal="",emailVal="",roleVal="employe";
   const wrap=el("div",{});
-  wrap.appendChild(el("p",{style:{color:"#8a8070",fontSize:"13px",marginBottom:"1.5rem"}},"Remplis les infos et clique Générer le lien. Un lien de connexion direct est créé — tu l'envoies par SMS ou WhatsApp à l'employé. Il clique et accède directement au CRM."));
+  wrap.appendChild(el("p",{style:{color:"#706a62",fontSize:"13px",marginBottom:"1.5rem"}},"Remplis les infos et clique Générer le lien. Un lien de connexion direct est créé — tu l'envoies par SMS ou WhatsApp à l'employé. Il clique et accède directement au CRM."));
   const form=el("form",{});
   
   function inp2(placeholder,type="text",onInput){const i=el("input",{type,placeholder});i.addEventListener("input",e=>onInput(e.target.value));return i;}
@@ -1221,9 +1115,9 @@ function renderFormEmploye(){
   rg.appendChild(rs);form.appendChild(rg);
   
   // Affichage accès
-  const accBox=el("div",{style:{background:"#0a0a0a",border:"1px solid #2a2a2a",borderRadius:"6px",padding:"0.8rem 1rem",marginBottom:"1.5rem"}});
-  accBox.appendChild(el("div",{style:{fontSize:"11px",color:"#5a5040",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"6px"}},"Accès de ce rôle"));
-  const accDiv=el("div",{style:{fontSize:"12px",color:"#7a7060"}});
+  const accBox=el("div",{style:{background:"#f0eeea",border:"1px solid #dddad2",borderRadius:"6px",padding:"0.8rem 1rem",marginBottom:"1.5rem"}});
+  accBox.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"6px"}},"Accès de ce rôle"));
+  const accDiv=el("div",{style:{fontSize:"12px",color:"#8a8278"}});
   function updateAcces(){
     accDiv.innerHTML="";
     ROLES[roleVal||"employe"].acces.forEach(a=>{
@@ -1267,7 +1161,7 @@ function renderFormEmploye(){
       desc.textContent="Envoie ce lien par SMS ou WhatsApp. Il cliquera dessus et choisira son PIN :";
       msgDiv.appendChild(desc);
       const lienBox=document.createElement("div");
-      lienBox.style.cssText="background:#0a0a0a;border:1px solid rgba(59,109,17,0.4);border-radius:4px;padding:10px 12px;font-size:11px;color:#c9a84c;word-break:break-all;cursor:pointer;line-height:1.5;";
+      lienBox.style.cssText="background:#f0eeea;border:1px solid rgba(59,109,17,0.3);border-radius:6px;padding:10px 12px;font-size:11px;color:#6a8a40;word-break:break-all;cursor:pointer;line-height:1.5;";
       lienBox.textContent=lien;
       lienBox.title="Cliquer pour copier";
       lienBox.addEventListener("click",()=>{
@@ -1302,16 +1196,16 @@ function renderFormEmploye(){
 
 function renderFiches(){
   const wrap=el("div",{});
-  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #1e1e1e",marginBottom:"2rem"}});
+  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #e8e4dc",marginBottom:"2rem"}});
   Object.entries(TARIFS).forEach(([key,t])=>{const btn=el("button",{className:"tab-btn"+(S.ficheTab===key?" active":""),style:{fontFamily:"Inter,sans-serif"}},t.label);btn.addEventListener("click",()=>set({ficheTab:key}));tabs.appendChild(btn);});
   wrap.appendChild(tabs);
   const fiche=FICHES[S.ficheTab];
   if(!fiche)return wrap;
-  wrap.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"24px",fontWeight:"400",marginBottom:"2rem"}},fiche.titre));
-  const matSection=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1.5rem",marginBottom:"2rem"}});
+  wrap.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"24px",fontWeight:"400",marginBottom:"2rem"}},fiche.titre));
+  const matSection=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"1.5rem",marginBottom:"2rem"}});
   matSection.appendChild(el("h3",{style:{color:"#c9a84c",fontSize:"12px",fontWeight:"500",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}},"Matériel nécessaire"));
   const matGrid=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px"}});
-  fiche.materiel.forEach(m=>{const row=el("div",{style:{display:"flex",alignItems:"flex-start",gap:"8px",padding:"6px 0",borderBottom:"1px solid #1a1a1a",fontSize:"13px",color:"#8a8070"}});row.appendChild(el("span",{style:{color:"#c9a84c",flexShrink:"0"}},"○"));row.appendChild(el("span",{},m));matGrid.appendChild(row);});
+  fiche.materiel.forEach(m=>{const row=el("div",{style:{display:"flex",alignItems:"flex-start",gap:"8px",padding:"6px 0",borderBottom:"1px solid #eceae4",fontSize:"13px",color:"#706a62"}});row.appendChild(el("span",{style:{color:"#c9a84c",flexShrink:"0"}},"○"));row.appendChild(el("span",{},m));matGrid.appendChild(row);});
   matSection.appendChild(matGrid);wrap.appendChild(matSection);
   const etSection=el("div",{});
   etSection.appendChild(el("h3",{style:{color:"#c9a84c",fontSize:"12px",fontWeight:"500",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem"}},"Étapes de réalisation"));
@@ -1323,9 +1217,9 @@ function renderFiches(){
       mc.appendChild(el("div",{className:"mob-etape-desc"},et.desc));
       etSection.appendChild(mc);
     } else {
-      const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1.2rem",marginBottom:"8px",display:"flex",gap:"1rem",alignItems:"flex-start"}});
+      const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"1.2rem",marginBottom:"8px",display:"flex",gap:"1rem",alignItems:"flex-start"}});
       card.appendChild(el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"13px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},String(i+1)));
-      const txt=el("div",{});txt.appendChild(el("div",{style:{color:"#e0d8cc",fontWeight:"500",fontSize:"14px",marginBottom:"4px"}},et.titre));txt.appendChild(el("div",{style:{color:"#7a7060",fontSize:"13px",lineHeight:"1.6"}},et.desc));card.appendChild(txt);etSection.appendChild(card);
+      const txt=el("div",{});txt.appendChild(el("div",{style:{color:"#2a2520",fontWeight:"500",fontSize:"14px",marginBottom:"4px"}},et.titre));txt.appendChild(el("div",{style:{color:"#8a8278",fontSize:"13px",lineHeight:"1.6"}},et.desc));card.appendChild(txt);etSection.appendChild(card);
     }
   });
   wrap.appendChild(etSection);return wrap;
@@ -1333,27 +1227,27 @@ function renderFiches(){
 
 function renderParametres(){
   const wrap=el("div",{style:{maxWidth:"700px"}});
-  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #1e1e1e",marginBottom:"2rem"}});
+  const tabs=el("div",{style:{display:"flex",gap:"0",borderBottom:"1px solid #e8e4dc",marginBottom:"2rem"}});
   [["infos","Entreprise"],["tarifs","Tarifs"]].forEach(([id,label])=>{const btn=el("button",{className:"tab-btn"+(S.paramTab===id?" active":""),style:{fontFamily:"Inter,sans-serif"}},label);btn.addEventListener("click",()=>set({paramTab:id}));tabs.appendChild(btn);});
   wrap.appendChild(tabs);
   if(S.paramTab==="infos"){
-    wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"20px",fontWeight:"400",marginBottom:"1.5rem"}},"Informations entreprise"));
+    wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"20px",fontWeight:"400",marginBottom:"1.5rem"}},"Informations entreprise"));
     [["Raison sociale","nom"],["Forme juridique","forme"],["SIRET","siret"],["N° TVA","tva"],["Adresse","adresse"],["Code postal","cp"],["Ville","ville"],["Téléphone","tel"],["Email","email"],["Président","president"],["Site web","site"]].forEach(([label,key])=>{
       const i=el("input",{value:INFO[key]||""});i.addEventListener("input",e=>INFO[key]=e.target.value);wrap.appendChild(grp(label,i));
     });
     const bs=el("button",{style:{...BP,marginTop:"0.5rem"}},"Sauvegarder");bs.addEventListener("click",()=>{bs.textContent="✓ Sauvegardé !";setTimeout(()=>bs.textContent="Sauvegarder",2000);});wrap.appendChild(bs);
   }else if(S.paramTab==="tarifs"){
-    wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#f0ece4",fontSize:"20px",fontWeight:"400",marginBottom:"0.5rem"}},"Tarifs par défaut"));
-    wrap.appendChild(el("p",{style:{color:"#5a5040",fontSize:"13px",marginBottom:"1.5rem"}},"Ces tarifs sont pré-remplis lors de la création d'un devis."));
+    wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"20px",fontWeight:"400",marginBottom:"0.5rem"}},"Tarifs par défaut"));
+    wrap.appendChild(el("p",{style:{color:"#8a8278",fontSize:"13px",marginBottom:"1.5rem"}},"Ces tarifs sont pré-remplis lors de la création d'un devis."));
     Object.entries(TARIFS).forEach(([key,sol])=>{
-      const card=el("div",{style:{background:"#111",border:"1px solid #1e1e1e",borderRadius:"8px",padding:"1.2rem",marginBottom:"1rem"}});
+      const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"1.2rem",marginBottom:"1rem"}});
       card.appendChild(el("div",{style:{color:"#c9a84c",fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem",fontWeight:"500"}},sol.label));
       sol.trav.forEach((t,i)=>{
         const row=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 120px",gap:"1rem",alignItems:"center",marginBottom:"8px"}});
         const ti=el("input",{value:t,style:{padding:"0.5rem 0.8rem",fontSize:"13px"}});ti.addEventListener("input",e=>TARIFS[key].trav[i]=e.target.value);
         const pw=el("div",{style:{position:"relative"}});
         const pi=el("input",{type:"number",value:sol.prix[i],style:{padding:"0.5rem 0.8rem",fontSize:"13px"}});pi.addEventListener("input",e=>TARIFS[key].prix[i]=parseFloat(e.target.value)||0);
-        pw.appendChild(pi);pw.appendChild(el("span",{style:{position:"absolute",right:"8px",top:"50%",transform:"translateY(-50%)",color:"#5a5040",fontSize:"12px",pointerEvents:"none"}},"€/m²"));
+        pw.appendChild(pi);pw.appendChild(el("span",{style:{position:"absolute",right:"8px",top:"50%",transform:"translateY(-50%)",color:"#8a8278",fontSize:"12px",pointerEvents:"none"}},"€/m²"));
         row.appendChild(ti);row.appendChild(pw);card.appendChild(row);
       });
       const badd=el("button",{type:"button",style:{...BS,fontSize:"12px",marginTop:"8px",padding:"0.4rem 0.8rem"}},"+ Ajouter une prestation");
