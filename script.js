@@ -116,15 +116,21 @@ async function handleSubmit(e) {
       successDiv.style.display = 'flex';
       successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
-      throw new Error('Erreur réseau');
+      const errData = await response.json().catch(() => ({}));
+      console.error('Supabase error:', response.status, errData);
+      throw new Error('Supabase ' + response.status);
     }
   } catch (err) {
-    // Fallback mailto si Supabase inaccessible
-    const subject = encodeURIComponent(`Demande de devis — ${formData.type_sol} — ${formData.ville}`);
-    const body = encodeURIComponent(
-      `Nom: ${formData.client_nom}\nTéléphone: ${formData.client_tel}\nEmail: ${formData.client_email}\nVille: ${formData.ville}\nType de sol: ${document.getElementById('type').value}\nSurface: ${formData.surface}\n\nMessage:\n${formData.description}`
-    );
-    window.location.href = `mailto:contact@maisonsolnoble.com?subject=${subject}&body=${body}`;
+    // Afficher un message d'erreur visible
+    let errDiv = document.getElementById('formError');
+    if (!errDiv) {
+      errDiv = document.createElement('div');
+      errDiv.id = 'formError';
+      errDiv.style.cssText = 'background:rgba(163,45,45,0.1);border:1px solid rgba(163,45,45,0.3);border-radius:8px;padding:1rem;margin-top:1rem;color:#a32d2d;font-size:14px;text-align:center;';
+      form.appendChild(errDiv);
+    }
+    errDiv.innerHTML = 'Une erreur est survenue lors de l\'envoi.<br><strong>Contactez-nous directement :</strong><br><a href="mailto:contact@maisonsolnoble.com" style="color:#a32d2d;">contact@maisonsolnoble.com</a> · <a href="tel:0554542864" style="color:#a32d2d;">05 54 54 28 64</a>';
+    errDiv.style.display = 'block';
     btn.disabled = false;
     btnText.textContent = 'Envoyer ma demande de devis';
   }
