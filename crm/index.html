@@ -819,7 +819,6 @@ function buildPDFHtml(dv,type="devis"){
 *{margin:0;padding:0;box-sizing:border-box;}
 a,a:link,a:visited,a:hover,a:active{color:#1a1611!important;text-decoration:none!important;}
 body{font-family:Inter,Arial,sans-serif;font-size:12px;color:#1a1611;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-@page{margin:0;size:A4;}
 .page{max-width:794px;margin:0 auto;padding:48px 52px 44px;min-height:1060px;display:flex;flex-direction:column;}
 /* HEADER */
 .hd{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;margin-bottom:28px;border-bottom:2px solid #c9a84c;}
@@ -896,12 +895,12 @@ tbody td:last-child{text-align:right;font-weight:600;white-space:nowrap;}
   <div>
     <div class="p-label">Prestataire</div>
     <div class="p-name">${INFO.nom}</div>
-    <div class="p-detail">${INFO.forme}<br>SIRET : ${INFO.siret}<br>N° TVA : ${INFO.tva}<br>Capital social : ${INFO.capital}</div>
+    <div class="p-detail">${INFO.forme}<br>SIRET : ${INFO.siret.replace(/ /g," ")}<br>N° TVA : ${INFO.tva.replace(/\./g,"&#46;")}<br>Capital social : ${INFO.capital}</div>
   </div>
   <div>
     <div class="p-label">Client</div>
     <div class="p-name">${dv.client_nom}</div>
-    <div class="p-detail">${[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).map(v=>`<span>${v.replace("@","&#64;").replace(/\./g,(c,i,s)=>i>0&&i<s.length-1?"&#46;":".")}</span>`).join("<br>")}</div>
+    <div class="p-detail">${[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).map(v=>v.includes("@")?`<span>${v.replace("@","&#64;").replace(/\./g,"&#46;")}</span>`:`<span>${v.replace(/ /g," ")}</span>`).join("<br>")}</div>
   </div>
 </div>
 <table>
@@ -947,7 +946,7 @@ ${dv.cerfa&&type==="devis"?`<div class="cond" style="border-left-color:#c9a84c;m
 
 <div class="ft">
   <span>${INFO.nom}</span> — <span>${INFO.forme}</span> — Capital social <span>${INFO.capital}</span><br>
-  SIRET <span>${INFO.siret}</span> — N° TVA intracommunautaire <span>${INFO.tva}</span><br>
+  SIRET <span>${INFO.siret.replace(/ /g," ")}</span> — N° TVA intracommunautaire <span>${INFO.tva.replace(/\./g,"&#46;")}</span><br>
   <span>${INFO.adresse}</span>, <span>${INFO.cp} ${INFO.ville}</span> — Tél. <span>${INFO.tel.replace(/ /g," ")}</span> — <span>${INFO.email.replace("@","&#64;").replace(/\./g,"&#46;")}</span> — <span>${INFO.site.replace(/\./g,"&#46;")}</span>
 </div>
 </div></body></html>`;
