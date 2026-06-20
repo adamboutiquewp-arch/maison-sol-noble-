@@ -578,7 +578,6 @@ const LOGO_B64="iVBORw0KGgoAAAANSUhEUgAAAbAAAABpCAYAAABbCHZ5AAAAAXNSR0IArs4c6QAA
 function buildDescription(dv){
   const sol=dv.type_sol,fin=dv.finition||"brillant",trav=(dv.travaux||"").toLowerCase(),etat=dv.etat||"moyen";
   const grains=dv.grains&&dv.grains.length?dv.grains:null;
-  const grainSeq=grains?"grain "+grains.join(" → "):null;
   const L=[];
   // Étape 1 : Rebouchage
   const travInclutRebouchage=
@@ -590,8 +589,8 @@ function buildDescription(dv){
     else if(sol==="travertin")L.push("Rebouchage des pores ouverts, fissures et lacunes au mortier de restauration ou résine époxy fluide");
     else if(sol==="granito")L.push("Réparation des joints endommagés et rebouchage des manques à la résine époxy teintée assortie au granulat");
   }
-  // Étape 2 : Ponçage
-  if(dv.preparation)L.push("Ponçage — préparation et mise à niveau du support par ponçage mécanique (disques abrasifs diamant)");
+  // Étape 2 : Ponçage — grains sélectionnés uniquement
+  if(grains)L.push("Ponçage — grain "+grains.join(" → "));
   // Étape 3 : Cristallisation
   if(dv.cristallisation&&sol!=="parquet")L.push("Cristallisation — traitement thermochimique en surface restituant l'éclat naturel de la pierre et augmentant sa résistance");
   // Étape 4 : Traitements de protection
@@ -602,17 +601,15 @@ function buildDescription(dv){
       L.push(dv.travaux);
     }else if(trav.includes("polissage")){
       L.push("Nettoyage et préparation de la surface");
-      L.push("Affinage : "+(grainSeq||"grain 800 → 1 500 → 3 000"));
+      if(!grains)L.push("Affinage : grain 800 → 1 500 → 3 000");
       L.push("Cristallisation "+fin+" à la monobrosse professionnelle");
     }else if(trav.includes("cristallis")){
       L.push("Nettoyage de la surface");
-      if(grainSeq)L.push("Affinage préalable : "+grainSeq);
       L.push("Application cristalliseur professionnel — finition "+fin);
     }else if(trav.includes("protection")||trav.includes("imperméabil")){
       L.push("Nettoyage et dégraissage de la surface");
       L.push("Application traitement hydrofuge et oléofuge");
     }else{
-      if(grainSeq)L.push("Ponçage diamant : "+grainSeq);
       L.push(dv.travaux);
     }
   }else if(sol==="travertin"){
@@ -621,13 +618,12 @@ function buildDescription(dv){
     }else if(trav.includes("ponçage")||trav.includes("bouchage")){
       L.push("Nettoyage et évaluation des pores");
       L.push("Rebouchage des pores et fissures à la résine époxy");
-      L.push("Ponçage diamant : "+(grainSeq||"grain 50 → 1 500"));
+      if(!grains)L.push("Ponçage diamant : grain 50 → 1 500");
       L.push("Cristallisation "+fin);
     }else if(trav.includes("hydrofuge")||trav.includes("protection")){
       L.push("Nettoyage de la surface");
       L.push("Application traitement hydrofuge et oléofuge");
     }else{
-      if(grainSeq)L.push("Ponçage diamant : "+grainSeq);
       L.push(dv.travaux);
     }
   }else if(sol==="granito"){
@@ -637,14 +633,14 @@ function buildDescription(dv){
       L.push("Nettoyage professionnel dégraissant spécial granito");
       L.push("Rinçage et séchage complet");
     }else{
-      L.push("Ponçage diamant progressif : "+(grainSeq||"grain 50 → 3 000"));
+      if(!grains)L.push("Ponçage diamant progressif : grain 50 → 3 000");
       L.push("Cristallisation "+fin);
     }
   }else if(sol==="parquet"){
     const finLabel=fin==="ciré"?"cirage à la cire naturelle (2 couches)":"vitrification polyuréthane mat/brillant (2 couches)";
     L.push("Rebouchage des fentes, nœuds et irrégularités (Sintobois)");
     if(trav.includes("vitrification")||trav.includes("ponçage")||trav.includes("complet")||trav.includes("cirage")){
-      L.push("Ponçage progressif : "+(grainSeq||"grain 40 → 60 → 80 → 120"));
+      if(!grains)L.push("Ponçage progressif : grain 40 → 60 → 80 → 120");
       L.push("Aspiration complète et dépoussiérage entre chaque passe");
     }
     L.push("Finition : "+finLabel);
@@ -706,15 +702,29 @@ function showEmailModal(d){
     </div>
     <div id="em-feedback" style="display:none;text-align:center;padding:14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px;"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-      <button id="em-pdf" style="flex:1;min-width:120px;background:#f5f4f0;color:#1a1611;border:1px solid #dddad2;border-radius:8px;padding:12px;font-size:13px;cursor:pointer;font-weight:500;">📄 PDF</button>
+      <button id="em-pdf-dl" style="flex:1;min-width:150px;background:#f5f4f0;color:#1a1611;border:1px solid #dddad2;border-radius:8px;padding:12px;font-size:13px;cursor:pointer;font-weight:600;">📥 Télécharger le PDF</button>
       <button id="em-send" style="flex:2;min-width:160px;background:#c9a84c;color:#111;border:none;border-radius:8px;padding:12px;font-size:13px;cursor:pointer;font-weight:600;">${hasResend?"📤 Envoyer depuis contact@maisonsolnoble.com":"📧 Ouvrir ma messagerie"}</button>
     </div>
+    <button id="em-pdf" style="width:100%;background:transparent;color:#9a9488;border:1px solid #eceae4;border-radius:8px;padding:9px;font-size:12px;cursor:pointer;font-weight:400;margin-bottom:4px;">🖨 Imprimer / aperçu</button>
     ${d.cerfa?`<button id="em-cerfa" style="width:100%;background:#eef4fb;color:#1a4f7a;border:1px solid rgba(26,111,168,0.35);border-radius:8px;padding:11px;font-size:13px;cursor:pointer;font-weight:600;margin-bottom:4px;">📋 Imprimer l'attestation CERFA n°13948*05</button>`:""}
     <button id="em-close" style="width:100%;margin-top:6px;background:transparent;border:none;color:#b0a898;font-size:13px;cursor:pointer;padding:8px;">Fermer</button>`;
   box.appendChild(card);
   document.body.appendChild(box);
 
   card.querySelector("#em-pdf").addEventListener("click",()=>genPDF(d,"devis"));
+
+  const dlBtn=card.querySelector("#em-pdf-dl");
+  dlBtn.addEventListener("click",async()=>{
+    dlBtn.textContent="⏳ Génération…";dlBtn.disabled=true;
+    try{
+      await downloadPDFFile(d,"devis");
+      dlBtn.textContent="✅ PDF téléchargé !";
+      setTimeout(()=>{dlBtn.textContent="📥 Télécharger le PDF";dlBtn.disabled=false;},3000);
+    }catch(e){
+      dlBtn.textContent="❌ Erreur — réessayer";
+      setTimeout(()=>{dlBtn.textContent="📥 Télécharger le PDF";dlBtn.disabled=false;},3000);
+    }
+  });
 
   card.querySelector("#em-send").addEventListener("click",()=>{
     const email=card.querySelector("#em-email").value.trim();
@@ -723,13 +733,23 @@ function showEmailModal(d){
     if(!hasResend){
       const fb=card.querySelector("#em-feedback");
       fb.style.cssText="display:block;background:#fff8e6;border:1px solid rgba(201,168,76,0.4);border-radius:10px;padding:12px;font-size:12px;color:#7a5a0a;margin-bottom:12px;text-align:center;";
-      fb.innerHTML="📄 Le PDF s'ouvre dans un nouvel onglet — enregistrez-le, puis joignez-le à votre email.";
-      genPDF(d,"devis");
-      setTimeout(()=>{
+      fb.innerHTML="📥 Le PDF se télécharge — joignez-le à votre email puis cliquez Envoyer.";
+      const sendBtn=card.querySelector("#em-send");
+      sendBtn.disabled=true;
+      downloadPDFFile(d,"devis").then(()=>{
+        sendBtn.disabled=false;
         const sujet=encodeURIComponent(card.querySelector("#em-sujet").value);
         const corps=encodeURIComponent(card.querySelector("#em-corps").value);
         window.location.href=`mailto:${encodeURIComponent(email)}?subject=${sujet}&body=${corps}`;
-      },600);
+      }).catch(()=>{
+        sendBtn.disabled=false;
+        genPDF(d,"devis");
+        setTimeout(()=>{
+          const sujet=encodeURIComponent(card.querySelector("#em-sujet").value);
+          const corps=encodeURIComponent(card.querySelector("#em-corps").value);
+          window.location.href=`mailto:${encodeURIComponent(email)}?subject=${sujet}&body=${corps}`;
+        },600);
+      });
       return;
     }
     // Afficher la zone de confirmation
@@ -760,7 +780,7 @@ function showEmailModal(d){
     try{
       await sendEmailResend(email,sujet,corps,pdfB64,pdfName);
       fb.style.cssText="display:block;background:#f0f9ec;border:1px solid rgba(59,109,17,0.3);border-radius:10px;padding:14px;font-size:13px;font-weight:600;color:#3B6D11;margin-bottom:12px;text-align:center;";
-      fb.textContent="✓ Email envoyé avec le PDF en pièce jointe à "+email;
+      fb.textContent="✓ Email envoyé"+(pdfB64?" avec le PDF en pièce jointe":"")+" à "+email;
       card.querySelector("#em-send").style.display="none";
       setTimeout(()=>box.remove(),3500);
     }catch(err){
@@ -916,37 +936,49 @@ function genPDF(dv,type="devis"){
   const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();w.print();}
 }
 
+async function _pdfInit(){
+  if(window.html2pdf)return;
+  await new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+    s.onload=resolve;s.onerror=reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function _pdfSetup(dv,type){
+  await _pdfInit();
+  const full=buildPDFHtml(dv,type);
+  const css=(full.match(/<style>([\s\S]*?)<\/style>/)||["",""])[1];
+  const body=(full.match(/<body>([\s\S]*?)<\/body>/)||["",""])[1];
+  const st=document.createElement("style");
+  st.setAttribute("data-pdf-tmp","1");
+  st.textContent=css;
+  document.head.appendChild(st);
+  const div=document.createElement("div");
+  div.innerHTML=body;
+  div.style.cssText="position:absolute;left:-9999px;top:0;width:794px;";
+  document.body.appendChild(div);
+  const cleanup=()=>{if(st.parentNode)document.head.removeChild(st);if(div.parentNode)document.body.removeChild(div);};
+  return{div,cleanup};
+}
+
+const _PDF_OPT={margin:0,image:{type:"jpeg",quality:0.95},html2canvas:{scale:1.5,useCORS:true,logging:false,allowTaint:true,windowWidth:794},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
+
 async function genPDFBase64(dv,type="devis"){
-  if(!window.html2pdf){
-    await new Promise((resolve,reject)=>{
-      const s=document.createElement("script");
-      s.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
-      s.onload=resolve;s.onerror=reject;
-      document.head.appendChild(s);
-    });
-  }
-  const html=buildPDFHtml(dv,type);
-  const ifr=document.createElement("iframe");
-  ifr.style.cssText="position:fixed;left:-9999px;top:0;width:840px;height:1200px;border:none;";
-  document.body.appendChild(ifr);
+  const{div,cleanup}=await _pdfSetup(dv,type);
   try{
-    ifr.contentDocument.open();
-    ifr.contentDocument.write(html);
-    ifr.contentDocument.close();
-    await new Promise(r=>setTimeout(r,900));
-    const opt={
-      margin:0,
-      image:{type:"jpeg",quality:0.95},
-      html2canvas:{scale:1.5,useCORS:true,logging:false,allowTaint:true,windowWidth:840},
-      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
-    };
-    const b64=await html2pdf().set(opt).from(ifr.contentDocument.body).outputPdf("datauristring");
-    document.body.removeChild(ifr);
-    return b64.split(",")[1];
-  }catch(err){
-    if(ifr.parentNode)document.body.removeChild(ifr);
-    throw err;
-  }
+    const uri=await html2pdf().set(_PDF_OPT).from(div).outputPdf("datauristring");
+    cleanup();return uri.split(",")[1];
+  }catch(err){cleanup();throw err;}
+}
+
+async function downloadPDFFile(dv,type="devis"){
+  const{div,cleanup}=await _pdfSetup(dv,type);
+  try{
+    await html2pdf().set({..._PDF_OPT,filename:`${type}-${dv.numero}.pdf`}).from(div).save();
+    cleanup();
+  }catch(err){cleanup();throw err;}
 }
 
 function genCERFA(dv){
@@ -1778,46 +1810,54 @@ function renderFormDevis(){
   form.appendChild(row(grp("Travaux *",sel("travaux",tarif.trav.map((t,i)=>[t,`${t} — ${tarif.prix[i]} €/m²`])),0),grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
   const finOpts=f.type_sol==="parquet"?[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]:[["brillant","Brillant"],["mat","Mat"]];
   form.appendChild(row(grp("Finition",sel("finition",finOpts),0)));
-  {
-    const GRAINS_LIST=f.type_sol==="parquet"?[16,24,30,36,40,50,60,80,100,120,150,180,220]:[50,100,200,400,800,1500,3000,5000];
-    const grainWrap=el("div",{style:{marginBottom:"1rem"}});
-    grainWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Grains de ponçage sélectionnés"));
-    const grainBtns=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"6px"}});
-    GRAINS_LIST.forEach(g=>{
-      const active=(S.form.grains||[]).includes(g);
-      const btn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},`${g}`);
-      btn.addEventListener("click",()=>{
-        const arr=S.form.grains||[];
-        S.form.grains=arr.includes(g)?arr.filter(x=>x!==g):[...arr,g].sort((a,b)=>a-b);
-        render();
-      });
-      grainBtns.appendChild(btn);
-    });
-    grainWrap.appendChild(grainBtns);
-    if((S.form.grains||[]).length>0){
-      const preview=el("div",{style:{marginTop:"8px",fontSize:"11px",color:"#8a6a20",background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"5px 10px"}});
-      preview.textContent="Séquence : grain "+(S.form.grains.join(" → "));
-      grainWrap.appendChild(preview);
-    }
-    form.appendChild(grainWrap);
-  }
-  // ── OPTIONS SUPPLÉMENTAIRES ──
+  // ── PRESTATIONS COMPLÉMENTAIRES (ordre de travail) ──
   {
     const optWrap=el("div",{style:{marginBottom:"1rem"}});
-    optWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Prestations complémentaires"));
-    const optRow=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+    optWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"10px"}},"Prestations complémentaires"));
     function optBtn(label,key){
       const active=!!S.form[key];
       const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},label);
       b.addEventListener("click",()=>{S.form[key]=!S.form[key];render();});
       return b;
     }
-    if(f.type_sol!=="parquet")optRow.appendChild(optBtn("🔨 Rebouchage","rebouchage"));
-    optRow.appendChild(optBtn("✨ Ponçage","preparation"));
-    if(f.type_sol!=="parquet")optRow.appendChild(optBtn("💎 Cristallisation","cristallisation"));
-    optRow.appendChild(optBtn("💧 Traitement hydrofuge","hydrofuge"));
-    optRow.appendChild(optBtn("🛢 Traitement oléofuge","oleofuge"));
-    optWrap.appendChild(optRow);
+    // 1. Rebouchage
+    if(f.type_sol!=="parquet"){
+      const r1=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"10px"}});
+      r1.appendChild(optBtn("🔨 Rebouchage","rebouchage"));
+      optWrap.appendChild(r1);
+    }
+    // 2. Ponçage = sélection des grains
+    {
+      const GRAINS_LIST=f.type_sol==="parquet"?[16,24,30,36,40,50,60,80,100,120,150,180,220]:[50,100,200,400,800,1500,3000,5000];
+      const pWrap=el("div",{style:{marginBottom:"10px"}});
+      pWrap.appendChild(el("div",{style:{fontSize:"11px",color:"#706a62",fontWeight:"600",marginBottom:"6px"}},"✨ Ponçage — grains"));
+      const gBtns=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"6px"}});
+      GRAINS_LIST.forEach(g=>{
+        const active=(S.form.grains||[]).includes(g);
+        const btn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},`${g}`);
+        btn.addEventListener("click",()=>{
+          const arr=S.form.grains||[];
+          S.form.grains=arr.includes(g)?arr.filter(x=>x!==g):[...arr,g].sort((a,b)=>a-b);
+          render();
+        });
+        gBtns.appendChild(btn);
+      });
+      pWrap.appendChild(gBtns);
+      if((S.form.grains||[]).length>0){
+        const prev=el("div",{style:{marginTop:"7px",fontSize:"11px",color:"#8a6a20",background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"5px 10px"}});
+        prev.textContent="Ponçage grain "+(S.form.grains.join(" → "));
+        pWrap.appendChild(prev);
+      }
+      optWrap.appendChild(pWrap);
+    }
+    // 3. Cristallisation, Hydrofuge, Oléofuge
+    {
+      const r3=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+      if(f.type_sol!=="parquet")r3.appendChild(optBtn("💎 Cristallisation","cristallisation"));
+      r3.appendChild(optBtn("💧 Traitement hydrofuge","hydrofuge"));
+      r3.appendChild(optBtn("🛢 Traitement oléofuge","oleofuge"));
+      optWrap.appendChild(r3);
+    }
     form.appendChild(optWrap);
   }
   const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.dataset.formKey="inp-description";ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
