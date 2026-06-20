@@ -258,7 +258,34 @@ const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagn
 // Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
 function isLead(d){return d.source==="site_vitrine";}
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false}};
+// ── ZONES D'INTERVENTION ──
+const ZONES_DEF=[
+  {key:"paris",    label:"Paris & Île-de-France",color:"#2c5fa8",icon:"🗼",mots:["paris","neuilly","versailles","saint-germain","levallois","saint-cloud","courbevoie","boulogne","rueil","sèvres","vincennes","issy","clamart","meudon","nanterre","puteaux","asnieres","colombes","chatou","maisons-laffitte","le pecq"]},
+  {key:"cote_azur",label:"Côte d'Azur",          color:"#0a7a6b",icon:"🌊",mots:["nice","cannes","antibes","saint-tropez","monaco","mougins","grasse","valbonne","menton","juan-les-pins","sophia","mandelieu","le cannet","vallauris","golfe-juan","cagnes","eze","beaulieu","villefranche","cap-d'ail"]},
+  {key:"pays_basque",label:"Pays Basque",         color:"#8a2a2a",icon:"🏄",mots:["biarritz","bayonne","saint-jean-de-luz","anglet","hendaye","bidart","guéthary","ciboure","urrugne","cambo"]},
+  {key:"toulouse", label:"Toulouse & région",     color:"#8a5a0a",icon:"🌸",mots:["toulouse","blagnac","colomiers","ramonville","balma","aucamville","cugnaux","tournefeuille","labège","muret","castanet"]},
+];
+const ZONE_AUTRES={key:"autres",label:"Autres villes",color:"#6a6258",icon:"📍"};
+
+function getZoneInfo(ville){
+  if(!ville)return ZONE_AUTRES;
+  const v=ville.toLowerCase();
+  for(const z of ZONES_DEF){if(z.mots.some(m=>v.includes(m)))return z;}
+  return ZONE_AUTRES;
+}
+
+// ── NUMÉROTATION SÉQUENTIELLE : MSN-YYYY-NNNN ──
+function genNumeroDevis(){
+  const year=new Date().getFullYear();
+  const prefix=`MSN-${year}-`;
+  const nums=S.devis
+    .filter(d=>d.numero&&d.numero.startsWith(prefix))
+    .map(d=>parseInt(d.numero.slice(prefix.length))||0);
+  const next=(nums.length?Math.max(...nums):0)+1;
+  return prefix+String(next).padStart(4,"0");
+}
+
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -799,7 +826,7 @@ function buildPDFHtml(dv,type="devis"){
   const tvaPct=dv.tva_taux||20;
   const ht=dv.montant_ht||0,tva=ht*(tvaPct/100),ttc=ht*(1+tvaPct/100);
   const titre=type==="devis"?"DEVIS":"FACTURE";
-  const num=type==="facture"?"FAC-"+dv.numero.replace("MSN-","").replace("LEAD-",""):dv.numero;
+  const num=type==="facture"?dv.numero.replace(/^MSN-/,"FAC-").replace(/^LEAD-.*/,"FAC"):dv.numero;
   const dateDoc=new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR");
   const echeance=new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR");
   const acompte=(ttc*0.3).toFixed(2),solde=(ttc*0.7).toFixed(2);
@@ -1620,6 +1647,10 @@ function renderDevis(){
     const sf=el("select",{style:{width:"160px",padding:"0.55rem 0.8rem",fontSize:"13px"}});
     ["Tous",...STATUTS].forEach(s=>{const o=el("option",{},s);if(s===S.filterStatut)o.selected=true;sf.appendChild(o);});
     sf.addEventListener("change",e=>{S.filterStatut=e.target.value;render();});rightActions.appendChild(sf);
+    const bz=el("button",{style:{padding:"0.55rem 0.9rem",fontSize:"12px",fontWeight:"600",border:"1px solid "+(S.sortBy==="zone"?"#c9a84c":"#dddad2"),background:S.sortBy==="zone"?"rgba(201,168,76,0.12)":"#fff",color:S.sortBy==="zone"?"#8a6a20":"#5a5450",borderRadius:"8px",cursor:"pointer",whiteSpace:"nowrap"}},(S.sortBy==="zone"?"📍 Zone ✓":"📍 Par zone"));
+    bz.title="Grouper les devis par zone géographique";
+    bz.addEventListener("click",()=>{S.sortBy=S.sortBy==="zone"?"date":"zone";render();});
+    rightActions.appendChild(bz);
     bar.appendChild(rightActions);
     wrap.appendChild(bar);
   }else{
@@ -1636,17 +1667,35 @@ function renderDevis(){
     ["Tous les statuts",...STATUTS].forEach((s,i)=>{const o=el("option",{value:i===0?"Tous":s},s);if((i===0&&S.filterStatut==="Tous")||s===S.filterStatut)o.selected=true;sf.appendChild(o);});
     sf.addEventListener("change",e=>{S.filterStatut=e.target.value;render();});
     wrap.appendChild(sf);
+    const bzm=el("button",{style:{width:"100%",fontSize:"14px",fontWeight:"600",border:"1px solid "+(S.sortBy==="zone"?"#c9a84c":"#dddad2"),background:S.sortBy==="zone"?"rgba(201,168,76,0.12)":"#fff",color:S.sortBy==="zone"?"#8a6a20":"#5a5450",borderRadius:"10px",padding:"0.65rem 1rem",marginBottom:"1rem",cursor:"pointer"}},(S.sortBy==="zone"?"📍 Trié par zone (appuyer pour désactiver)":"📍 Grouper par zone géographique"));
+    bzm.addEventListener("click",()=>{S.sortBy=S.sortBy==="zone"?"date":"zone";render();});
+    wrap.appendChild(bzm);
   }
   const q=S.search.toLowerCase();
   const filtered=dvs.filter(d=>{const ms=!q||d.client_nom?.toLowerCase().includes(q)||d.ville?.toLowerCase().includes(q)||d.numero?.includes(q);const mf=S.filterStatut==="Tous"||d.statut===S.filterStatut;return ms&&mf;});
+  // Tri par zone ou par date
+  const ZONE_ORDER=["paris","cote_azur","pays_basque","toulouse","autres"];
+  const sorted=S.sortBy==="zone"
+    ?[...filtered].sort((a,b)=>ZONE_ORDER.indexOf(getZoneInfo(a.ville).key)-ZONE_ORDER.indexOf(getZoneInfo(b.ville).key))
+    :filtered;
   if(isMobile()){
     // ── MOBILE: Cards layout ──
-    if(!filtered.length){
+    if(!sorted.length){
       const empty=el("div",{style:{textAlign:"center",color:"#9a9488",fontSize:"14px",padding:"3rem 1rem"}});
       empty.textContent='Aucun devis — appuie sur + pour créer';
       wrap.appendChild(empty);
     }
-    filtered.forEach(d=>{
+    let curZoneKey=null;
+    sorted.forEach(d=>{
+      if(S.sortBy==="zone"){
+        const zi=getZoneInfo(d.ville);
+        if(zi.key!==curZoneKey){
+          curZoneKey=zi.key;
+          const zh=el("div",{style:{padding:"8px 4px 4px",fontSize:"11px",fontWeight:"700",letterSpacing:"0.08em",textTransform:"uppercase",color:zi.color,borderBottom:"2px solid "+zi.color,marginBottom:"8px",marginTop:curZoneKey?"12px":"0"}});
+          zh.textContent=zi.icon+" "+zi.label;
+          wrap.appendChild(zh);
+        }
+      }
       const card=el("div",{className:"mob-devis-card"});
       card.addEventListener("click",()=>set({modal:"detail",selected:d}));
       const top=el("div",{className:"mob-devis-top"});
@@ -1658,7 +1707,7 @@ function renderDevis(){
       card.appendChild(top);
       const mid=el("div",{className:"mob-devis-mid"});
       mid.appendChild(el("span",{className:"mob-devis-tag"},TARIFS[d.type_sol]?.label||d.type_sol));
-      if(d.ville)mid.appendChild(el("span",{className:"mob-devis-tag"},d.ville));
+      if(d.ville){const zi=getZoneInfo(d.ville);mid.appendChild(el("span",{className:"mob-devis-tag",style:{color:zi.color,borderColor:zi.color+"66",background:zi.color+"11"}},zi.icon+" "+d.ville));}
       if(d.surface)mid.appendChild(el("span",{className:"mob-devis-tag"},d.surface+" m²"));
       card.appendChild(mid);
       const bot=el("div",{className:"mob-devis-bot"});
@@ -1673,7 +1722,7 @@ function renderDevis(){
   const tableWrap=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"12px",overflow:"hidden",overflowX:"auto",boxShadow:"0 2px 12px rgba(0,0,0,0.07)"}});
   // Table header bar
   const tableHead=el("div",{style:{padding:"1rem 1.4rem",borderBottom:"1px solid #f0ece4",display:"flex",alignItems:"center",justifyContent:"space-between"}});
-  tableHead.appendChild(el("div",{style:{fontSize:"13px",color:"#2a2520",fontWeight:"500"}},`${filtered.length} devis`+(S.filterStatut!=="Tous"?` · ${S.filterStatut}`:"")+(S.search?` · "${S.search}"`:"") ));
+  tableHead.appendChild(el("div",{style:{fontSize:"13px",color:"#2a2520",fontWeight:"500"}},`${sorted.length} devis`+(S.filterStatut!=="Tous"?` · ${S.filterStatut}`:"")+(S.search?` · "${S.search}"`:"")+(S.sortBy==="zone"?" · 📍 par zone":"")));
   tableWrap.appendChild(tableHead);
   const tbl=tableWrap;
   const t=el("table",{style:{width:"100%"}});
@@ -1681,8 +1730,20 @@ function renderDevis(){
   ["N°","Client","Ville","Type de sol","Montant HT","Statut","Actions"].forEach(h=>trh.appendChild(el("th",{style:{padding:"0.75rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:"#a09890",fontWeight:"600"}},h)));
   t.appendChild(el("thead",{},[trh]));
   const tbody=el("tbody",{});
-  if(!filtered.length){const tr=el("tr",{});tr.appendChild(el("td",{colSpan:"7",style:{padding:"3rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},'Aucun devis — clique sur "+ Nouveau devis"'));tbody.appendChild(tr);}
-  filtered.forEach(d=>{
+  if(!sorted.length){const tr=el("tr",{});tr.appendChild(el("td",{colSpan:"7",style:{padding:"3rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},'Aucun devis — clique sur "+ Nouveau devis"'));tbody.appendChild(tr);}
+  let curZKey=null;
+  sorted.forEach(d=>{
+    if(S.sortBy==="zone"){
+      const zi=getZoneInfo(d.ville);
+      if(zi.key!==curZKey){
+        curZKey=zi.key;
+        const ztr=el("tr",{});
+        const ztd=el("td",{colSpan:"7",style:{padding:"6px 1rem",background:zi.color+"18",borderBottom:"1px solid "+zi.color+"44",borderTop:"2px solid "+zi.color,fontSize:"11px",fontWeight:"700",color:zi.color,letterSpacing:"0.08em",textTransform:"uppercase"}});
+        ztd.textContent=zi.icon+" "+zi.label;
+        ztr.appendChild(ztd);
+        tbody.appendChild(ztr);
+      }
+    }
     const tr=el("tr",{style:{borderBottom:"1px solid #f5f3ef",transition:"background 0.1s"}});
     tr.addEventListener("mouseenter",()=>tr.style.background="#faf9f6");tr.addEventListener("mouseleave",()=>tr.style.background="");
     const numCell=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#c9a84c",fontWeight:"600"}});
@@ -1690,7 +1751,7 @@ function renderDevis(){
     if(isLead(d)){const lb=el("span",{style:{marginLeft:"6px",background:"rgba(226,75,74,0.15)",color:"#E24B4A",border:"1px solid rgba(226,75,74,0.3)",padding:"1px 6px",borderRadius:"10px",fontSize:"10px",fontWeight:"600"}},"LEAD");numCell.appendChild(lb);}
     tr.appendChild(numCell);
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#2a2520",fontWeight:"500"}},d.client_nom));
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}},d.ville||"—"));
+    {const zi=getZoneInfo(d.ville);const vtd=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}});vtd.appendChild(el("span",{style:{display:"inline-flex",alignItems:"center",gap:"4px"}},[el("span",{style:{color:zi.color,fontSize:"11px"}},zi.icon),document.createTextNode(d.ville||"—")]));tr.appendChild(vtd);}
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}},TARIFS[d.type_sol]?.label||d.type_sol));
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#1a1611",fontWeight:"600"}},((d.montant_ht||0).toFixed(0))+" €"));
     const tds=el("td",{style:{padding:"0.8rem 1rem"}});tds.appendChild(badge(d.statut));tr.appendChild(tds);
@@ -1922,13 +1983,13 @@ function renderFormDevis(){
       const lead=S.devis.find(d=>d.client_nom===S.form.client_nom&&isLead(d));
       if(lead){
         // Convertir le lead en devis : PATCH l'enregistrement existant
-        const newNum=`MSN-${Date.now().toString().slice(-6)}`;
+        const newNum=genNumeroDevis();
         const patch={...S.form,numero:newNum,montant_ht:ht,statut:"Nouveau",source:null,updated_at:new Date().toISOString()};
         await updateDevisSupabase(lead.numero,patch);
         S.devis=S.devis.map(d=>d.numero===lead.numero?{...d,...patch}:d);
       }else{
         // Aucun lead existant : créer un nouveau devis
-        const num=`MSN-${Date.now().toString().slice(-6)}`;
+        const num=genNumeroDevis();
         const payload={...S.form,numero:num,montant_ht:ht,statut:"Nouveau",created_at:new Date().toISOString()};
         await saveDevisToSupabase(payload);
         S.devis=[payload,...S.devis];
