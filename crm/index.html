@@ -1230,6 +1230,21 @@ function renderModal(){
 }
 
 function renderFormDevis(){
+  // Si un lead correspond au client saisi, pré-remplir type_sol/surface/description depuis le lead
+  if(S.modal!=="modifier" && S.form.client_nom){
+    const lead=S.devis.find(d=>d.client_nom===S.form.client_nom&&isLead(d));
+    if(lead){
+      if(lead.type_sol&&S.form.type_sol==="marbre"){
+        S.form.type_sol=lead.type_sol;
+        S.form.travaux=TARIFS[S.form.type_sol]?.trav[0]||S.form.travaux;
+        S.form.prix_m2=TARIFS[S.form.type_sol]?.prix[0]||S.form.prix_m2;
+        S.form.finition=S.form.type_sol==="parquet"?"vitrifié":"brillant";
+        S.form.grains=[];
+      }
+      if(lead.surface&&lead.surface!=="0"&&!S.form.surface)S.form.surface=lead.surface;
+      if(lead.description&&!S.form.description)S.form.description=lead.description;
+    }
+  }
   const f=S.form,tarif=TARIFS[f.type_sol];
   const ht=f.surface?Math.round(f.prix_m2*parseFloat(f.surface)*COEFF[f.etat]):0;
   const form=el("form",{});
@@ -1447,7 +1462,22 @@ function renderClients(){
       card.appendChild(traite);
     } else {
       const bnd=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Créer le devis");
-      bnd.addEventListener("click",()=>{S.form.client_nom=c.nom;S.form.client_tel=c.tel||"";S.form.client_email=c.email||"";S.form.ville=c.ville||"";set({onglet:"devis",modal:"nouveau"});});
+      bnd.addEventListener("click",()=>{
+        const leadDevis=S.devis.find(d=>d.client_nom===c.nom&&isLead(d));
+        const sol=leadDevis?.type_sol||"marbre";
+        S.form={
+          client_nom:c.nom,client_tel:c.tel||"",client_email:c.email||"",ville:c.ville||"",
+          type_sol:sol,
+          travaux:TARIFS[sol]?.trav[0]||"Polissage simple",
+          prix_m2:TARIFS[sol]?.prix[0]||30,
+          surface:(leadDevis?.surface&&leadDevis.surface!=="0")?leadDevis.surface:"",
+          etat:"moyen",
+          description:leadDevis?.description||"",
+          finition:sol==="parquet"?"vitrifié":"brillant",
+          grains:[]
+        };
+        set({onglet:"devis",modal:"nouveau"});
+      });
       card.appendChild(bnd);
     }
     if(!isMobile()){
