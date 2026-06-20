@@ -1,9 +1,7 @@
 #!/bin/bash
 # ============================================================
 # Script de build — Maison Sol Noble
-# Injecte les secrets (variables d'environnement Render) dans
-# le code statique au moment du déploiement, pour qu'aucun
-# identifiant ne soit jamais écrit en clair dans le dépôt Git.
+# Injecte les secrets via Node.js (plus fiable que sed)
 # ============================================================
 
 set -e
@@ -24,17 +22,32 @@ if [ -z "$SUPABASE_URL" ]; then
   exit 1
 fi
 
-# --- Injection dans crm/index.html ---
-sed -i "s#__CRM_AUTH_PASSWORD__#${CRM_AUTH_PASSWORD}#g" crm/index.html
-sed -i "s#__SUPABASE_ANON_KEY__#${SUPABASE_ANON_KEY}#g" crm/index.html
-sed -i "s#__SUPABASE_URL__#${SUPABASE_URL}#g" crm/index.html
+echo "=== Variables d'environnement OK ==="
+echo "SUPABASE_URL : ${SUPABASE_URL:0:30}..."
 
-# --- Injection dans index.html (config Supabase formulaire de contact) ---
-sed -i "s#__SUPABASE_ANON_KEY__#${SUPABASE_ANON_KEY}#g" index.html
-sed -i "s#__SUPABASE_URL__#${SUPABASE_URL}#g" index.html
+# --- Injection via Node.js ---
+node -e "
+const fs = require('fs');
+const url = process.env.SUPABASE_URL;
+const key = process.env.SUPABASE_ANON_KEY;
+const pwd = process.env.CRM_AUTH_PASSWORD;
 
-# --- Injection dans script.js (formulaire de contact site vitrine) ---
-sed -i "s#__SUPABASE_ANON_KEY__#${SUPABASE_ANON_KEY}#g" script.js
-sed -i "s#__SUPABASE_URL__#${SUPABASE_URL}#g" script.js
+const files = ['index.html', 'crm/index.html', 'script.js'];
+
+files.forEach(function(f) {
+  try {
+    let c = fs.readFileSync(f, 'utf8');
+    let n = 0;
+    c = c.replace(/__SUPABASE_URL__/g, function() { n++; return url; });
+    c = c.replace(/__SUPABASE_ANON_KEY__/g, function() { n++; return key; });
+    c = c.replace(/__CRM_AUTH_PASSWORD__/g, function() { n++; return pwd; });
+    fs.writeFileSync(f, c, 'utf8');
+    console.log('OK ' + f + ' (' + n + ' remplacements)');
+  } catch(e) {
+    console.error('ERREUR ' + f + ': ' + e.message);
+    process.exit(1);
+  }
+});
+"
 
 echo "Build terminé : tous les secrets injectés depuis les variables d'environnement Render."
