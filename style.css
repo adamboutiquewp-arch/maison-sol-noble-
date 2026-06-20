@@ -72,7 +72,7 @@ em { font-style: italic; color: #c9a84c; }
 .nav-logo-img { width: 50px; height: 50px; object-fit: contain; filter: brightness(0) invert(1); }
 .nav-logo-text { display: flex; flex-direction: column; line-height: 1; gap: 4px; }
 .logo-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; letter-spacing: 0.22em; color: #f0ece4; font-weight: 600; text-transform: uppercase; }
-.logo-tagline { font-family: 'Cormorant Garamond', serif; font-size: 0.7rem; letter-spacing: 0.1em; color: #c9a84c; font-style: italic; font-weight: 400; }
+.logo-tagline { font-family: 'Cormorant Garamond', serif; font-size: 0.88rem; letter-spacing: 0.1em; color: #c9a84c; font-style: italic; font-weight: 400; }
 .footer-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
 .footer-logo-img { width: 50px; height: 50px; object-fit: contain; }
 .footer-logo-text { display: flex; flex-direction: column; line-height: 1; gap: 4px; }
