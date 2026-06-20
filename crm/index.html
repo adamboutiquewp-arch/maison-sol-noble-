@@ -861,13 +861,25 @@ tbody td:last-child{text-align:right;font-weight:600;white-space:nowrap;}
 .cond{border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:10px;color:#5a5450;line-height:1.8;margin-bottom:18px;}
 /* FOOTER */
 .ft{margin-top:auto;padding-top:14px;border-top:1px solid #eceae4;font-size:9px;color:#9a9488;text-align:center;line-height:1.9;}
-a{color:inherit!important;text-decoration:none!important;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:32px 40px;}a[href]:after{content:none!important;}}
+a,a:link,a:visited,a:hover,a:active{color:#1a1611!important;text-decoration:none!important;}
+@media print{
+  *,*::before,*::after{color:#1a1611!important;text-decoration:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  a,a:link,a:visited,a:hover,a:active{color:#1a1611!important;text-decoration:none!important;}
+  a[href]::after,a[href]::before{content:none!important;display:none!important;}
+  .gold,.trow.ttc-row .gold{color:#c9a84c!important;}
+  .pay-title,.p-label,.logo-m{color:#c9a84c!important;}
+  .t-badge{color:#8a6a20!important;}
+  thead th{color:#ffffff!important;}
+  .trow.ttc-row,.trow.ttc-row span{color:#ffffff!important;}
+  .trow.ttc-row .gold{color:#c9a84c!important;}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .page{padding:32px 40px;}
+}
 </style></head><body><div class="page">
 <div class="hd">
   <div>
     <img src="data:image/png;base64,${LOGO_B64}" style="height:70px;display:block;margin-bottom:8px;">
-    <div class="logo-addr"><span>${INFO.adresse}</span><br><span>${INFO.cp} ${INFO.ville}</span><br><span>${INFO.tel}</span><br><span>${INFO.email}</span><br><span>${INFO.site}</span></div>
+    <div class="logo-addr"><span>${INFO.adresse}</span><br><span>${INFO.cp} ${INFO.ville}</span><br><span>${INFO.tel.replace(/ /g," ")}</span><br><span>${INFO.email.replace("@","&#64;").replace(/\./g,"&#46;")}</span><br><span>${INFO.site.replace(/\./g,"&#46;")}</span></div>
   </div>
   <div class="doc-t">
     <div class="doc-title">${titre}</div>
@@ -886,7 +898,7 @@ a{color:inherit!important;text-decoration:none!important;}
   <div>
     <div class="p-label">Client</div>
     <div class="p-name">${dv.client_nom}</div>
-    <div class="p-detail">${[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).map(v=>`<span>${v}</span>`).join("<br>")}</div>
+    <div class="p-detail">${[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).map(v=>`<span>${v.replace("@","&#64;").replace(/\./g,(c,i,s)=>i>0&&i<s.length-1?"&#46;":".")}</span>`).join("<br>")}</div>
   </div>
 </div>
 <table>
@@ -933,7 +945,7 @@ ${dv.cerfa&&type==="devis"?`<div class="cond" style="border-left-color:#c9a84c;m
 <div class="ft">
   <span>${INFO.nom}</span> — <span>${INFO.forme}</span> — Capital social <span>${INFO.capital}</span><br>
   SIRET <span>${INFO.siret}</span> — N° TVA intracommunautaire <span>${INFO.tva}</span><br>
-  <span>${INFO.adresse}</span>, <span>${INFO.cp} ${INFO.ville}</span> — Tél. <span>${INFO.tel}</span> — <span>${INFO.email}</span> — <span>${INFO.site}</span>
+  <span>${INFO.adresse}</span>, <span>${INFO.cp} ${INFO.ville}</span> — Tél. <span>${INFO.tel.replace(/ /g," ")}</span> — <span>${INFO.email.replace("@","&#64;").replace(/\./g,"&#46;")}</span> — <span>${INFO.site.replace(/\./g,"&#46;")}</span>
 </div>
 </div></body></html>`;
   return html;
