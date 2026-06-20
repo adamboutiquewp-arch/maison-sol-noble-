@@ -504,7 +504,7 @@ function buildDescription(dv){
   const grainSeq=grains?"grain "+grains.join(" → "):null;
   const L=[];
   // Prestations complémentaires — toujours en premier si sélectionnées
-  if(dv.preparation)L.push("Protection et préparation du chantier : déplacement et protection du mobilier, bâchage des surfaces environnantes, aspiration et nettoyage initial du sol");
+  if(dv.preparation)L.push("Protection et préparation du chantier : bâchage et protection des surfaces environnantes, aspiration et nettoyage initial du sol");
   if(dv.rebouchage&&sol!=="parquet"){
     if(sol==="marbre")L.push("Réparation et rebouchage des fissures, éclats et jointures défectueuses (résine époxy teintée assortie)");
     else if(sol==="travertin")L.push("Rebouchage des pores ouverts, fissures et lacunes au mortier de restauration ou résine époxy fluide");
