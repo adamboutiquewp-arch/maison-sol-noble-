@@ -29,6 +29,10 @@ sed -i "s#__CRM_AUTH_PASSWORD__#${CRM_AUTH_PASSWORD}#g" crm/index.html
 sed -i "s#__SUPABASE_ANON_KEY__#${SUPABASE_ANON_KEY}#g" crm/index.html
 sed -i "s#__SUPABASE_URL__#${SUPABASE_URL}#g" crm/index.html
 
+# --- Injection dans index.html (config Supabase formulaire de contact) ---
+sed -i "s#__SUPABASE_ANON_KEY__#${SUPABASE_ANON_KEY}#g" index.html
+sed -i "s#__SUPABASE_URL__#${SUPABASE_URL}#g" index.html
+
 # --- Injection dans script.js (formulaire de contact site vitrine) ---
 sed -i "s#__SUPABASE_ANON_KEY__#${SUPABASE_ANON_KEY}#g" script.js
 sed -i "s#__SUPABASE_URL__#${SUPABASE_URL}#g" script.js

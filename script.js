@@ -67,8 +67,8 @@ if (floatBtns) {
 }
 
 // ===== FORMULAIRE — envoie dans Supabase comme "lead" =====
-const SUPA_URL = '__SUPABASE_URL__';
-const SUPA_KEY = '__SUPABASE_ANON_KEY__';
+const SUPA_URL = window._SUPA_URL || '__SUPABASE_URL__';
+const SUPA_KEY = window._SUPA_KEY || '__SUPABASE_ANON_KEY__';
 
 async function handleSubmit(e) {
   e.preventDefault();
