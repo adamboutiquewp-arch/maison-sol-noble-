@@ -1213,7 +1213,8 @@ function renderDevis(){
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
     const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[],rebouchage:d.rebouchage||false,preparation:d.preparation||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
-    if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));acts.appendChild(bf);}
+    if(d.statut==="Gagné"){const bfact=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"🖨 Facture");bfact.addEventListener("click",()=>genPDF(d,"facture"));acts.appendChild(bfact);}
+    else{const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));acts.appendChild(bf);}
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
     bDel.addEventListener("click",e=>{e.stopPropagation();if(confirm("Supprimer le devis "+d.numero+" de "+d.client_nom+" ? Cette action est irréversible.")){deleteDevisSupabase(d.numero).then(()=>render());}});
     acts.appendChild(bDel);
@@ -1488,7 +1489,10 @@ function renderDetailDevis(d){
   // Boutons
   const bpdf=el("button",{className:"mob-btn-full"},"🖨 Imprimer devis PDF");
   bpdf.addEventListener("click",()=>genPDF(d,"devis"));wrap.appendChild(bpdf);
-  if(d.statut!=="Gagné"){
+  if(d.statut==="Gagné"){
+    const bfact=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff"}},"🖨 Imprimer facture PDF");
+    bfact.addEventListener("click",()=>genPDF(d,"facture"));wrap.appendChild(bfact);
+  }else{
     const bf=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff"}},"✓ Convertir en facture");
     bf.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));
     wrap.appendChild(bf);
