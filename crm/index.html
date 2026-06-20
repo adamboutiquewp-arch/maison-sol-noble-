@@ -613,9 +613,14 @@ const LOGO_B64="iVBORw0KGgoAAAANSUhEUgAAAbAAAABpCAYAAABbCHZ5AAAAAXNSR0IArs4c6QAA
 
 function buildDescription(dv){
   const lines=[];
-  if(dv.grains&&dv.grains.length){const sorted=[...dv.grains].sort((a,b)=>a-b);lines.push("Ponçage progressif : grain "+sorted.join(" → grain "));}
+  const g=dv.grains&&dv.grains.length?[...dv.grains].sort((a,b)=>a-b):[];
+  const coarse=g.filter(x=>x<=100);
+  const fine=g.filter(x=>x>=200);
   if(dv.rebouchage)lines.push("Rebouchage des fissures et joints");
+  if(coarse.length)lines.push("Ponçage : grain "+coarse.join(", grain "));
   if(dv.mineralisation)lines.push("Minéralisation (durcisseur pénétrant solidifiant)");
+  if(fine.length)lines.push("Ponçage : grain "+fine.join(", grain "));
+  if(dv.cristallisation)lines.push("Cristallisation");
   if(dv.hydrofuge)lines.push("Traitement hydrofuge");
   if(dv.oleofuge)lines.push("Traitement oléofuge");
   return lines;
