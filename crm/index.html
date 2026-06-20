@@ -251,7 +251,7 @@ const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagn
 // Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
 function isLead(d){return d.source==="site_vitrine";}
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -1213,7 +1213,7 @@ function renderDevis(){
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
     const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[],rebouchage:d.rebouchage||false,preparation:d.preparation||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
-    if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>set({modal:"planifier",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));acts.appendChild(bf);}
+    if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));acts.appendChild(bf);}
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
     bDel.addEventListener("click",e=>{e.stopPropagation();if(confirm("Supprimer le devis "+d.numero+" de "+d.client_nom+" ? Cette action est irréversible.")){deleteDevisSupabase(d.numero).then(()=>render());}});
     acts.appendChild(bDel);
@@ -1467,7 +1467,7 @@ function renderDetailDevis(d){
   STATUTS.forEach(s=>{const o=el("option",{},s);if(s===d.statut)o.selected=true;ss.appendChild(o);});
   ss.addEventListener("change",e=>{
     const ns=e.target.value;
-    if(ns==="Gagné"){set({modal:"planifier",planifierDevis:{...d,statut:"Gagné"}});return;}
+    if(ns==="Gagné"){set({modal:null,selected:null,onglet:"planning",planifierDevis:{...d,statut:"Gagné"}});return;}
     S.devis=S.devis.map(x=>x.numero===d.numero?{...x,statut:ns}:x);
     S.selected={...d,statut:ns};updateDevisSupabase(d.numero,{statut:ns});render();
   });
@@ -1478,11 +1478,11 @@ function renderDetailDevis(d){
     di.textContent="📅 Intervention : "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
     wrap.appendChild(di);
     const bReplan=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",fontSize:"12px"}},"Modifier la date");
-    bReplan.addEventListener("click",()=>set({modal:"planifier",planifierDevis:d}));
+    bReplan.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:d}));
     wrap.appendChild(bReplan);
   }else if(d.statut==="Gagné"){
     const bPlan=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},"📅 Planifier l'intervention");
-    bPlan.addEventListener("click",()=>set({modal:"planifier",planifierDevis:d}));
+    bPlan.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:d}));
     wrap.appendChild(bPlan);
   }
   // Boutons
@@ -1490,7 +1490,7 @@ function renderDetailDevis(d){
   bpdf.addEventListener("click",()=>genPDF(d,"devis"));wrap.appendChild(bpdf);
   if(d.statut!=="Gagné"){
     const bf=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff"}},"✓ Convertir en facture");
-    bf.addEventListener("click",()=>set({modal:"planifier",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));
+    bf.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));
     wrap.appendChild(bf);
   }
   const bc=el("button",{className:"mob-btn-outline"},"Fermer");
@@ -1503,48 +1503,160 @@ function renderDetailDevis(d){
 
 function renderPlanning(){
   const wrap=el("div",{});
-  const today=new Date(),jours=["Lun","Mar","Mer","Jeu","Ven","Sam"];
-  const debut=new Date(today);debut.setDate(today.getDate()-today.getDay()+1+S.semaine*7);
-  const nav=el("div",{style:{display:"flex",gap:isMobile()?"6px":"0.8rem",marginBottom:"1.5rem",alignItems:"center",flexWrap:isMobile()?"nowrap":"wrap"}});
-  const bpStyle=isMobile()?{background:"#ffffff",border:"1px solid #e8e4dc",color:"#706a62",padding:"10px 14px",fontSize:"16px",borderRadius:"10px",WebkitAppearance:"none",minWidth:"44px",display:"flex",alignItems:"center",justifyContent:"center"}:BS;
-  const bp=el("button",{style:bpStyle},isMobile()?"‹":"← Précédente");bp.addEventListener("click",()=>set({semaine:S.semaine-1}));nav.appendChild(bp);
-  nav.appendChild(el("span",{style:{color:"#2a2520",fontSize:isMobile()?"13px":"14px",fontWeight:"500",flex:isMobile()?"1":"",textAlign:isMobile()?"center":"left",padding:isMobile()?"0 4px":"0"}},`Semaine du ${debut.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`));
-  const bn=el("button",{style:bpStyle},isMobile()?"›":"Suivante →");bn.addEventListener("click",()=>set({semaine:S.semaine+1}));nav.appendChild(bn);
-  if(!isMobile()){const bt=el("button",{style:{...BS,marginLeft:"auto"}},"Aujourd'hui");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);}
-  else{const bt=el("button",{style:{...bpStyle,fontSize:"11px",padding:"10px 10px",color:"#c9a84c",borderColor:"rgba(201,168,76,0.25)"}},"Auj.");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);}
-  wrap.appendChild(nav);
-  const grid=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"repeat(3,1fr)":"repeat(6,1fr)",gap:isMobile()?"6px":"4px",marginBottom:"1.5rem"}});
+  const today=new Date();
   const gagnes=S.devis.filter(d=>d.statut==="Gagné");
-  jours.forEach((jour,i)=>{
-    const date=new Date(debut);date.setDate(debut.getDate()+i);
-    const dateStr=date.toISOString().split("T")[0];
-    const isToday=date.toDateString()===today.toDateString();
-    const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"10px",padding:isMobile()?"8px 10px":"0.8rem",minHeight:isMobile()?"70px":"120px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}});
-    cell.appendChild(el("div",{style:{fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:isToday?"#b08030":"#9a9488",marginBottom:"4px"}},jour));
-    cell.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"16px",color:isToday?"#b08030":"#c0b8ae",marginBottom:"8px"}},String(date.getDate())));
-    const dayChantiers=gagnes.filter(d=>d.date_intervention===dateStr);
-    dayChantiers.forEach(c=>{
-      const chip=el("div",{style:{background:"rgba(59,109,17,0.13)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"4px",padding:"3px 6px",fontSize:"11px",color:"#3B6D11",marginBottom:"3px",cursor:"pointer"}},c.client_nom+(c.ville?" · "+c.ville:""));
-      chip.addEventListener("click",()=>set({modal:"detail",selected:c}));
-      cell.appendChild(chip);
+  const selMode=!!S.planifierDevis;
+
+  // Bannière mode sélection de date
+  if(selMode){
+    const d=S.planifierDevis;
+    const banner=el("div",{style:{background:"rgba(59,109,17,0.08)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"10px",padding:"0.9rem 1.2rem",marginBottom:"1rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"8px"}});
+    banner.appendChild(el("div",{},[
+      el("div",{style:{fontSize:"11px",color:"#3B6D11",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"3px"}},"📅 Cliquer sur un jour pour planifier"),
+      el("div",{style:{fontSize:"14px",color:"#2a2520",fontWeight:"500"}},d.client_nom+(d.ville?" · "+d.ville:""))
+    ]));
+    const bSkip=el("button",{style:{...BS,fontSize:"12px",padding:"6px 12px"}},"Passer sans date");
+    bSkip.addEventListener("click",async()=>{
+      const patch={statut:"Gagné",updated_at:new Date().toISOString()};
+      await updateDevisSupabase(d.numero,patch);
+      S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+      if(d._genFacture)genPDF({...d,...patch},"facture");
+      set({planifierDevis:null});
     });
-    grid.appendChild(cell);
+    banner.appendChild(bSkip);
+    wrap.appendChild(banner);
+  }
+
+  // Toggle Semaine / Mois
+  const topRow=el("div",{style:{display:"flex",gap:"6px",alignItems:"center",marginBottom:"1rem"}});
+  ["semaine","mois"].forEach(vue=>{
+    const active=S.planningVue===vue;
+    const b=el("button",{style:{...(active?BP:BS),fontSize:"12px",padding:"4px 16px"}},vue==="semaine"?"Semaine":"Mois");
+    if(!active)b.addEventListener("click",()=>set({planningVue:vue}));
+    topRow.appendChild(b);
   });
-  wrap.appendChild(grid);
-  // Chantiers sans date
-  const aplanifier=gagnes.filter(d=>!d.date_intervention);
-  wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"18px",fontWeight:"400",marginBottom:"1rem"}},"Interventions à planifier"));
-  if(!aplanifier.length){wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Tous les chantiers ont une date."));}
-  aplanifier.forEach(d=>{
-    const row=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"0.9rem 1.2rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"0.5rem",marginBottom:"8px"}});
-    row.appendChild(el("div",{},[el("span",{style:{color:"#2a2520",fontWeight:"500",fontSize:"14px"}},d.client_nom),el("span",{style:{color:"#8a8278",fontSize:"12px",marginLeft:"10px"}},d.ville||"")]));
-    row.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278"}},`${TARIFS[d.type_sol]?.label} · ${d.surface} m²`));
-    row.appendChild(el("div",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},((d.montant_ht||0)*1.2).toFixed(0)+" € TTC"));
-    const bPlan=el("button",{style:{...BS,fontSize:"11px",padding:"4px 10px",color:"#3B6D11",borderColor:"#3B6D1144"}},"📅 Planifier");
-    bPlan.addEventListener("click",()=>set({modal:"planifier",planifierDevis:d}));
-    row.appendChild(bPlan);
-    wrap.appendChild(row);
-  });
+  wrap.appendChild(topRow);
+
+  const clickDay=async(dateStr)=>{
+    if(!selMode)return;
+    const d=S.planifierDevis;
+    const patch={statut:"Gagné",date_intervention:dateStr,updated_at:new Date().toISOString()};
+    await updateDevisSupabase(d.numero,patch);
+    S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+    if(d._genFacture)genPDF({...d,...patch},"facture");
+    set({planifierDevis:null});
+  };
+
+  if(S.planningVue==="semaine"){
+    const jours=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+    const debut=new Date(today);
+    const dow=(today.getDay()+6)%7;
+    debut.setDate(today.getDate()-dow+S.semaine*7);
+    const bpS=isMobile()?{background:"#ffffff",border:"1px solid #e8e4dc",color:"#706a62",padding:"8px 12px",fontSize:"16px",borderRadius:"10px",WebkitAppearance:"none",minWidth:"40px",display:"flex",alignItems:"center",justifyContent:"center"}:BS;
+    const nav=el("div",{style:{display:"flex",gap:isMobile()?"6px":"0.8rem",marginBottom:"1.2rem",alignItems:"center"}});
+    const bp=el("button",{style:bpS},isMobile()?"‹":"← Précédente");bp.addEventListener("click",()=>set({semaine:S.semaine-1}));nav.appendChild(bp);
+    nav.appendChild(el("span",{style:{color:"#2a2520",fontSize:isMobile()?"12px":"14px",fontWeight:"500",flex:"1",textAlign:"center"}},`Sem. du ${debut.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`));
+    const bn=el("button",{style:bpS},isMobile()?"›":"Suivante →");bn.addEventListener("click",()=>set({semaine:S.semaine+1}));nav.appendChild(bn);
+    const bt=el("button",{style:{...bpS,fontSize:isMobile()?"11px":"12px",padding:isMobile()?"8px 8px":"4px 10px",color:"#c9a84c",borderColor:"rgba(201,168,76,0.3)"}},"Auj.");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);
+    wrap.appendChild(nav);
+    const grid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:isMobile()?"2px":"4px",marginBottom:"1.5rem"}});
+    jours.forEach((jour,i)=>{
+      const date=new Date(debut);date.setDate(debut.getDate()+i);
+      const dateStr=date.toISOString().split("T")[0];
+      const isToday=date.toDateString()===today.toDateString();
+      const isSun=date.getDay()===0;
+      const dayChantiers=gagnes.filter(d=>d.date_intervention===dateStr);
+      const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"8px",padding:isMobile()?"4px 3px":"0.75rem",minHeight:isMobile()?"52px":"110px",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:selMode?"pointer":"default",transition:"background 0.12s,border-color 0.12s"}});
+      if(selMode){
+        cell.addEventListener("mouseenter",()=>{cell.style.background="rgba(59,109,17,0.07)";cell.style.borderColor="rgba(59,109,17,0.35)";});
+        cell.addEventListener("mouseleave",()=>{cell.style.background=isToday?"rgba(201,168,76,0.08)":"#ffffff";cell.style.borderColor=isToday?"rgba(201,168,76,0.3)":"#e8e4dc";});
+        cell.addEventListener("click",()=>clickDay(dateStr));
+      }
+      cell.appendChild(el("div",{style:{fontSize:isMobile()?"7px":"9px",letterSpacing:"0.08em",textTransform:"uppercase",color:isToday?"#b08030":isSun?"#a07060":"#9a9488",marginBottom:"2px",fontWeight:isSun?"600":"400"}},jour));
+      cell.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile()?"12px":"15px",color:isToday?"#b08030":"#c0b8ae",marginBottom:isMobile()?"2px":"5px"}},String(date.getDate())));
+      dayChantiers.forEach(c=>{
+        if(isMobile()){
+          const dot=el("div",{style:{width:"5px",height:"5px",background:"#3B6D11",borderRadius:"50%",margin:"2px auto",cursor:"pointer"}});
+          dot.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"detail",selected:c});});
+          cell.appendChild(dot);
+        }else{
+          const row=el("div",{style:{display:"flex",gap:"2px",alignItems:"center",marginBottom:"3px"}});
+          const chip=el("div",{style:{background:"rgba(59,109,17,0.13)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"4px",padding:"2px 5px",fontSize:"10px",color:"#3B6D11",flex:"1",cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},c.client_nom+(c.ville?" · "+c.ville:""));
+          chip.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"detail",selected:c});});
+          const bEd=el("button",{style:{background:"none",border:"none",color:"#b0a898",fontSize:"11px",cursor:"pointer",padding:"0 2px",lineHeight:"1",flexShrink:"0"},title:"Modifier la date"},"✎");
+          bEd.addEventListener("click",(e)=>{e.stopPropagation();set({planifierDevis:c});});
+          row.appendChild(chip);row.appendChild(bEd);cell.appendChild(row);
+        }
+      });
+      grid.appendChild(cell);
+    });
+    wrap.appendChild(grid);
+  } else {
+    // VUE MOIS
+    const moisRef=new Date(today.getFullYear(),today.getMonth()+S.moisOffset,1);
+    const moisLabel=moisRef.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+    const bpS=isMobile()?{background:"#ffffff",border:"1px solid #e8e4dc",color:"#706a62",padding:"8px 12px",fontSize:"16px",borderRadius:"10px",WebkitAppearance:"none",minWidth:"40px",display:"flex",alignItems:"center",justifyContent:"center"}:BS;
+    const nav=el("div",{style:{display:"flex",gap:isMobile()?"6px":"0.8rem",marginBottom:"1.2rem",alignItems:"center"}});
+    const bp=el("button",{style:bpS},isMobile()?"‹":"← Précédent");bp.addEventListener("click",()=>set({moisOffset:S.moisOffset-1}));nav.appendChild(bp);
+    nav.appendChild(el("span",{style:{color:"#2a2520",fontSize:isMobile()?"13px":"15px",fontWeight:"500",flex:"1",textAlign:"center",textTransform:"capitalize"}},moisLabel));
+    const bn=el("button",{style:bpS},isMobile()?"›":"Suivant →");bn.addEventListener("click",()=>set({moisOffset:S.moisOffset+1}));nav.appendChild(bn);
+    const bt=el("button",{style:{...bpS,fontSize:isMobile()?"10px":"12px",padding:isMobile()?"8px 8px":"4px 10px",color:"#c9a84c",borderColor:"rgba(201,168,76,0.3)"}},"Ce mois");bt.addEventListener("click",()=>set({moisOffset:0}));nav.appendChild(bt);
+    wrap.appendChild(nav);
+    const joursTetes=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+    const grid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:"2px",marginBottom:"1.5rem"}});
+    joursTetes.forEach(j=>grid.appendChild(el("div",{style:{textAlign:"center",fontSize:"9px",color:"#9a9488",padding:"4px 0",textTransform:"uppercase",letterSpacing:"0.07em",fontWeight:"600"}},j)));
+    const firstOfMonth=new Date(moisRef);
+    const startDow=(firstOfMonth.getDay()+6)%7;
+    const cur=new Date(firstOfMonth);cur.setDate(1-startDow);
+    for(let i=0;i<42;i++){
+      const dateStr=cur.toISOString().split("T")[0];
+      const isToday=cur.toDateString()===today.toDateString();
+      const isThisMonth=cur.getMonth()===moisRef.getMonth();
+      const isSun=cur.getDay()===0;
+      const dayChantiers=gagnes.filter(d=>d.date_intervention===dateStr);
+      const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":!isThisMonth?"rgba(0,0,0,0.015)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"6px",padding:isMobile()?"3px":"5px 6px",minHeight:isMobile()?"38px":"72px",cursor:selMode?"pointer":"default",transition:"background 0.12s",opacity:isThisMonth?"1":"0.45"}});
+      if(selMode){
+        cell.addEventListener("mouseenter",()=>{cell.style.background="rgba(59,109,17,0.07)";cell.style.borderColor="rgba(59,109,17,0.35)";});
+        cell.addEventListener("mouseleave",()=>{cell.style.background=isToday?"rgba(201,168,76,0.08)":!isThisMonth?"rgba(0,0,0,0.015)":"#ffffff";cell.style.borderColor=isToday?"rgba(201,168,76,0.3)":"#e8e4dc";});
+        cell.addEventListener("click",()=>clickDay(dateStr));
+      }
+      cell.appendChild(el("div",{style:{fontSize:isMobile()?"9px":"11px",color:isToday?"#b08030":isSun?"#a07060":"#9a9488",fontWeight:isToday?"600":"400",marginBottom:"2px",textAlign:"right"}},String(cur.getDate())));
+      dayChantiers.forEach(c=>{
+        if(isMobile()){
+          const dot=el("div",{style:{width:"5px",height:"5px",background:"#3B6D11",borderRadius:"50%",margin:"1px auto",cursor:"pointer"}});
+          dot.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"detail",selected:c});});
+          cell.appendChild(dot);
+        }else{
+          const row=el("div",{style:{display:"flex",gap:"2px",alignItems:"center",marginBottom:"2px"}});
+          const chip=el("div",{style:{background:"rgba(59,109,17,0.13)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"3px",padding:"2px 4px",fontSize:"9px",color:"#3B6D11",flex:"1",cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},c.client_nom);
+          chip.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"detail",selected:c});});
+          const bEd=el("button",{style:{background:"none",border:"none",color:"#b0a898",fontSize:"10px",cursor:"pointer",padding:"0 1px",lineHeight:"1",flexShrink:"0"},title:"Modifier la date"},"✎");
+          bEd.addEventListener("click",(e)=>{e.stopPropagation();set({planifierDevis:c});});
+          row.appendChild(chip);row.appendChild(bEd);cell.appendChild(row);
+        }
+      });
+      grid.appendChild(cell);
+      cur.setDate(cur.getDate()+1);
+    }
+    wrap.appendChild(grid);
+  }
+
+  // Interventions sans date (hors mode sélection)
+  if(!selMode){
+    const aplanifier=gagnes.filter(d=>!d.date_intervention);
+    wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"18px",fontWeight:"400",marginBottom:"1rem"}},"Interventions à planifier"));
+    if(!aplanifier.length){wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Tous les chantiers ont une date."));}
+    aplanifier.forEach(d=>{
+      const row=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"0.9rem 1.2rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"0.5rem",marginBottom:"8px"}});
+      row.appendChild(el("div",{},[el("span",{style:{color:"#2a2520",fontWeight:"500",fontSize:"14px"}},d.client_nom),el("span",{style:{color:"#8a8278",fontSize:"12px",marginLeft:"10px"}},d.ville||"")]));
+      row.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278"}},`${TARIFS[d.type_sol]?.label} · ${d.surface} m²`));
+      row.appendChild(el("div",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},((d.montant_ht||0)*1.2).toFixed(0)+" € TTC"));
+      const bPlan=el("button",{style:{...BS,fontSize:"11px",padding:"4px 10px",color:"#3B6D11",borderColor:"#3B6D1144"}},"📅 Planifier");
+      bPlan.addEventListener("click",()=>set({planifierDevis:d}));
+      row.appendChild(bPlan);
+      wrap.appendChild(row);
+    });
+  }
   return wrap;
 }
 
