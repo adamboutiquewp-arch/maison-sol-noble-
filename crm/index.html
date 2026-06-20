@@ -2,6 +2,13 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T6K9FR4W');</script>
+<!-- End Google Tag Manager -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -143,6 +150,10 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
 </style>
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T6K9FR4W"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div id="app" style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:8px;">
   <div style="font-size:11px;letter-spacing:3px;color:#b08030;text-transform:uppercase;">Maison</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:#1a1611;">Sol Noble</div>
@@ -399,11 +410,22 @@ function initDirecteur(){
 function genPDF(dv,type="devis"){
   const ht=dv.montant_ht||0,tva=(ht*0.2).toFixed(2),ttc=(ht*1.2).toFixed(2),titre=type==="devis"?"DEVIS":"FACTURE",num=type==="facture"?"FAC-"+dv.numero.replace("MSN-",""):dv.numero;
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T6K9FR4W');</script>
+<!-- End Google Tag Manager -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:40px;}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #c9a84c;}.lm{font-size:9px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;}.ls{font-size:20px;font-weight:300;}.dt{font-size:26px;font-weight:700;letter-spacing:4px;}.bl{display:flex;justify-content:space-between;margin:25px 0;}.bl h3{font-size:9px;letter-spacing:2px;color:#c9a84c;text-transform:uppercase;margin-bottom:6px;}.bl p{line-height:1.7;}table{width:100%;border-collapse:collapse;margin:20px 0;}th{background:#1a1a1a;color:#fff;padding:9px 12px;text-align:left;font-size:11px;}td{padding:9px 12px;border-bottom:1px solid #eee;}.tot{margin-left:auto;width:260px;margin-top:15px;}.tr{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;}.ttc{border-top:2px solid #1a1a1a;font-size:15px;font-weight:700;padding-top:8px;margin-top:3px;}.gold{color:#c9a84c;font-weight:700;}.ft{margin-top:40px;padding-top:15px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;}.nt{background:#f9f7f3;border-left:3px solid #c9a84c;padding:10px 14px;margin:15px 0;font-size:11px;color:#555;}</style></head><body><div class="hd"><div><div class="lm">Maison</div><div class="ls">Sol Noble</div><div style="font-size:11px;color:#888;margin-top:4px;">${INFO.adresse}, ${INFO.cp} ${INFO.ville}</div><div style="font-size:11px;color:#888;">${INFO.tel} · ${INFO.email}</div></div><div style="text-align:right"><div class="dt">${titre}</div><div style="font-size:12px;color:#888">N° ${num}</div><div style="font-size:11px;color:#888;margin-top:3px">Date : ${new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR")}</div><div style="font-size:11px;color:#888">${type==="devis"?"Valable 30 jours":"Échéance : "+new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR")}</div></div></div><div class="bl"><div><h3>Émetteur</h3><p><strong>${INFO.nom}</strong><br>${INFO.forme}<br>SIRET : ${INFO.siret}<br>TVA : ${INFO.tva}</p></div><div><h3>Client</h3><p><strong>${dv.client_nom}</strong><br>${dv.client_tel||""}<br>${dv.client_email||""}<br>${dv.ville||""}</p></div></div><table><thead><tr><th>Description</th><th>Type de sol</th><th>Surface</th><th>Prix/m²</th><th>Total HT</th></tr></thead><tbody><tr><td>${dv.travaux}</td><td>${TARIFS[dv.type_sol]?.label||dv.type_sol}</td><td>${dv.surface} m²</td><td>${dv.prix_m2} €</td><td><strong>${ht.toFixed(2)} €</strong></td></tr>${dv.description?`<tr><td colspan="5" style="font-size:11px;color:#666;font-style:italic">${dv.description}</td></tr>`:""}</tbody></table><div class="tot"><div class="tr"><span>Montant HT</span><span>${ht.toFixed(2)} €</span></div><div class="tr"><span>TVA 20%</span><span>${tva} €</span></div><div class="tr ttc"><span>TOTAL TTC</span><span class="gold">${ttc} €</span></div></div><div class="nt">${type==="devis"?"<strong>Conditions :</strong> Devis valable 30 jours. Déplacement inclus. Acompte 30% à la commande.":"<strong>Règlement :</strong> Paiement à réception. Pénalités de retard : 3x le taux légal."}</div><div class="ft">${INFO.nom} · SIRET ${INFO.siret} · TVA ${INFO.tva}<br>${INFO.adresse}, ${INFO.cp} ${INFO.ville} · ${INFO.email} · ${INFO.site}</div></body></html>`;
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:40px;}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #c9a84c;}.lm{font-size:9px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;}.ls{font-size:20px;font-weight:300;}.dt{font-size:26px;font-weight:700;letter-spacing:4px;}.bl{display:flex;justify-content:space-between;margin:25px 0;}.bl h3{font-size:9px;letter-spacing:2px;color:#c9a84c;text-transform:uppercase;margin-bottom:6px;}.bl p{line-height:1.7;}table{width:100%;border-collapse:collapse;margin:20px 0;}th{background:#1a1a1a;color:#fff;padding:9px 12px;text-align:left;font-size:11px;}td{padding:9px 12px;border-bottom:1px solid #eee;}.tot{margin-left:auto;width:260px;margin-top:15px;}.tr{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;}.ttc{border-top:2px solid #1a1a1a;font-size:15px;font-weight:700;padding-top:8px;margin-top:3px;}.gold{color:#c9a84c;font-weight:700;}.ft{margin-top:40px;padding-top:15px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;}.nt{background:#f9f7f3;border-left:3px solid #c9a84c;padding:10px 14px;margin:15px 0;font-size:11px;color:#555;}</style></head><body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T6K9FR4W"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) --><div class="hd"><div><div class="lm">Maison</div><div class="ls">Sol Noble</div><div style="font-size:11px;color:#888;margin-top:4px;">${INFO.adresse}, ${INFO.cp} ${INFO.ville}</div><div style="font-size:11px;color:#888;">${INFO.tel} · ${INFO.email}</div></div><div style="text-align:right"><div class="dt">${titre}</div><div style="font-size:12px;color:#888">N° ${num}</div><div style="font-size:11px;color:#888;margin-top:3px">Date : ${new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR")}</div><div style="font-size:11px;color:#888">${type==="devis"?"Valable 30 jours":"Échéance : "+new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR")}</div></div></div><div class="bl"><div><h3>Émetteur</h3><p><strong>${INFO.nom}</strong><br>${INFO.forme}<br>SIRET : ${INFO.siret}<br>TVA : ${INFO.tva}</p></div><div><h3>Client</h3><p><strong>${dv.client_nom}</strong><br>${dv.client_tel||""}<br>${dv.client_email||""}<br>${dv.ville||""}</p></div></div><table><thead><tr><th>Description</th><th>Type de sol</th><th>Surface</th><th>Prix/m²</th><th>Total HT</th></tr></thead><tbody><tr><td>${dv.travaux}</td><td>${TARIFS[dv.type_sol]?.label||dv.type_sol}</td><td>${dv.surface} m²</td><td>${dv.prix_m2} €</td><td><strong>${ht.toFixed(2)} €</strong></td></tr>${dv.description?`<tr><td colspan="5" style="font-size:11px;color:#666;font-style:italic">${dv.description}</td></tr>`:""}</tbody></table><div class="tot"><div class="tr"><span>Montant HT</span><span>${ht.toFixed(2)} €</span></div><div class="tr"><span>TVA 20%</span><span>${tva} €</span></div><div class="tr ttc"><span>TOTAL TTC</span><span class="gold">${ttc} €</span></div></div><div class="nt">${type==="devis"?"<strong>Conditions :</strong> Devis valable 30 jours. Déplacement inclus. Acompte 30% à la commande.":"<strong>Règlement :</strong> Paiement à réception. Pénalités de retard : 3x le taux légal."}</div><div class="ft">${INFO.nom} · SIRET ${INFO.siret} · TVA ${INFO.tva}<br>${INFO.adresse}, ${INFO.cp} ${INFO.ville} · ${INFO.email} · ${INFO.site}</div></body></html>`;
   const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();w.print();}
 }
 
