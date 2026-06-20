@@ -344,9 +344,10 @@ async function saveDevisToSupabase(payload){
   const localBefore=JSON.parse(localStorage.getItem("msn_devis")||"[]");
   localStorage.setItem("msn_devis",JSON.stringify([{...payload,_pendingSync:true},...localBefore.filter(d=>d.numero!==payload.numero)]));
   const r=await api("devis",{method:"POST",body:JSON.stringify(toSupabase(payload))});
-  // Succès → on retire le flag pendingSync ; échec → on le garde pour éviter la perte
+  // Succès Supabase = tableau [{...}] ; erreur = objet {code,message} ou null → on garde _pendingSync:true
   const localAfter=JSON.parse(localStorage.getItem("msn_devis")||"[]");
-  const entry=r?{...payload,_pendingSync:false}:{...payload,_pendingSync:true};
+  const saved=Array.isArray(r)&&r.length>0;
+  const entry=saved?{...payload,_pendingSync:false}:{...payload,_pendingSync:true};
   localStorage.setItem("msn_devis",JSON.stringify([entry,...localAfter.filter(d=>d.numero!==payload.numero)]));
   return r;
 }
@@ -436,7 +437,12 @@ function startPolling(){
     _pollCount++;
     const remote=await api("devis?order=created_at.desc&limit=500");
     if(remote===null)return;
-    const devis=mergeDevisLocal(Array.isArray(remote)?remote:[]);
+    let devis=mergeDevisLocal(Array.isArray(remote)?remote:[]);
+    // Garder les items de S.devis absents du merge mais présents en localStorage (_pendingSync:true)
+    const devisNums=new Set(devis.map(d=>d.numero));
+    const localRaw=JSON.parse(localStorage.getItem("msn_devis")||"[]");
+    const stillPending=localRaw.filter(d=>!devisNums.has(d.numero)&&d._pendingSync===true);
+    if(stillPending.length)devis=[...stillPending,...devis];
     const sig=d=>d.map(x=>x.numero+"|"+(x.statut||"")+(x.updated_at||"")).join(",");
     if(sig(devis)!==sig(S.devis)){
       localStorage.setItem("msn_devis",JSON.stringify(devis));
