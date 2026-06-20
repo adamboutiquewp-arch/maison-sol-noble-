@@ -638,7 +638,7 @@ function ouvrirApercu(dv){
   function fSite(s){return String(s).replace(/\./g,"&#46;");}
   const descHTML=descLines.length?descLines.map(function(l){return "<div style=\"padding:2px 0 2px 14px;text-indent:-14px;font-size:10.5px;color:#333333;line-height:1.7;\">&bull; "+l+"</div>";}).join(""):"";
   const logoHTML=LOGO_B64
-    ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:70px;display:block;margin-bottom:8px;\">"
+    ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin-bottom:8px;\">"
     :"<div style=\"font-size:18px;font-weight:700;color:#111111;\">"+INFO.nom+"</div>";
   const cerfaBlock=dv.cerfa
     ?"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;margin-top:12px;\"><strong style=\"color:#111111;\">TVA au taux réduit de "+tvaPct+"% — Article 279-0 bis du CGI :</strong> Ce taux s’applique aux travaux de rénovation portant sur des locaux à usage d’habitation achevés depuis plus de 2 ans. L’attestation CERFA n°1301-SD doit être signée par le client et conservée par les deux parties pendant 6 ans.</div>"
