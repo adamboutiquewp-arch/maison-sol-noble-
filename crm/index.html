@@ -595,12 +595,7 @@ function buildDescription(dv){
   if(dv.oleofuge)L.push("Application d'un traitement oléofuge — protection contre les taches grasses, huiles et corps gras");
   if(sol==="marbre"){
     if(trav.includes("rénovation")||trav.includes("complet")){
-      L.push("Nettoyage dégraissant alcalin et rinçage abondant");
-      L.push("Diagnostic : profondeur des rayures, état des joints");
-      L.push("Rebouchage des fissures et reprise des joints");
-      L.push("Ponçage diamant progressif : "+(grainSeq||"grain 50 → 400 → 800 → 1 500 → 3 000"));
-      L.push("Cristallisation "+fin+" au cristalliseur professionnel à la monobrosse");
-      L.push("Protection finale hydrofuge et oléofuge");
+      L.push(dv.travaux);
     }else if(trav.includes("polissage")){
       L.push("Nettoyage et préparation de la surface");
       L.push("Affinage : "+(grainSeq||"grain 800 → 1 500 → 3 000"));
@@ -618,12 +613,7 @@ function buildDescription(dv){
     }
   }else if(sol==="travertin"){
     if(trav.includes("rénovation")||trav.includes("complet")){
-      L.push("Nettoyage dégraissant et rinçage abondant");
-      L.push("Diagnostic : état des pores, fissures et joints");
-      L.push("Rebouchage des pores et fissures (résine époxy / ciment fin)");
-      L.push("Ponçage diamant progressif : "+(grainSeq||"grain 50 → 400 → 800 → 1 500 → 3 000"));
-      L.push("Cristallisation "+fin+" au cristalliseur professionnel");
-      L.push("Protection finale hydrofuge et oléofuge");
+      L.push(dv.travaux);
     }else if(trav.includes("ponçage")||trav.includes("bouchage")){
       L.push("Nettoyage et évaluation des pores");
       L.push("Rebouchage des pores et fissures à la résine époxy");
@@ -638,12 +628,7 @@ function buildDescription(dv){
     }
   }else if(sol==="granito"){
     if(trav.includes("rénovation")||trav.includes("complet")){
-      L.push("Nettoyage dégraissant spécial granito");
-      L.push("Diagnostic : état des joints et des granulats");
-      L.push("Réparation des joints à la résine époxy teintée assortie");
-      L.push("Ponçage diamant révélateur : "+(grainSeq||"grain 50 → 400 → 800 → 1 500 → 3 000"));
-      L.push("Cristallisation "+fin+" — mise en valeur des granulats colorés");
-      L.push("Protection finale hydrofuge et oléofuge");
+      L.push(dv.travaux);
     }else if(trav.includes("nettoyage")){
       L.push("Nettoyage professionnel dégraissant spécial granito");
       L.push("Rinçage et séchage complet");
