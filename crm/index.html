@@ -184,6 +184,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
 const SUPA_URL="__SUPABASE_URL__";
 const SUPA_KEY="__SUPABASE_ANON_KEY__";
+const RESEND_KEY="__RESEND_API_KEY__";
 
 // ── COMPTE TECHNIQUE SUPABASE AUTH ──────────────────────────────
 // Ce compte permet à l'app de s'authentifier auprès de Supabase
@@ -257,7 +258,7 @@ const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagn
 // Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
 function isLead(d){return d.source==="site_vitrine";}
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -281,6 +282,8 @@ function mergeDevisLocal(remote){
     finition:lm[d.numero]?.finition||d.finition||"brillant",
     rebouchage:lm[d.numero]?.rebouchage||false,
     preparation:lm[d.numero]?.preparation||false,
+    hydrofuge:lm[d.numero]?.hydrofuge||false,
+    oleofuge:lm[d.numero]?.oleofuge||false,
     date_intervention:lm[d.numero]?.date_intervention||null,
     tva_taux:lm[d.numero]?.tva_taux||20,
     cerfa:lm[d.numero]?.cerfa||false
@@ -303,7 +306,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,rebouchage,preparation,date_intervention,tva_taux,cerfa,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,rebouchage,preparation,hydrofuge,oleofuge,date_intervention,tva_taux,cerfa,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -588,6 +591,8 @@ function buildDescription(dv){
     else if(sol==="travertin")L.push("Rebouchage des pores ouverts, fissures et lacunes au mortier de restauration ou résine époxy fluide");
     else if(sol==="granito")L.push("Réparation des joints endommagés et rebouchage des manques à la résine époxy teintée assortie au granulat");
   }
+  if(dv.hydrofuge)L.push("Application d'un traitement hydrofuge — imperméabilisation en profondeur contre les infiltrations d'eau et les taches humides");
+  if(dv.oleofuge)L.push("Application d'un traitement oléofuge — protection contre les taches grasses, huiles et corps gras");
   if(sol==="marbre"){
     if(trav.includes("rénovation")||trav.includes("complet")){
       L.push("Nettoyage dégraissant alcalin et rinçage abondant");
@@ -660,6 +665,17 @@ function buildDescription(dv){
   return L;
 }
 
+async function sendEmailResend(to,subject,text){
+  const r=await fetch("https://api.resend.com/emails",{
+    method:"POST",
+    headers:{"Authorization":"Bearer "+RESEND_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({from:"Maison Sol Noble <contact@maisonsolnoble.com>",to:[to],subject,text})
+  });
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(data?.message||"Erreur Resend "+r.status);
+  return data;
+}
+
 function showEmailModal(d){
   const tvaPct=d.tva_taux||20;
   const ht=(d.montant_ht||0),ttc=(ht*(1+tvaPct/100));
@@ -667,13 +683,15 @@ function showEmailModal(d){
   const defSujet=`Votre devis n°${d.numero} — Maison Sol Noble`;
   const cerfaNote=d.cerfa?`\n⚠️ CERFA n°1301-SD (n°13948*05) : Merci de signer l'attestation jointe et de nous en retourner un exemplaire. Elle est indispensable pour bénéficier du taux de TVA réduit à ${tvaPct}%.\n`:"";
   const defCorps=`Bonjour ${d.client_nom},\n\nVeuillez trouver ci-joint votre devis n°${d.numero}.\n\nRécapitulatif :\n• ${TARIFS[d.type_sol]?.label||d.type_sol} — ${d.travaux}\n• Surface : ${d.surface} m²\n• Montant HT : ${ht.toFixed(2)} €\n• TVA ${tvaPct}% : ${(ht*tvaPct/100).toFixed(2)} €\n• Montant TTC : ${ttc.toFixed(2)} €\n${cerfaNote}\nN'hésitez pas à nous contacter pour toute question.\n\nCordialement,\nMaison Sol Noble\n05 54 54 28 64 — contact@maisonsolnoble.com`;
+  const hasResend=RESEND_KEY&&RESEND_KEY.length>8;
 
   const box=document.createElement("div");
   box.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;";
   const card=document.createElement("div");
   card.style.cssText="background:#fff;border-radius:14px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25);";
   card.innerHTML=`
-    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#1a1611;margin-bottom:16px;font-weight:400;">📧 Envoyer le devis par email</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#1a1611;margin-bottom:4px;font-weight:400;">📧 Envoyer le devis par email</div>
+    <div style="font-size:11px;color:#8a8278;margin-bottom:16px;">De : contact@maisonsolnoble.com</div>
     <div style="margin-bottom:12px;">
       <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8278;display:block;margin-bottom:4px;">Email du client</label>
       <input id="em-email" type="email" value="${defEmail}" placeholder="client@email.com" style="width:100%;border:1px solid #dddad2;border-radius:8px;padding:10px 12px;font-size:14px;color:#1a1611;outline:none;">
@@ -682,28 +700,74 @@ function showEmailModal(d){
       <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8278;display:block;margin-bottom:4px;">Objet</label>
       <input id="em-sujet" type="text" value="${defSujet}" style="width:100%;border:1px solid #dddad2;border-radius:8px;padding:10px 12px;font-size:14px;color:#1a1611;outline:none;">
     </div>
-    <div style="margin-bottom:20px;">
+    <div style="margin-bottom:16px;">
       <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8278;display:block;margin-bottom:4px;">Message</label>
       <textarea id="em-corps" rows="9" style="width:100%;border:1px solid #dddad2;border-radius:8px;padding:10px 12px;font-size:13px;color:#1a1611;resize:vertical;outline:none;font-family:Inter,sans-serif;line-height:1.6;">${defCorps}</textarea>
     </div>
-    <p style="font-size:11px;color:#b0a898;margin-bottom:16px;">Le PDF s'ouvre séparément — imprimez-le puis joignez-le à votre email.</p>
+    <p style="font-size:11px;color:#b0a898;margin-bottom:14px;">📄 Générez le PDF séparément et joignez-le manuellement à votre email.</p>
+    <div id="em-confirm-box" style="display:none;background:#fffbf0;border:1px solid rgba(201,168,76,0.4);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;color:#1a1611;margin-bottom:4px;">✉ Confirmer l'envoi</div>
+      <div id="em-confirm-to" style="font-size:12px;color:#5a5450;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button id="em-confirm-ok" style="flex:1;background:#3B6D11;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;cursor:pointer;font-weight:600;">✓ Envoyer maintenant</button>
+        <button id="em-confirm-cancel" style="flex:1;background:#f5f4f0;color:#5a5450;border:1px solid #dddad2;border-radius:8px;padding:11px;font-size:13px;cursor:pointer;">Annuler</button>
+      </div>
+    </div>
+    <div id="em-feedback" style="display:none;text-align:center;padding:14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px;"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-      <button id="em-pdf" style="flex:1;min-width:140px;background:#f5f4f0;color:#1a1611;border:1px solid #dddad2;border-radius:8px;padding:12px;font-size:13px;cursor:pointer;font-weight:500;">📄 Générer le PDF</button>
-      <button id="em-send" style="flex:1;min-width:140px;background:#c9a84c;color:#111;border:none;border-radius:8px;padding:12px;font-size:13px;cursor:pointer;font-weight:600;">📧 Ouvrir la messagerie</button>
+      <button id="em-pdf" style="flex:1;min-width:120px;background:#f5f4f0;color:#1a1611;border:1px solid #dddad2;border-radius:8px;padding:12px;font-size:13px;cursor:pointer;font-weight:500;">📄 PDF</button>
+      <button id="em-send" style="flex:2;min-width:160px;background:#c9a84c;color:#111;border:none;border-radius:8px;padding:12px;font-size:13px;cursor:pointer;font-weight:600;">${hasResend?"📤 Envoyer depuis contact@maisonsolnoble.com":"📧 Ouvrir ma messagerie"}</button>
     </div>
     ${d.cerfa?`<button id="em-cerfa" style="width:100%;background:#eef4fb;color:#1a4f7a;border:1px solid rgba(26,111,168,0.35);border-radius:8px;padding:11px;font-size:13px;cursor:pointer;font-weight:600;margin-bottom:4px;">📋 Imprimer l'attestation CERFA n°13948*05</button>`:""}
-    <button id="em-close" style="width:100%;margin-top:6px;background:transparent;border:none;color:#b0a898;font-size:13px;cursor:pointer;padding:8px;">Annuler</button>`;
+    <button id="em-close" style="width:100%;margin-top:6px;background:transparent;border:none;color:#b0a898;font-size:13px;cursor:pointer;padding:8px;">Fermer</button>`;
   box.appendChild(card);
   document.body.appendChild(box);
 
   card.querySelector("#em-pdf").addEventListener("click",()=>genPDF(d,"devis"));
+
   card.querySelector("#em-send").addEventListener("click",()=>{
     const email=card.querySelector("#em-email").value.trim();
-    const sujet=encodeURIComponent(card.querySelector("#em-sujet").value);
-    const corps=encodeURIComponent(card.querySelector("#em-corps").value);
-    if(!email){card.querySelector("#em-email").focus();return;}
-    window.location.href=`mailto:${encodeURIComponent(email)}?subject=${sujet}&body=${corps}`;
+    if(!email){card.querySelector("#em-email").style.border="1px solid #a32d2d";card.querySelector("#em-email").focus();return;}
+    card.querySelector("#em-email").style.border="1px solid #dddad2";
+    if(!hasResend){
+      // Fallback mailto
+      const sujet=encodeURIComponent(card.querySelector("#em-sujet").value);
+      const corps=encodeURIComponent(card.querySelector("#em-corps").value);
+      window.location.href=`mailto:${encodeURIComponent(email)}?subject=${sujet}&body=${corps}`;
+      return;
+    }
+    // Afficher la zone de confirmation
+    const confirmBox=card.querySelector("#em-confirm-box");
+    card.querySelector("#em-confirm-to").textContent=`Destinataire : ${email}`;
+    confirmBox.style.display="block";
+    confirmBox.scrollIntoView({behavior:"smooth",block:"nearest"});
   });
+
+  card.querySelector("#em-confirm-cancel")?.addEventListener("click",()=>{
+    card.querySelector("#em-confirm-box").style.display="none";
+  });
+
+  card.querySelector("#em-confirm-ok")?.addEventListener("click",async()=>{
+    const email=card.querySelector("#em-email").value.trim();
+    const sujet=card.querySelector("#em-sujet").value;
+    const corps=card.querySelector("#em-corps").value;
+    const fb=card.querySelector("#em-feedback");
+    const okBtn=card.querySelector("#em-confirm-ok");
+    okBtn.textContent="Envoi en cours…";okBtn.disabled=true;
+    card.querySelector("#em-confirm-box").style.display="none";
+    try{
+      await sendEmailResend(email,sujet,corps);
+      fb.style.cssText="display:block;background:#f0f9ec;border:1px solid rgba(59,109,17,0.3);border-radius:10px;padding:14px;font-size:13px;font-weight:600;color:#3B6D11;margin-bottom:12px;text-align:center;";
+      fb.textContent="✓ Email envoyé avec succès à "+email;
+      card.querySelector("#em-send").style.display="none";
+      setTimeout(()=>box.remove(),3500);
+    }catch(err){
+      fb.style.cssText="display:block;background:#fff0f0;border:1px solid rgba(163,45,45,0.3);border-radius:10px;padding:14px;font-size:13px;font-weight:600;color:#a32d2d;margin-bottom:12px;text-align:center;";
+      fb.textContent="❌ Erreur : "+err.message;
+      okBtn.textContent="✓ Envoyer maintenant";okBtn.disabled=false;
+    }
+  });
+
   if(d.cerfa){const bcerfa=card.querySelector("#em-cerfa");if(bcerfa)bcerfa.addEventListener("click",()=>genCERFA(d));}
   card.querySelector("#em-close").addEventListener("click",()=>box.remove());
   box.addEventListener("click",e=>{if(e.target===box)box.remove();});
@@ -1514,7 +1578,7 @@ function renderDevis(){
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[],rebouchage:d.rebouchage||false,preparation:d.preparation||false,tva_taux:d.tva_taux||20,cerfa:d.cerfa||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[],rebouchage:d.rebouchage||false,preparation:d.preparation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,tva_taux:d.tva_taux||20,cerfa:d.cerfa||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
     const bem=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#1a6fa8",borderColor:"#1a6fa844"}},"📧");bem.title="Envoyer par email";bem.addEventListener("click",()=>showEmailModal(d));acts.appendChild(bem);
     if(d.cerfa){const bcerfa=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#1a4f7a",borderColor:"rgba(26,79,122,0.3)",background:"#eef4fb"}},"📋 CERFA");bcerfa.title="Imprimer attestation CERFA n°13948*05";bcerfa.addEventListener("click",()=>genCERFA(d));acts.appendChild(bcerfa);}
@@ -1663,6 +1727,8 @@ function renderFormDevis(){
     }
     optRow.appendChild(optBtn("🛡 Préparation & protection chantier","preparation"));
     if(f.type_sol!=="parquet")optRow.appendChild(optBtn("🔨 Réparation / Rebouchage","rebouchage"));
+    optRow.appendChild(optBtn("💧 Traitement hydrofuge","hydrofuge"));
+    optRow.appendChild(optBtn("🛢 Traitement oléofuge","oleofuge"));
     optWrap.appendChild(optRow);
     form.appendChild(optWrap);
   }
@@ -1740,7 +1806,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,tva_taux:20,cerfa:false};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
     set({modal:null,selected:null});
   });
   return form;
@@ -2059,7 +2125,7 @@ function renderClients(){
           etat:etatInit,
           description:leadDevis?.description||"",
           finition:sol==="parquet"?"vitrifié":"brillant",
-          grains:[],rebouchage:false,preparation:false,
+          grains:[],rebouchage:false,preparation:false,hydrofuge:false,oleofuge:false,
           tva_taux:20,cerfa:false,
           _leadPrefilled:true
         };

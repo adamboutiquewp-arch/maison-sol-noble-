@@ -21,6 +21,10 @@ if [ -z "$SUPABASE_URL" ]; then
   exit 1
 fi
 
+if [ -z "$RESEND_API_KEY" ]; then
+  echo "AVERTISSEMENT : RESEND_API_KEY non défini — envoi email direct désactivé (fallback mailto:)"
+fi
+
 echo "=== Variables OK : URL=${SUPABASE_URL:0:25}... ==="
 
 # --- Génère config.js avec les vraies valeurs (nouveau fichier créé au build) ---
@@ -36,10 +40,12 @@ const fs = require('fs');
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_ANON_KEY;
 const pwd = process.env.CRM_AUTH_PASSWORD;
+const resend = process.env.RESEND_API_KEY || '';
 let c = fs.readFileSync('crm/index.html', 'utf8');
 c = c.replace(/__SUPABASE_URL__/g, url);
 c = c.replace(/__SUPABASE_ANON_KEY__/g, key);
 c = c.replace(/__CRM_AUTH_PASSWORD__/g, pwd);
+c = c.replace(/__RESEND_API_KEY__/g, resend);
 fs.writeFileSync('crm/index.html', c, 'utf8');
 console.log('OK crm/index.html');
 "
