@@ -264,11 +264,21 @@ async function api(path,opts={},token=null){
 }
 
 function mergeDevisLocal(remote){
-  // Préserve les champs locaux (grains, finition) absents de Supabase
+  // Préserve les champs locaux absents de Supabase + garde les devis local-only (save Supabase raté)
   let local=[];
   try{local=JSON.parse(localStorage.getItem("msn_devis")||"[]");}catch{}
   const lm=Object.fromEntries(local.map(d=>[d.numero,d]));
-  return remote.map(d=>({...d,grains:lm[d.numero]?.grains||[],finition:lm[d.numero]?.finition||d.finition||"brillant"}));
+  const remoteNums=new Set(remote.map(d=>d.numero));
+  const merged=remote.map(d=>({
+    ...d,
+    grains:lm[d.numero]?.grains||[],
+    finition:lm[d.numero]?.finition||d.finition||"brillant",
+    rebouchage:lm[d.numero]?.rebouchage||false,
+    preparation:lm[d.numero]?.preparation||false
+  }));
+  // Devis sauvegardés localement mais pas encore dans Supabase
+  const localOnly=local.filter(d=>!remoteNums.has(d.numero));
+  return [...localOnly,...merged];
 }
 
 async function loadDevisFromSupabase(){
@@ -283,7 +293,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,_leadPrefilled,...rest}=obj;
+  const {grains,finition,rebouchage,preparation,_leadPrefilled,...rest}=obj;
   return rest;
 }
 
