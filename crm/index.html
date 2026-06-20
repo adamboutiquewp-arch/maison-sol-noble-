@@ -35,6 +35,28 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
 .tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:#9a9488;padding:0.6rem 1rem;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;}
 .tab-btn.active{color:#b08030;border-bottom-color:#b08030;}
 @keyframes spin{to{transform:rotate(360deg);}}
+.mob-header,.mob-nav,.mob-fab{display:none;}
+
+/* ── DESKTOP CRM LAYOUT ─────────────────────────────────── */
+.crm-sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;background:#1a1611;display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+.crm-sidebar-logo{padding:1.8rem 1.6rem 1.2rem;}
+.crm-nav-section{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.25);padding:1.2rem 1.6rem 0.4rem;font-weight:500;}
+.crm-nav-item{width:100%;display:flex;align-items:center;gap:12px;padding:0.72rem 1.6rem;background:transparent;border:none;border-left:3px solid transparent;color:rgba(255,255,255,0.45);font-size:13px;font-family:Inter,sans-serif;font-weight:400;text-align:left;cursor:pointer;transition:all 0.15s;letter-spacing:0.01em;}
+.crm-nav-item:hover{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.85);}
+.crm-nav-item.active{background:rgba(201,168,76,0.12);border-left-color:#c9a84c;color:#c9a84c;font-weight:500;}
+.crm-nav-item .nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.crm-sidebar-footer{padding:1rem 1.4rem;border-top:1px solid rgba(255,255,255,0.07);}
+.crm-avatar{width:34px;height:34px;border-radius:50%;background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);display:flex;align-items:center;justify-content:center;font-size:11px;color:#c9a84c;font-weight:600;flex-shrink:0;}
+.crm-main{margin-left:240px;flex:1;min-height:100vh;overflow-x:hidden;}
+.crm-topbar{background:#ffffff;border-bottom:1px solid #eceae4;padding:0 2.2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 #eceae4;}
+.crm-topbar-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:#1a1611;font-weight:400;letter-spacing:0.01em;}
+.crm-topbar-right{display:flex;align-items:center;gap:1rem;}
+.crm-topbar-date{font-size:12px;color:#9a9488;letter-spacing:0.03em;}
+.crm-content{padding:2rem 2.5rem;}
+.crm-btn-primary{background:#c9a84c;color:#ffffff;border:none;padding:0.55rem 1.2rem;font-size:12px;font-weight:600;letter-spacing:0.08em;border-radius:6px;text-transform:uppercase;cursor:pointer;font-family:Inter,sans-serif;box-shadow:0 2px 8px rgba(201,168,76,0.3);transition:opacity 0.15s;}
+.crm-btn-primary:hover{opacity:0.9;}
+.crm-logout-btn{width:100%;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.35);font-size:11px;font-family:Inter,sans-serif;padding:7px 10px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all 0.15s;letter-spacing:0.04em;margin-top:8px;}
+.crm-logout-btn:hover{border-color:rgba(201,168,76,0.4);color:#c9a84c;}
 
 @media(max-width:768px){
   *{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
@@ -665,19 +687,27 @@ function renderCRM(){
     ...(hasAccess("parametres")?[["⚙️","parametres","Paramètres"]]:[]),
     ["📊","statistiques","Statistiques"],
   ];
-  const app=el("div",{style:{minHeight:"100vh",background:"#f5f4f0",display:"flex",overflow:"hidden"}});
-  const sb=el("div",{style:{position:"fixed",top:0,left:0,bottom:0,width:"220px",background:"#ffffff",borderRight:"1px solid #eceae4",display:"flex",flexDirection:"column",zIndex:"100",overflowY:"auto"}});
-  const sh=el("div",{style:{padding:"1.5rem 1.5rem 1rem"}});
-  sh.appendChild(el("div",{style:{fontSize:"0.6rem",letterSpacing:"0.25em",color:"#c9a84c",textTransform:"uppercase",marginBottom:"1px"}},"Maison"));
-  sh.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",color:"#1a1611",fontWeight:"300",lineHeight:"1.1"}},"Sol Noble"));
-  sh.appendChild(el("div",{style:{fontSize:"9px",color:"#9a8858",marginTop:"6px",letterSpacing:"0.15em",textTransform:"uppercase",background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.15)",borderRadius:"3px",padding:"2px 8px",display:"inline-block"}},"Espace de gestion"));
+  const app=el("div",{style:{minHeight:"100vh",background:"#f0ede8",display:"flex",overflow:"hidden"}});
+
+  // ── SIDEBAR (desktop only) ──────────────────────────────
+  const sb=el("div",{className:"crm-sidebar"});
+  const sh=el("div",{className:"crm-sidebar-logo"});
+  sh.appendChild(el("div",{style:{fontSize:"9px",letterSpacing:"0.28em",color:"#c9a84c",textTransform:"uppercase",marginBottom:"2px",fontWeight:"500"}},"Maison"));
+  sh.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.55rem",color:"#ffffff",fontWeight:"300",lineHeight:"1.1"}},"Sol Noble"));
+  sh.appendChild(el("div",{style:{fontSize:"8.5px",color:"rgba(255,255,255,0.28)",marginTop:"10px",letterSpacing:"0.18em",textTransform:"uppercase"}},"Espace de gestion"));
   sb.appendChild(sh);
-  const nav=el("nav",{style:{flex:"1",padding:"0.5rem 0"}});
+  // Separator
+  sb.appendChild(el("div",{style:{height:"1px",background:"rgba(255,255,255,0.07)",margin:"0 1.4rem 0.6rem"}}));
+  const nav=el("nav",{style:{flex:"1",padding:"0.3rem 0"}});
   navItems.forEach(([icon,id,label])=>{
     const active=S.onglet===id;
-    const btn=el("button",{style:{width:"100%",display:"flex",alignItems:"center",gap:"12px",padding:"0.65rem 1.5rem",background:active?"rgba(201,168,76,0.1)":"transparent",border:"none",borderLeft:`2px solid ${active?"#c9a84c":"transparent"}`,color:active?"#b08030":"#8a8278",fontSize:"13px",fontWeight:active?"500":"300",textAlign:"left",transition:"all 0.15s",borderRadius:"0 6px 6px 0",marginRight:"8px"}},el("span",{style:{fontSize:"15px",opacity:active?"1":"0.6"}},icon),label);
-    btn.addEventListener("mouseenter",()=>{if(!active)btn.style.background="rgba(201,168,76,0.06)";btn.style.color=active?"#c9a84c":"#4a4440";});
-    btn.addEventListener("mouseleave",()=>{if(!active)btn.style.background="transparent";btn.style.color=active?"#c9a84c":"#8a8278";});
+    const btn=el("button",{className:"crm-nav-item"+(active?" active":"")});
+    btn.appendChild(el("span",{className:"nav-icon"},icon));
+    btn.appendChild(el("span",{},label));
+    if(!active){
+      btn.addEventListener("mouseenter",()=>{btn.style.background="rgba(255,255,255,0.05)";btn.style.color="rgba(255,255,255,0.85)";});
+      btn.addEventListener("mouseleave",()=>{btn.style.background="transparent";btn.style.color="rgba(255,255,255,0.45)";});
+    }
     if(id==="statistiques"){
       btn.addEventListener("click",()=>{window.location.href="https://analytics.google.com";});
     } else {
@@ -686,30 +716,42 @@ function renderCRM(){
     nav.appendChild(btn);
   });
   sb.appendChild(nav);
-  const sf=el("div",{style:{padding:"1rem 1.5rem",borderTop:"1px solid #eceae4",background:"#f5f4f0"}});
-  const userRow=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}});
-  const avatar=el("div",{style:{width:"32px",height:"32px",borderRadius:"50%",background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",color:"#c9a84c",fontWeight:"600",flexShrink:"0"}},(S.session?.nom||"?").split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase());
-  const userInfo=el("div",{});
-  userInfo.appendChild(el("div",{style:{fontSize:"12px",color:"#2a2520",fontWeight:"500",lineHeight:"1.2"}},S.session?.nom||S.session?.email||""));
+
+  // Sidebar footer — user + logout
+  const sf=el("div",{className:"crm-sidebar-footer"});
+  const userRow=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"0"}});
+  const avatar=el("div",{className:"crm-avatar"},(S.session?.nom||"?").split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase());
+  const userInfo=el("div",{style:{flex:"1",minWidth:"0"}});
+  userInfo.appendChild(el("div",{style:{fontSize:"12px",color:"rgba(255,255,255,0.85)",fontWeight:"500",lineHeight:"1.3",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},S.session?.nom||S.session?.email||""));
   userInfo.appendChild(roleBadge(S.role));
   userRow.appendChild(avatar);userRow.appendChild(userInfo);
   sf.appendChild(userRow);
-  const bo=el("button",{style:{background:"none",border:"1px solid #e8e4dc",borderRadius:"4px",color:"#8a8278",fontSize:"11px",padding:"5px 10px",display:"flex",alignItems:"center",gap:"5px",cursor:"pointer",width:"100%",justifyContent:"center",transition:"all 0.15s"}});
-  bo.textContent="⏻ Déconnexion";
-  bo.addEventListener("mouseenter",()=>{bo.style.borderColor="#c9a84c";bo.style.color="#b08030";});
-  bo.addEventListener("mouseleave",()=>{bo.style.borderColor="#dddad2";bo.style.color="#8a8278";});
+  const bo=el("button",{className:"crm-logout-btn"});
+  bo.textContent="⏻  Déconnexion";
   bo.addEventListener("click",()=>{logoutLocal();set({page:"login",session:null,loginEmail:"",loginPin:"",loginError:""});});
   sf.appendChild(bo);sb.appendChild(sf);if(!isMobile())app.appendChild(sb);
-  const main=el("div",{style:{marginLeft:isMobile()?"0":"220px",flex:"1",minHeight:"100vh",maxWidth:isMobile()?"100vw":"calc(100vw - 220px)",overflowX:"hidden"}});
-  const titles={devis:"Devis",planning:"Planning",clients:"Clients",employes:"Équipe",fiches:"Fiches tech.",parametres:"Paramètres"};
-  const hdr=el("div",{style:{background:"rgba(255,255,255,0.97)",backdropFilter:"blur(10px)",borderBottom:"1px solid #eceae4",padding:"0.85rem 2rem",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:"0",zIndex:"50"},className:"desktop-only"});
-  const hdrLeft=el("div",{style:{display:"flex",alignItems:"center",gap:"12px"}});
-  hdrLeft.appendChild(el("h1",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#1a1611",fontWeight:"400",letterSpacing:"0.02em"}},titles[S.onglet]||"CRM"));
-  hdr.appendChild(hdrLeft);
-  const hr=el("div",{style:{display:"flex",gap:"0.5rem",alignItems:"center"}});
-  hr.appendChild(el("span",{style:{fontSize:"11px",color:"#9a9488"}},new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})));
-  if(hasAccess("devis")){const bn=el("button",{style:{...BP,padding:"0.5rem 1rem",fontSize:"12px"}},"+  Devis rapide");bn.addEventListener("click",()=>set({onglet:"devis",modal:"nouveau"}));hr.appendChild(bn);}
-  hdr.appendChild(hr);main.appendChild(hdr);
+
+  // ── MAIN AREA ──────────────────────────────────────────
+  const titles={devis:"Devis",planning:"Planning",clients:"Clients",employes:"Équipe",fiches:"Fiches techniques",parametres:"Paramètres"};
+  const main=el("div",{className:isMobile()?"":"crm-main",style:isMobile()?{flex:"1",minHeight:"100vh",overflowX:"hidden"}:{}});
+
+  // Desktop top bar
+  if(!isMobile()){
+    const hdr=el("div",{className:"crm-topbar"});
+    const hdrLeft=el("div",{style:{display:"flex",flexDirection:"column",gap:"1px"}});
+    hdrLeft.appendChild(el("div",{style:{fontSize:"10px",letterSpacing:"0.15em",textTransform:"uppercase",color:"#b0a898",fontWeight:"500"}},S.onglet==="statistiques"?"Analytics":(Object.keys(titles).includes(S.onglet)?"":"")));
+    hdrLeft.appendChild(el("h1",{className:"crm-topbar-title"},titles[S.onglet]||"CRM"));
+    hdr.appendChild(hdrLeft);
+    const hr=el("div",{className:"crm-topbar-right"});
+    hr.appendChild(el("span",{className:"crm-topbar-date"},new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})));
+    if(hasAccess("devis")){
+      const bn=el("button",{className:"crm-btn-primary"},"+  Devis rapide");
+      bn.addEventListener("click",()=>set({onglet:"devis",modal:"nouveau"}));
+      hr.appendChild(bn);
+    }
+    hdr.appendChild(hr);
+    main.appendChild(hdr);
+  }
   // Header mobile
   const mobHdr=el("div",{className:"mob-header"});
   const mobLeft=el("div",{style:{display:"flex",flexDirection:"column",gap:"1px"}});
@@ -730,7 +772,7 @@ function renderCRM(){
     fabBtn.addEventListener("click",()=>set({modal:"nouveau"}));
     app.appendChild(fabBtn);
   }
-  const body=el("div",{style:isMobile()?{}:{padding:"2rem 2.5rem"},className:"mob-body"});
+  const body=el("div",{style:isMobile()?{}:{padding:"2rem 2.5rem",background:"#f0ede8",minHeight:"calc(100vh - 60px)"},className:"mob-body"});
   if(S.onglet==="devis")body.appendChild(renderDevis());
   else if(S.onglet==="planning")body.appendChild(renderPlanning());
   else if(S.onglet==="clients")body.appendChild(renderClients());
@@ -766,27 +808,49 @@ function renderDevis(){
   const wrap=el("div",{});
   const dvs=S.devis;
   const ca=dvs.filter(d=>d.statut==="Gagné").reduce((s,d)=>s+(d.montant_ht||0),0);
-  const kpis=el("div",{className:isMobile()?"mob-kpi-grid":"",style:isMobile()?{}:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"1rem",marginBottom:"1.5rem"}});
+  const kpis=el("div",{className:isMobile()?"mob-kpi-grid":"",style:isMobile()?{}:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"1rem",marginBottom:"2rem"}});
   const leads=dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length;
-  [{l:"Leads site",v:leads,alert:leads>0},{l:"Total devis",v:dvs.length},{l:"Gagnés",v:dvs.filter(d=>d.statut==="Gagné").length},{l:"CA HT",v:ca.toFixed(0)+" €"}].forEach((k,i)=>{
-    const c=el("div",{className:isMobile()?"mob-kpi":"",style:isMobile()?{}:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",padding:"1rem 1.2rem",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}});
-    c.appendChild(el("div",{className:isMobile()?"mob-kpi-label":"",style:isMobile()?{}:{fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",marginBottom:"6px"}},k.l));
-    const alertColor=k.alert?"#E24B4A":(i===3?"#c9a84c":"#f0ece4");
-    c.appendChild(el("div",{className:isMobile()?"mob-kpi-val"+(i===3?" gold":""):"",style:isMobile()?{}:{fontFamily:"'Cormorant Garamond',serif",fontSize:"24px",color:alertColor,fontWeight:"400"}},String(k.v)));
-    kpis.appendChild(c);
+  const kpiData=[
+    {l:"Leads site",v:leads,alert:leads>0,icon:"🔔",accent:leads>0?"#E24B4A":"#8a8278"},
+    {l:"Total devis",v:dvs.length,icon:"📄",accent:"#3B8BD4"},
+    {l:"Gagnés",v:dvs.filter(d=>d.statut==="Gagné").length,icon:"✓",accent:"#3B6D11"},
+    {l:"CA HT",v:ca.toFixed(0)+" €",icon:"€",accent:"#c9a84c"},
+  ];
+  kpiData.forEach((k,i)=>{
+    if(isMobile()){
+      const c=el("div",{className:"mob-kpi"});
+      c.appendChild(el("div",{className:"mob-kpi-label"},k.l));
+      c.appendChild(el("div",{className:"mob-kpi-val"+(i===3?" gold":""),style:{color:k.alert?"#E24B4A":""}},String(k.v)));
+      kpis.appendChild(c);
+    } else {
+      const c=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",padding:"1.2rem 1.4rem",boxShadow:"0 1px 6px rgba(0,0,0,0.06)",borderTop:`3px solid ${k.accent}`,transition:"box-shadow 0.15s"}});
+      c.addEventListener("mouseenter",()=>c.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)");
+      c.addEventListener("mouseleave",()=>c.style.boxShadow="0 1px 6px rgba(0,0,0,0.06)");
+      const row=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.6rem"}});
+      row.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",fontWeight:"500"}},k.l));
+      row.appendChild(el("div",{style:{fontSize:"16px",width:"28px",height:"28px",borderRadius:"50%",background:k.accent+"15",display:"flex",alignItems:"center",justifyContent:"center",color:k.accent}},k.icon));
+      c.appendChild(row);
+      c.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"28px",color:k.alert?"#E24B4A":k.accent,fontWeight:"400",letterSpacing:"-0.01em",lineHeight:"1"}},String(k.v)));
+      kpis.appendChild(c);
+    }
   });
   wrap.appendChild(kpis);
   if(!isMobile()){
-    const bar=el("div",{style:{display:"flex",gap:"0.8rem",marginBottom:"1rem",flexWrap:"wrap",alignItems:"center"}});
-    const bn=el("button",{style:BP},"+ Nouveau devis");bn.addEventListener("click",()=>set({modal:"nouveau"}));bar.appendChild(bn);
+    const bar=el("div",{style:{display:"flex",gap:"0.7rem",marginBottom:"1.4rem",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}});
+    const leftActions=el("div",{style:{display:"flex",gap:"0.7rem",alignItems:"center"}});
+    const bn=el("button",{style:BP},"+ Nouveau devis");bn.addEventListener("click",()=>set({modal:"nouveau"}));leftActions.appendChild(bn);
     if(dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length>0){
-      const bl=el("button",{style:{...BP,background:"#E24B4A",marginLeft:"4px"}},`🔔 Leads (${dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length})`);
-      bl.addEventListener("click",()=>set({filterStatut:"Nouveau",search:""}));bar.appendChild(bl);
+      const bl=el("button",{style:{...BP,background:"#E24B4A",boxShadow:"0 2px 8px rgba(226,75,74,0.3)"}},`🔔  Leads (${dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length})`);
+      bl.addEventListener("click",()=>set({filterStatut:"Nouveau",search:""}));leftActions.appendChild(bl);
     }
-    const si=el("input",{type:"text",placeholder:"Rechercher...",style:{maxWidth:"200px"},value:S.search});si.addEventListener("input",e=>{S.search=e.target.value;render();});bar.appendChild(si);
-    const sf=el("select",{style:{maxWidth:"160px",padding:"0.55rem 0.8rem"}});
+    bar.appendChild(leftActions);
+    const rightActions=el("div",{style:{display:"flex",gap:"0.7rem",alignItems:"center"}});
+    const si=el("input",{type:"text",placeholder:"🔍  Rechercher un client, ville...",style:{width:"220px",fontSize:"13px",padding:"0.55rem 0.9rem"},value:S.search});
+    si.addEventListener("input",e=>{S.search=e.target.value;render();});rightActions.appendChild(si);
+    const sf=el("select",{style:{width:"160px",padding:"0.55rem 0.8rem",fontSize:"13px"}});
     ["Tous",...STATUTS].forEach(s=>{const o=el("option",{},s);if(s===S.filterStatut)o.selected=true;sf.appendChild(o);});
-    sf.addEventListener("change",e=>{S.filterStatut=e.target.value;render();});bar.appendChild(sf);
+    sf.addEventListener("change",e=>{S.filterStatut=e.target.value;render();});rightActions.appendChild(sf);
+    bar.appendChild(rightActions);
     wrap.appendChild(bar);
   }else{
     // Barre recherche mobile
@@ -838,16 +902,21 @@ function renderDevis(){
     return wrap;
   }
   // ── DESKTOP: Table layout ──
-  const tbl=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",overflow:"hidden",overflowX:"auto",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}});
-  const t=el("table",{});
-  const trh=el("tr",{style:{borderBottom:"1px solid #e8e4dc"}});
-  ["N°","Client","Ville","Sol","Montant HT","Statut","Actions"].forEach(h=>trh.appendChild(el("th",{style:{padding:"0.8rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",fontWeight:"500"}},h)));
+  const tableWrap=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"12px",overflow:"hidden",overflowX:"auto",boxShadow:"0 2px 12px rgba(0,0,0,0.07)"}});
+  // Table header bar
+  const tableHead=el("div",{style:{padding:"1rem 1.4rem",borderBottom:"1px solid #f0ece4",display:"flex",alignItems:"center",justifyContent:"space-between"}});
+  tableHead.appendChild(el("div",{style:{fontSize:"13px",color:"#2a2520",fontWeight:"500"}},`${filtered.length} devis`+(S.filterStatut!=="Tous"?` · ${S.filterStatut}`:"")+(S.search?` · "${S.search}"`:"") ));
+  tableWrap.appendChild(tableHead);
+  const tbl=tableWrap;
+  const t=el("table",{style:{width:"100%"}});
+  const trh=el("tr",{style:{borderBottom:"2px solid #f0ece4",background:"#faf9f6"}});
+  ["N°","Client","Ville","Type de sol","Montant HT","Statut","Actions"].forEach(h=>trh.appendChild(el("th",{style:{padding:"0.75rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:"#a09890",fontWeight:"600"}},h)));
   t.appendChild(el("thead",{},[trh]));
   const tbody=el("tbody",{});
-  if(!filtered.length){const tr=el("tr",{});tr.appendChild(el("td",{colSpan:"7",style:{padding:"2rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},'Aucun devis — clique sur "+ Nouveau devis"'));tbody.appendChild(tr);}
+  if(!filtered.length){const tr=el("tr",{});tr.appendChild(el("td",{colSpan:"7",style:{padding:"3rem",textAlign:"center",color:"#9a9488",fontSize:"13px"}},'Aucun devis — clique sur "+ Nouveau devis"'));tbody.appendChild(tr);}
   filtered.forEach(d=>{
-    const tr=el("tr",{style:{borderBottom:"1px solid #eceae4"}});
-    tr.addEventListener("mouseenter",()=>tr.style.background="#f5f4f0");tr.addEventListener("mouseleave",()=>tr.style.background="");
+    const tr=el("tr",{style:{borderBottom:"1px solid #f5f3ef",transition:"background 0.1s"}});
+    tr.addEventListener("mouseenter",()=>tr.style.background="#faf9f6");tr.addEventListener("mouseleave",()=>tr.style.background="");
     const numCell=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#c9a84c",fontWeight:"600"}});
     numCell.appendChild(document.createTextNode(d.numero||"—"));
     if(isLead(d)){const lb=el("span",{style:{marginLeft:"6px",background:"rgba(226,75,74,0.15)",color:"#E24B4A",border:"1px solid rgba(226,75,74,0.3)",padding:"1px 6px",borderRadius:"10px",fontSize:"10px",fontWeight:"600"}},"LEAD");numCell.appendChild(lb);}
@@ -869,6 +938,7 @@ function renderDevis(){
   });
   t.appendChild(tbody);tbl.appendChild(t);wrap.appendChild(tbl);return wrap;
 }
+
 
 function renderModal(){
   if(isMobile()){
@@ -1034,6 +1104,15 @@ function renderClients(){
   const map={};
   S.devis.forEach(d=>{if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0};map[d.client_nom].nb++;if(d.statut==="Gagné")map[d.client_nom].ca+=d.montant_ht||0;});
   const clients=Object.values(map);
+  const wrap2=el("div",{});
+  if(!isMobile()){
+    const pageHdr=el("div",{style:{marginBottom:"1.5rem",display:"flex",justifyContent:"space-between",alignItems:"center"}});
+    pageHdr.appendChild(el("div",{},[
+      el("div",{style:{fontSize:"11px",color:"#a09890",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"3px"}},"Répertoire"),
+      el("div",{style:{fontSize:"20px",color:"#1a1611",fontFamily:"'Cormorant Garamond',serif",fontWeight:"400"}},`${clients.length} client${clients.length!==1?"s":""}`),
+    ]));
+    wrap2.appendChild(pageHdr);
+  }
   const grid=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"1fr":"repeat(3,1fr)",gap:isMobile()?"8px":"1rem"}});
   if(!clients.length)grid.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px",gridColumn:"1/-1"}},"Aucun client."));
   clients.forEach(c=>{
@@ -1056,7 +1135,8 @@ function renderClients(){
     card.appendChild(bDel);
     grid.appendChild(card);
   });
-  return grid;
+  wrap2.appendChild(grid);
+  return wrap2;
 }
 
 function renderEmployes(){
