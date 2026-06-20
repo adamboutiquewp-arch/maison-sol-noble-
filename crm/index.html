@@ -251,7 +251,7 @@ const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagn
 // Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
 function isLead(d){return d.source==="site_vitrine";}
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[]}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -503,6 +503,13 @@ function buildDescription(dv){
   const grains=dv.grains&&dv.grains.length?dv.grains:null;
   const grainSeq=grains?"grain "+grains.join(" → "):null;
   const L=[];
+  // Prestations complémentaires — toujours en premier si sélectionnées
+  if(dv.preparation)L.push("Protection et préparation du chantier : déplacement et protection du mobilier, bâchage des surfaces environnantes, aspiration et nettoyage initial du sol");
+  if(dv.rebouchage&&sol!=="parquet"){
+    if(sol==="marbre")L.push("Réparation et rebouchage des fissures, éclats et jointures défectueuses (résine époxy teintée assortie)");
+    else if(sol==="travertin")L.push("Rebouchage des pores ouverts, fissures et lacunes au mortier de restauration ou résine époxy fluide");
+    else if(sol==="granito")L.push("Réparation des joints endommagés et rebouchage des manques à la résine époxy teintée assortie au granulat");
+  }
   if(sol==="marbre"){
     if(trav.includes("rénovation")||trav.includes("complet")){
       L.push("Nettoyage dégraissant alcalin et rinçage abondant");
@@ -563,7 +570,6 @@ function buildDescription(dv){
     }
   }else if(sol==="parquet"){
     const finLabel=fin==="ciré"?"cirage à la cire naturelle (2 couches)":"vitrification polyuréthane mat/brillant (2 couches)";
-    L.push("Préparation : déplacement des obstacles, nettoyage initial");
     L.push("Rebouchage des fentes, nœuds et irrégularités (Sintobois)");
     if(trav.includes("vitrification")||trav.includes("ponçage")||trav.includes("complet")||trav.includes("cirage")){
       L.push("Ponçage progressif : "+(grainSeq||"grain 40 → 60 → 80 → 120"));
@@ -1195,7 +1201,7 @@ function renderDevis(){
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[]};set({modal:"modifier",selected:d});});acts.appendChild(bm);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[],rebouchage:d.rebouchage||false,preparation:d.preparation||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
     if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);genPDF(f,"facture");render();});acts.appendChild(bf);}
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
@@ -1324,6 +1330,22 @@ function renderFormDevis(){
     }
     form.appendChild(grainWrap);
   }
+  // ── OPTIONS SUPPLÉMENTAIRES ──
+  {
+    const optWrap=el("div",{style:{marginBottom:"1rem"}});
+    optWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Prestations complémentaires"));
+    const optRow=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+    function optBtn(label,key){
+      const active=!!S.form[key];
+      const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},label);
+      b.addEventListener("click",()=>{S.form[key]=!S.form[key];render();});
+      return b;
+    }
+    optRow.appendChild(optBtn("🛡 Préparation & protection chantier","preparation"));
+    if(f.type_sol!=="parquet")optRow.appendChild(optBtn("🔨 Réparation / Rebouchage","rebouchage"));
+    optWrap.appendChild(optRow);
+    form.appendChild(optWrap);
+  }
   const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
   form.appendChild(grp("Notes",ta));
   if(f.surface>0){
@@ -1373,7 +1395,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[]};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false};
     set({modal:null,selected:null});
   });
   return form;
