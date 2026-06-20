@@ -251,7 +251,7 @@ const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagn
 // Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
 function isLead(d){return d.source==="site_vitrine";}
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -274,7 +274,8 @@ function mergeDevisLocal(remote){
     grains:lm[d.numero]?.grains||[],
     finition:lm[d.numero]?.finition||d.finition||"brillant",
     rebouchage:lm[d.numero]?.rebouchage||false,
-    preparation:lm[d.numero]?.preparation||false
+    preparation:lm[d.numero]?.preparation||false,
+    date_intervention:lm[d.numero]?.date_intervention||null
   }));
   // Devis sauvegardés localement mais pas encore dans Supabase
   const localOnly=local.filter(d=>!remoteNums.has(d.numero));
@@ -293,7 +294,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,rebouchage,preparation,_leadPrefilled,...rest}=obj;
+  const {grains,finition,rebouchage,preparation,date_intervention,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -1213,7 +1214,7 @@ function renderDevis(){
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
     const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[],rebouchage:d.rebouchage||false,preparation:d.preparation||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
-    if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);genPDF(f,"facture");render();});acts.appendChild(bf);}
+    if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>set({modal:"planifier",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));acts.appendChild(bf);}
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
     bDel.addEventListener("click",e=>{e.stopPropagation();if(confirm("Supprimer le devis "+d.numero+" de "+d.client_nom+" ? Cette action est irréversible.")){deleteDevisSupabase(d.numero).then(()=>render());}});
     acts.appendChild(bDel);
@@ -1230,16 +1231,17 @@ function renderModal(){
     ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
     const sheet=el("div",{className:"mob-sheet"});
     sheet.appendChild(el("div",{className:"mob-sheet-handle"}));
-    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte"};
+    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte",planifier:"Planifier l'intervention"};
     const hdr=el("div",{className:"mob-sheet-header"});
     hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
     const bx=el("button",{style:{background:"rgba(0,0,0,0.06)",border:"none",color:"#9a9488",fontSize:"22px",lineHeight:"1",padding:"4px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
-    bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);
+    bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null}));hdr.appendChild(bx);
     sheet.appendChild(hdr);
     const body=el("div",{className:"mob-sheet-body"});
     if(S.modal==="nouveau"||S.modal==="modifier")body.appendChild(renderFormDevis());
     else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
     else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
+    else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
     sheet.appendChild(body);ov.appendChild(sheet);return ov;
   }
   // ── MODAL DESKTOP ──
@@ -1247,13 +1249,14 @@ function renderModal(){
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
   const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
-  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte employé"};
+  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
-  const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);box.appendChild(hdr);
+  const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
   if(S.modal==="nouveau"||S.modal==="modifier")body.appendChild(renderFormDevis());
   else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
   else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
+  else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
   box.appendChild(body);ov.appendChild(box);return ov;
 }
 
@@ -1411,6 +1414,39 @@ function renderFormDevis(){
   return form;
 }
 
+function renderPlanifier(){
+  const d=S.planifierDevis;
+  const wrap=el("div",{});
+  const info=el("div",{style:{background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1.2rem",fontSize:"13px",color:"#3B6D11",fontWeight:"500"}});
+  info.textContent="✓ Devis validé — "+d.client_nom+(d.ville?" · "+d.ville:"");
+  wrap.appendChild(info);
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"6px"}},"Date d'intervention"));
+  const dateInp=el("input",{type:"date",style:{fontSize:"16px",width:"100%",marginBottom:"1.2rem",padding:"0.6rem 0.8rem",border:"1px solid #dddad2",borderRadius:"8px",background:"#fff",color:"#1a1611"}});
+  dateInp.min=new Date().toISOString().split("T")[0];
+  if(d.date_intervention)dateInp.value=d.date_intervention;
+  wrap.appendChild(dateInp);
+  const bConfirm=el("button",{style:{...BP,width:"100%",marginBottom:"8px"}},"📅 Confirmer la date");
+  bConfirm.addEventListener("click",async()=>{
+    const date=dateInp.value||null;
+    const patch={statut:"Gagné",date_intervention:date,updated_at:new Date().toISOString()};
+    await updateDevisSupabase(d.numero,patch);
+    S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+    if(d._genFacture)genPDF({...d,...patch},"facture");
+    set({modal:null,selected:null,planifierDevis:null});
+  });
+  wrap.appendChild(bConfirm);
+  const bSkip=el("button",{style:{...BS,width:"100%"}},"Passer sans date");
+  bSkip.addEventListener("click",async()=>{
+    const patch={statut:"Gagné",updated_at:new Date().toISOString()};
+    await updateDevisSupabase(d.numero,patch);
+    S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+    if(d._genFacture)genPDF({...d,...patch},"facture");
+    set({modal:null,selected:null,planifierDevis:null});
+  });
+  wrap.appendChild(bSkip);
+  return wrap;
+}
+
 function renderDetailDevis(d){
   const wrap=el("div",{});
   // Infos client
@@ -1430,14 +1466,32 @@ function renderDetailDevis(d){
   wrap.appendChild(lbl("Statut"));
   const ss=el("select",{style:{fontSize:"16px",marginBottom:"1rem"}});
   STATUTS.forEach(s=>{const o=el("option",{},s);if(s===d.statut)o.selected=true;ss.appendChild(o);});
-  ss.addEventListener("change",e=>{const ns=e.target.value;S.devis=S.devis.map(x=>x.numero===d.numero?{...x,statut:ns}:x);S.selected={...d,statut:ns};updateDevisSupabase(d.numero,{statut:ns});render();});
+  ss.addEventListener("change",e=>{
+    const ns=e.target.value;
+    if(ns==="Gagné"){set({modal:"planifier",planifierDevis:{...d,statut:"Gagné"}});return;}
+    S.devis=S.devis.map(x=>x.numero===d.numero?{...x,statut:ns}:x);
+    S.selected={...d,statut:ns};updateDevisSupabase(d.numero,{statut:ns});render();
+  });
   wrap.appendChild(ss);
+  // Date d'intervention
+  if(d.date_intervention){
+    const di=el("div",{style:{background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"8px",padding:"8px 14px",marginBottom:"0.8rem",fontSize:"13px",color:"#3B6D11",fontWeight:"500"}});
+    di.textContent="📅 Intervention : "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    wrap.appendChild(di);
+    const bReplan=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",fontSize:"12px"}},"Modifier la date");
+    bReplan.addEventListener("click",()=>set({modal:"planifier",planifierDevis:d}));
+    wrap.appendChild(bReplan);
+  }else if(d.statut==="Gagné"){
+    const bPlan=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},"📅 Planifier l'intervention");
+    bPlan.addEventListener("click",()=>set({modal:"planifier",planifierDevis:d}));
+    wrap.appendChild(bPlan);
+  }
   // Boutons
   const bpdf=el("button",{className:"mob-btn-full"},"🖨 Imprimer devis PDF");
   bpdf.addEventListener("click",()=>genPDF(d,"devis"));wrap.appendChild(bpdf);
   if(d.statut!=="Gagné"){
     const bf=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff"}},"✓ Convertir en facture");
-    bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);updateDevisSupabase(d.numero,{statut:"Gagné"});genPDF(f,"facture");set({modal:null,selected:null});});
+    bf.addEventListener("click",()=>set({modal:"planifier",planifierDevis:{...d,statut:"Gagné",_genFacture:true}}));
     wrap.appendChild(bf);
   }
   const bc=el("button",{className:"mob-btn-outline"},"Fermer");
@@ -1461,25 +1515,36 @@ function renderPlanning(){
   else{const bt=el("button",{style:{...bpStyle,fontSize:"11px",padding:"10px 10px",color:"#c9a84c",borderColor:"rgba(201,168,76,0.25)"}},"Auj.");bt.addEventListener("click",()=>set({semaine:0}));nav.appendChild(bt);}
   wrap.appendChild(nav);
   const grid=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"repeat(3,1fr)":"repeat(6,1fr)",gap:isMobile()?"6px":"4px",marginBottom:"1.5rem"}});
-  const chantiers=S.devis.filter(d=>d.statut==="Devis envoyé"||d.statut==="Gagné");
+  const gagnes=S.devis.filter(d=>d.statut==="Gagné");
   jours.forEach((jour,i)=>{
     const date=new Date(debut);date.setDate(debut.getDate()+i);
+    const dateStr=date.toISOString().split("T")[0];
     const isToday=date.toDateString()===today.toDateString();
     const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"10px",padding:isMobile()?"8px 10px":"0.8rem",minHeight:isMobile()?"70px":"120px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}});
     cell.appendChild(el("div",{style:{fontSize:"10px",letterSpacing:"0.1em",textTransform:"uppercase",color:isToday?"#b08030":"#9a9488",marginBottom:"4px"}},jour));
     cell.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"16px",color:isToday?"#b08030":"#c0b8ae",marginBottom:"8px"}},String(date.getDate())));
-    if(chantiers[i]){cell.appendChild(el("div",{style:{background:"rgba(59,139,212,0.15)",border:"1px solid rgba(59,139,212,0.3)",borderRadius:"4px",padding:"4px 6px",fontSize:"11px",color:"#3B8BD4"}},chantiers[i].client_nom));}
+    const dayChantiers=gagnes.filter(d=>d.date_intervention===dateStr);
+    dayChantiers.forEach(c=>{
+      const chip=el("div",{style:{background:"rgba(59,109,17,0.13)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"4px",padding:"3px 6px",fontSize:"11px",color:"#3B6D11",marginBottom:"3px",cursor:"pointer"}},c.client_nom+(c.ville?" · "+c.ville:""));
+      chip.addEventListener("click",()=>set({modal:"detail",selected:c}));
+      cell.appendChild(chip);
+    });
     grid.appendChild(cell);
   });
   wrap.appendChild(grid);
-  wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"18px",fontWeight:"400",marginBottom:"1rem"}},"Chantiers à planifier"));
-  if(!chantiers.length)wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucun chantier."));
-  chantiers.forEach(d=>{
+  // Chantiers sans date
+  const aplanifier=gagnes.filter(d=>!d.date_intervention);
+  wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"18px",fontWeight:"400",marginBottom:"1rem"}},"Interventions à planifier"));
+  if(!aplanifier.length){wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Tous les chantiers ont une date."));}
+  aplanifier.forEach(d=>{
     const row=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"0.9rem 1.2rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"0.5rem",marginBottom:"8px"}});
     row.appendChild(el("div",{},[el("span",{style:{color:"#2a2520",fontWeight:"500",fontSize:"14px"}},d.client_nom),el("span",{style:{color:"#8a8278",fontSize:"12px",marginLeft:"10px"}},d.ville||"")]));
     row.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278"}},`${TARIFS[d.type_sol]?.label} · ${d.surface} m²`));
     row.appendChild(el("div",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},((d.montant_ht||0)*1.2).toFixed(0)+" € TTC"));
-    row.appendChild(badge(d.statut));wrap.appendChild(row);
+    const bPlan=el("button",{style:{...BS,fontSize:"11px",padding:"4px 10px",color:"#3B6D11",borderColor:"#3B6D1144"}},"📅 Planifier");
+    bPlan.addEventListener("click",()=>set({modal:"planifier",planifierDevis:d}));
+    row.appendChild(bPlan);
+    wrap.appendChild(row);
   });
   return wrap;
 }
@@ -1487,10 +1552,13 @@ function renderPlanning(){
 function renderClients(){
   const map={};
   S.devis.forEach(d=>{
-    if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0,devisFait:false};
+    if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0,devisFait:false,dateIntervention:null};
     map[d.client_nom].nb++;
     if(!isLead(d))map[d.client_nom].devisFait=true;
-    if(d.statut==="Gagné")map[d.client_nom].ca+=d.montant_ht||0;
+    if(d.statut==="Gagné"){
+      map[d.client_nom].ca+=d.montant_ht||0;
+      if(d.date_intervention)map[d.client_nom].dateIntervention=d.date_intervention;
+    }
   });
   const clients=Object.values(map);
   const wrap2=el("div",{});
@@ -1516,7 +1584,11 @@ function renderClients(){
     bot.appendChild(el("span",{style:{fontSize:"11px",color:"#8a8278"}},c.nb+" devis"));
     bot.appendChild(el("span",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},c.ca.toFixed(0)+" € CA"));
     card.appendChild(bot);
-    if(c.devisFait){
+    if(c.dateIntervention){
+      const di=el("div",{style:{marginTop:"0.5rem",padding:"7px 12px",background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"6px",fontSize:"12px",color:"#3B6D11",fontWeight:"500"}});
+      di.textContent="📅 Intervention : "+new Date(c.dateIntervention+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+      card.appendChild(di);
+    }else if(c.devisFait){
       const traite=el("div",{style:{marginTop:"0.5rem",padding:"7px 12px",background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"6px",display:"flex",alignItems:"center",gap:"7px",fontSize:"12px",color:"#3B6D11",fontWeight:"500"}});
       traite.appendChild(el("span",{},"✓"));
       traite.appendChild(el("span",{},"Devis réalisé"));
