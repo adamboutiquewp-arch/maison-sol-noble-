@@ -266,6 +266,13 @@ async function updateDevisSupabase(numero,patch){
   localStorage.setItem("msn_devis",JSON.stringify(updated));
 }
 
+async function deleteDevisSupabase(numero){
+  await api(`devis?numero=eq.${encodeURIComponent(numero)}`,{method:"DELETE"});
+  const local=JSON.parse(localStorage.getItem("msn_devis")||"[]");
+  localStorage.setItem("msn_devis",JSON.stringify(local.filter(d=>d.numero!==numero)));
+  S.devis=S.devis.filter(d=>d.numero!==numero);
+}
+
 // ── SYSTÈME AUTH PIN LOCAL ────────────────────────────────────
 // Les comptes sont stockés en localStorage
 // Format: {email, nom, role, pin_hash, actif, created_at}
@@ -823,6 +830,9 @@ function renderDevis(){
       bot.appendChild(badge(d.statut));
       bot.appendChild(el("span",{className:"mob-devis-prix"},((d.montant_ht||0)*1.2).toFixed(0)+" € TTC"));
       card.appendChild(bot);
+      const bDel=el("button",{style:{width:"100%",marginTop:"6px",padding:"7px 0",fontSize:"12px",borderRadius:"8px",border:"1px solid rgba(163,45,45,0.27)",background:"rgba(163,45,45,0.05)",color:"#A32D2D",cursor:"pointer",WebkitAppearance:"none"}},"🗑 Supprimer");
+      bDel.addEventListener("click",e=>{e.stopPropagation();if(confirm("Supprimer le devis "+d.numero+" de "+d.client_nom+" ?")){deleteDevisSupabase(d.numero).then(()=>render());}});
+      card.appendChild(bDel);
       wrap.appendChild(card);
     });
     return wrap;
@@ -852,6 +862,9 @@ function renderDevis(){
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
     const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
     if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);genPDF(f,"facture");render();});acts.appendChild(bf);}
+    const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
+    bDel.addEventListener("click",e=>{e.stopPropagation();if(confirm("Supprimer le devis "+d.numero+" de "+d.client_nom+" ? Cette action est irréversible.")){deleteDevisSupabase(d.numero).then(()=>render());}});
+    acts.appendChild(bDel);
     tda.appendChild(acts);tr.appendChild(tda);tbody.appendChild(tr);
   });
   t.appendChild(tbody);tbl.appendChild(t);wrap.appendChild(tbl);return wrap;
@@ -1037,7 +1050,11 @@ function renderClients(){
     card.appendChild(bot);
     const bnd=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Nouveau devis");
     bnd.addEventListener("click",()=>{S.form.client_nom=c.nom;S.form.client_tel=c.tel||"";S.form.client_email=c.email||"";S.form.ville=c.ville||"";set({onglet:"devis",modal:"nouveau"});});
-    card.appendChild(bnd);grid.appendChild(card);
+    card.appendChild(bnd);
+    const bDel=el("button",{style:{...BS,width:"100%",marginTop:"4px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑 Supprimer client");
+    bDel.addEventListener("click",()=>{if(confirm("Supprimer tous les devis de "+c.nom+" ? Cette action est irréversible.")){const nums=S.devis.filter(d=>d.client_nom===c.nom).map(d=>d.numero);Promise.all(nums.map(n=>deleteDevisSupabase(n))).then(()=>render());}});
+    card.appendChild(bDel);
+    grid.appendChild(card);
   });
   return grid;
 }
