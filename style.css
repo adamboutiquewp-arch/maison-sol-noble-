@@ -568,14 +568,10 @@ em { font-style: italic; color: #c9a84c; }
   .services-section, .why-section, .temoignages-section, .contact-section, .zone-section, .problem-section, .galerie-section { padding: 4rem 0; }
 }
 
-@media (max-width: 768px) {
-  .urgence-bar > span { display: none; }
-  .urgence-bar { justify-content: center; padding: 10px 1rem; }
-}
-
 @media (max-width: 480px) {
   .hero-ctas { flex-direction: column; }
   .btn-primary, .btn-secondary { text-align: center; justify-content: center; }
+  .urgence-bar { font-size: 0.7rem; gap: 0.6rem; padding: 8px 1rem; text-align: center; }
 }
 
 /* ===== ANIMATIONS ===== */
