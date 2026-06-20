@@ -1077,13 +1077,13 @@ function renderFormDevis(){
     if(lead){
       // Convertir le lead en devis : PATCH l'enregistrement existant
       const newNum=`MSN-${Date.now().toString().slice(-6)}`;
-      const patch={...S.form,numero:newNum,montant_ht:ht,statut:"Devis envoyé",source:null,updated_at:new Date().toISOString()};
+      const patch={...S.form,numero:newNum,montant_ht:ht,statut:"Nouveau",source:null,updated_at:new Date().toISOString()};
       await updateDevisSupabase(lead.numero,patch);
       S.devis=S.devis.map(d=>d.numero===lead.numero?{...d,...patch}:d);
     }else{
       // Aucun lead existant : créer un nouveau devis
       const num=`MSN-${Date.now().toString().slice(-6)}`;
-      const payload={...S.form,numero:num,montant_ht:ht,statut:"Devis envoyé",created_at:new Date().toISOString()};
+      const payload={...S.form,numero:num,montant_ht:ht,statut:"Nouveau",created_at:new Date().toISOString()};
       await saveDevisToSupabase(payload);
       S.devis=[payload,...S.devis];
     }
