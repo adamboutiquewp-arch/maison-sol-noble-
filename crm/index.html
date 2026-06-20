@@ -650,11 +650,13 @@ function buildDescription(dv){
   return L;
 }
 
-async function sendEmailResend(to,subject,text){
+async function sendEmailResend(to,subject,text,pdfB64=null,pdfName=null){
+  const payload={from:"Maison Sol Noble <contact@maisonsolnoble.com>",to:[to],subject,text};
+  if(pdfB64&&pdfName)payload.attachments=[{filename:pdfName,content:pdfB64}];
   const r=await fetch("https://api.resend.com/emails",{
     method:"POST",
     headers:{"Authorization":"Bearer "+RESEND_KEY,"Content-Type":"application/json"},
-    body:JSON.stringify({from:"Maison Sol Noble <contact@maisonsolnoble.com>",to:[to],subject,text})
+    body:JSON.stringify(payload)
   });
   const data=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(data?.message||"Erreur Resend "+r.status);
@@ -689,7 +691,7 @@ function showEmailModal(d){
       <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#8a8278;display:block;margin-bottom:4px;">Message</label>
       <textarea id="em-corps" rows="9" style="width:100%;border:1px solid #dddad2;border-radius:8px;padding:10px 12px;font-size:13px;color:#1a1611;resize:vertical;outline:none;font-family:Inter,sans-serif;line-height:1.6;">${defCorps}</textarea>
     </div>
-    <p style="font-size:11px;color:#b0a898;margin-bottom:14px;">📄 Générez le PDF séparément et joignez-le manuellement à votre email.</p>
+    ${hasResend?'<p style="font-size:11px;color:#3a7a1a;margin-bottom:14px;font-weight:500;">📎 Le devis PDF sera automatiquement joint à l\'email.</p>':'<p style="font-size:11px;color:#b0a898;margin-bottom:14px;">⚠️ Le PDF s\'ouvrira dans un onglet — enregistrez-le et joignez-le à votre email.</p>'}
     <div id="em-confirm-box" style="display:none;background:#fffbf0;border:1px solid rgba(201,168,76,0.4);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
       <div style="font-size:13px;font-weight:600;color:#1a1611;margin-bottom:4px;">✉ Confirmer l'envoi</div>
       <div id="em-confirm-to" style="font-size:12px;color:#5a5450;margin-bottom:12px;"></div>
@@ -715,10 +717,15 @@ function showEmailModal(d){
     if(!email){card.querySelector("#em-email").style.border="1px solid #a32d2d";card.querySelector("#em-email").focus();return;}
     card.querySelector("#em-email").style.border="1px solid #dddad2";
     if(!hasResend){
-      // Fallback mailto
-      const sujet=encodeURIComponent(card.querySelector("#em-sujet").value);
-      const corps=encodeURIComponent(card.querySelector("#em-corps").value);
-      window.location.href=`mailto:${encodeURIComponent(email)}?subject=${sujet}&body=${corps}`;
+      const fb=card.querySelector("#em-feedback");
+      fb.style.cssText="display:block;background:#fff8e6;border:1px solid rgba(201,168,76,0.4);border-radius:10px;padding:12px;font-size:12px;color:#7a5a0a;margin-bottom:12px;text-align:center;";
+      fb.innerHTML="📄 Le PDF s'ouvre dans un nouvel onglet — enregistrez-le, puis joignez-le à votre email.";
+      genPDF(d,"devis");
+      setTimeout(()=>{
+        const sujet=encodeURIComponent(card.querySelector("#em-sujet").value);
+        const corps=encodeURIComponent(card.querySelector("#em-corps").value);
+        window.location.href=`mailto:${encodeURIComponent(email)}?subject=${sujet}&body=${corps}`;
+      },600);
       return;
     }
     // Afficher la zone de confirmation
@@ -738,12 +745,18 @@ function showEmailModal(d){
     const corps=card.querySelector("#em-corps").value;
     const fb=card.querySelector("#em-feedback");
     const okBtn=card.querySelector("#em-confirm-ok");
-    okBtn.textContent="Envoi en cours…";okBtn.disabled=true;
+    okBtn.textContent="Génération du PDF…";okBtn.disabled=true;
     card.querySelector("#em-confirm-box").style.display="none";
+    let pdfB64=null,pdfName=null;
     try{
-      await sendEmailResend(email,sujet,corps);
+      pdfB64=await genPDFBase64(d,"devis");
+      pdfName=`devis-${d.numero}.pdf`;
+    }catch(e){console.warn("PDF generation failed:",e);}
+    okBtn.textContent="Envoi en cours…";
+    try{
+      await sendEmailResend(email,sujet,corps,pdfB64,pdfName);
       fb.style.cssText="display:block;background:#f0f9ec;border:1px solid rgba(59,109,17,0.3);border-radius:10px;padding:14px;font-size:13px;font-weight:600;color:#3B6D11;margin-bottom:12px;text-align:center;";
-      fb.textContent="✓ Email envoyé avec succès à "+email;
+      fb.textContent="✓ Email envoyé avec le PDF en pièce jointe à "+email;
       card.querySelector("#em-send").style.display="none";
       setTimeout(()=>box.remove(),3500);
     }catch(err){
@@ -758,7 +771,7 @@ function showEmailModal(d){
   box.addEventListener("click",e=>{if(e.target===box)box.remove();});
 }
 
-function genPDF(dv,type="devis"){
+function buildPDFHtml(dv,type="devis"){
   const tvaPct=dv.tva_taux||20;
   const ht=dv.montant_ht||0,tva=ht*(tvaPct/100),ttc=ht*(1+tvaPct/100);
   const titre=type==="devis"?"DEVIS":"FACTURE";
@@ -891,7 +904,45 @@ ${dv.cerfa&&type==="devis"?`<div class="cond" style="border-left-color:#1a6fa8;m
   ${INFO.adresse}, ${INFO.cp} ${INFO.ville} — Tél. ${INFO.tel} — ${INFO.email} — ${INFO.site}
 </div>
 </div></body></html>`;
+  return html;
+}
+
+function genPDF(dv,type="devis"){
+  const html=buildPDFHtml(dv,type);
   const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();w.print();}
+}
+
+async function genPDFBase64(dv,type="devis"){
+  if(!window.html2pdf){
+    await new Promise((resolve,reject)=>{
+      const s=document.createElement("script");
+      s.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+      s.onload=resolve;s.onerror=reject;
+      document.head.appendChild(s);
+    });
+  }
+  const html=buildPDFHtml(dv,type);
+  const ifr=document.createElement("iframe");
+  ifr.style.cssText="position:fixed;left:-9999px;top:0;width:840px;height:1200px;border:none;";
+  document.body.appendChild(ifr);
+  try{
+    ifr.contentDocument.open();
+    ifr.contentDocument.write(html);
+    ifr.contentDocument.close();
+    await new Promise(r=>setTimeout(r,900));
+    const opt={
+      margin:0,
+      image:{type:"jpeg",quality:0.95},
+      html2canvas:{scale:1.5,useCORS:true,logging:false,allowTaint:true,windowWidth:840},
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
+    };
+    const b64=await html2pdf().set(opt).from(ifr.contentDocument.body).outputPdf("datauristring");
+    document.body.removeChild(ifr);
+    return b64.split(",")[1];
+  }catch(err){
+    if(ifr.parentNode)document.body.removeChild(ifr);
+    throw err;
+  }
 }
 
 function genCERFA(dv){
