@@ -1174,6 +1174,7 @@ function renderDevis(){
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
     if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);genPDF(f,"facture");render();});acts.appendChild(bf);}
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
@@ -1192,14 +1193,14 @@ function renderModal(){
     ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
     const sheet=el("div",{className:"mob-sheet"});
     sheet.appendChild(el("div",{className:"mob-sheet-handle"}));
-    const titles={nouveau:"Nouveau devis",detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte"};
+    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte"};
     const hdr=el("div",{className:"mob-sheet-header"});
     hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
     const bx=el("button",{style:{background:"rgba(0,0,0,0.06)",border:"none",color:"#9a9488",fontSize:"22px",lineHeight:"1",padding:"4px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
     bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);
     sheet.appendChild(hdr);
     const body=el("div",{className:"mob-sheet-body"});
-    if(S.modal==="nouveau")body.appendChild(renderFormDevis());
+    if(S.modal==="nouveau"||S.modal==="modifier")body.appendChild(renderFormDevis());
     else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
     else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
     sheet.appendChild(body);ov.appendChild(sheet);return ov;
@@ -1209,11 +1210,11 @@ function renderModal(){
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
   const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
-  const titles={nouveau:"Nouveau devis",detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte employé"};
+  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte employé"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
   const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
-  if(S.modal==="nouveau")body.appendChild(renderFormDevis());
+  if(S.modal==="nouveau"||S.modal==="modifier")body.appendChild(renderFormDevis());
   else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
   else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
   box.appendChild(body);ov.appendChild(box);return ov;
@@ -1257,36 +1258,47 @@ function renderFormDevis(){
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"TTC (TVA 20%)"),el("span",{style:{color:"#c9a84c",fontSize:"17px",fontWeight:"700"}},(ht*1.2).toFixed(2)+" €")]));
     form.appendChild(rc);
   }
+  const isEdit=S.modal==="modifier";
   const btns=el("div",{style:{display:"flex",gap:"0.8rem",justifyContent:isMobile()?"stretch":"flex-end",flexDirection:isMobile()?"column":"row",marginTop:"8px"}});
-  if(!isMobile()){const ba=el("button",{type:"button",style:BS},"Annuler");ba.addEventListener("click",()=>set({modal:null}));btns.appendChild(ba);}
-  const bsub=el("button",{type:"submit",style:isMobile()?{}:BP},isMobile()?"":"Créer le devis");
-  if(isMobile()){bsub.className="mob-btn-full";bsub.textContent="Créer le devis";}
+  if(!isMobile()){const ba=el("button",{type:"button",style:BS},"Annuler");ba.addEventListener("click",()=>set({modal:null,selected:null}));btns.appendChild(ba);}
+  const submitLabel=isEdit?"Sauvegarder les modifications":"Créer le devis";
+  const bsub=el("button",{type:"submit",style:isMobile()?{}:BP},isMobile()?"":submitLabel);
+  if(isMobile()){bsub.className="mob-btn-full";bsub.textContent=submitLabel;}
   btns.appendChild(bsub);form.appendChild(btns);
-  // Avertissement si un lead existe déjà pour ce client
-  const existingLead=S.devis.find(d=>d.client_nom===f.client_nom&&f.client_nom&&isLead(d));
-  if(existingLead){
-    const notice=el("div",{style:{background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.25)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1rem",fontSize:"12px",color:"#3B6D11",lineHeight:"1.5"}});
-    notice.textContent="✓ Ce devis remplacera le lead "+existingLead.numero+" — aucun doublon ne sera créé.";
-    form.insertBefore(notice,form.firstChild);
+  // Avertissement si un lead existe déjà pour ce client (uniquement en mode création)
+  if(!isEdit){
+    const existingLead=S.devis.find(d=>d.client_nom===f.client_nom&&f.client_nom&&isLead(d));
+    if(existingLead){
+      const notice=el("div",{style:{background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.25)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1rem",fontSize:"12px",color:"#3B6D11",lineHeight:"1.5"}});
+      notice.textContent="✓ Ce devis remplacera le lead "+existingLead.numero+" — aucun doublon ne sera créé.";
+      form.insertBefore(notice,form.firstChild);
+    }
   }
   form.addEventListener("submit",async e=>{
     e.preventDefault();
-    const lead=S.devis.find(d=>d.client_nom===S.form.client_nom&&isLead(d));
-    if(lead){
-      // Convertir le lead en devis : PATCH l'enregistrement existant
-      const newNum=`MSN-${Date.now().toString().slice(-6)}`;
-      const patch={...S.form,numero:newNum,montant_ht:ht,statut:"Nouveau",source:null,updated_at:new Date().toISOString()};
-      await updateDevisSupabase(lead.numero,patch);
-      S.devis=S.devis.map(d=>d.numero===lead.numero?{...d,...patch}:d);
+    if(isEdit&&S.selected){
+      // Mode modification : PATCH le devis existant
+      const patch={...S.form,montant_ht:ht,updated_at:new Date().toISOString()};
+      await updateDevisSupabase(S.selected.numero,patch);
+      S.devis=S.devis.map(d=>d.numero===S.selected.numero?{...d,...patch}:d);
     }else{
-      // Aucun lead existant : créer un nouveau devis
-      const num=`MSN-${Date.now().toString().slice(-6)}`;
-      const payload={...S.form,numero:num,montant_ht:ht,statut:"Nouveau",created_at:new Date().toISOString()};
-      await saveDevisToSupabase(payload);
-      S.devis=[payload,...S.devis];
+      const lead=S.devis.find(d=>d.client_nom===S.form.client_nom&&isLead(d));
+      if(lead){
+        // Convertir le lead en devis : PATCH l'enregistrement existant
+        const newNum=`MSN-${Date.now().toString().slice(-6)}`;
+        const patch={...S.form,numero:newNum,montant_ht:ht,statut:"Nouveau",source:null,updated_at:new Date().toISOString()};
+        await updateDevisSupabase(lead.numero,patch);
+        S.devis=S.devis.map(d=>d.numero===lead.numero?{...d,...patch}:d);
+      }else{
+        // Aucun lead existant : créer un nouveau devis
+        const num=`MSN-${Date.now().toString().slice(-6)}`;
+        const payload={...S.form,numero:num,montant_ht:ht,statut:"Nouveau",created_at:new Date().toISOString()};
+        await saveDevisToSupabase(payload);
+        S.devis=[payload,...S.devis];
+      }
     }
     S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30};
-    set({modal:null});
+    set({modal:null,selected:null});
   });
   return form;
 }
