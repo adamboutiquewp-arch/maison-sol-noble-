@@ -517,7 +517,12 @@ function buildDescription(dv){
   const L=[];
   // Prestations complémentaires — toujours en premier si sélectionnées
   if(dv.preparation)L.push("Protection et préparation du chantier : bâchage et protection des surfaces environnantes, aspiration et nettoyage initial du sol");
-  if(dv.rebouchage&&sol!=="parquet"){
+  // Le toggle rebouchage n'est ajouté que si le bloc travaux ne le contient pas déjà
+  const travInclutRebouchage=
+    (sol==="marbre"&&(trav.includes("rénovation")||trav.includes("complet")))||
+    (sol==="travertin"&&(trav.includes("rénovation")||trav.includes("complet")||trav.includes("ponçage")||trav.includes("bouchage")))||
+    (sol==="granito"&&(trav.includes("rénovation")||trav.includes("complet")));
+  if(dv.rebouchage&&sol!=="parquet"&&!travInclutRebouchage){
     if(sol==="marbre")L.push("Réparation et rebouchage des fissures, éclats et jointures défectueuses (résine époxy teintée assortie)");
     else if(sol==="travertin")L.push("Rebouchage des pores ouverts, fissures et lacunes au mortier de restauration ou résine époxy fluide");
     else if(sol==="granito")L.push("Réparation des joints endommagés et rebouchage des manques à la résine époxy teintée assortie au granulat");
