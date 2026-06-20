@@ -1165,7 +1165,12 @@ function renderPlanning(){
 
 function renderClients(){
   const map={};
-  S.devis.forEach(d=>{if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0};map[d.client_nom].nb++;if(d.statut==="Gagné")map[d.client_nom].ca+=d.montant_ht||0;});
+  S.devis.forEach(d=>{
+    if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0,devisFait:false};
+    map[d.client_nom].nb++;
+    if(!isLead(d))map[d.client_nom].devisFait=true;
+    if(d.statut==="Gagné")map[d.client_nom].ca+=d.montant_ht||0;
+  });
   const clients=Object.values(map);
   const wrap2=el("div",{});
   if(!isMobile()){
@@ -1190,9 +1195,16 @@ function renderClients(){
     bot.appendChild(el("span",{style:{fontSize:"11px",color:"#8a8278"}},c.nb+" devis"));
     bot.appendChild(el("span",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},c.ca.toFixed(0)+" € CA"));
     card.appendChild(bot);
-    const bnd=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Nouveau devis");
-    bnd.addEventListener("click",()=>{S.form.client_nom=c.nom;S.form.client_tel=c.tel||"";S.form.client_email=c.email||"";S.form.ville=c.ville||"";set({onglet:"devis",modal:"nouveau"});});
-    card.appendChild(bnd);
+    if(c.devisFait){
+      const traite=el("div",{style:{marginTop:"0.5rem",padding:"7px 12px",background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"6px",display:"flex",alignItems:"center",gap:"7px",fontSize:"12px",color:"#3B6D11",fontWeight:"500"}});
+      traite.appendChild(el("span",{},"✓"));
+      traite.appendChild(el("span",{},"Devis réalisé"));
+      card.appendChild(traite);
+    } else {
+      const bnd=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Créer le devis");
+      bnd.addEventListener("click",()=>{S.form.client_nom=c.nom;S.form.client_tel=c.tel||"";S.form.client_email=c.email||"";S.form.ville=c.ville||"";set({onglet:"devis",modal:"nouveau"});});
+      card.appendChild(bnd);
+    }
     if(!isMobile()){
       const bDel=el("button",{style:{...BS,width:"100%",marginTop:"4px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑 Supprimer client");
       bDel.addEventListener("click",()=>{if(confirm("Supprimer tous les devis de "+c.nom+" ? Cette action est irréversible.")){const nums=S.devis.filter(d=>d.client_nom===c.nom).map(d=>d.numero);Promise.all(nums.map(n=>deleteDevisSupabase(n))).then(()=>render());}});
