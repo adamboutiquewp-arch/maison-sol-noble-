@@ -326,11 +326,15 @@ function startPolling(){
   if(_pollTimer)return;
   _pollTimer=setInterval(async()=>{
     if(S.page!=="crm"||document.hidden)return;
-    const devis=await loadDevisFromSupabase();
-    if(!devis.length)return;
-    const changed=devis.length!==S.devis.length||devis.map(d=>d.numero).join()!==S.devis.map(d=>d.numero).join();
-    if(changed){S.devis=devis;render();}
-  },20000);
+    const remote=await api("devis?order=created_at.desc&limit=500");
+    if(remote===null)return; // erreur réseau, on skip
+    const devis=Array.isArray(remote)?remote:[];
+    const sig=d=>d.map(x=>x.numero+"|"+(x.statut||"")+(x.updated_at||"")).join(",");
+    if(sig(devis)!==sig(S.devis)){
+      localStorage.setItem("msn_devis",JSON.stringify(devis));
+      S.devis=devis;render();
+    }
+  },5000);
 }
 function stopPolling(){clearInterval(_pollTimer);_pollTimer=null;}
 
