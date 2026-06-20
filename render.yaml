@@ -4,6 +4,7 @@ services:
     name: maisonsolnoble
     buildCommand: "bash build.sh"
     staticPublishPath: ./
+    autoDeploy: true
     headers:
       - path: /*
         name: X-Content-Type-Options

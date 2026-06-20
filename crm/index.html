@@ -672,7 +672,7 @@ function renderCRM(){
     btn.addEventListener("mouseenter",()=>{if(!active)btn.style.background="rgba(201,168,76,0.06)";btn.style.color=active?"#c9a84c":"#4a4440";});
     btn.addEventListener("mouseleave",()=>{if(!active)btn.style.background="transparent";btn.style.color=active?"#c9a84c":"#8a8278";});
     if(id==="statistiques"){
-      btn.addEventListener("click",()=>{const a=document.createElement("a");a.href="https://analytics.google.com";a.target="_blank";a.rel="noopener noreferrer";document.body.appendChild(a);a.click();document.body.removeChild(a);});
+      btn.addEventListener("click",()=>{window.location.href="https://analytics.google.com";});
     } else {
       btn.addEventListener("click",()=>set({onglet:id}));
     }
