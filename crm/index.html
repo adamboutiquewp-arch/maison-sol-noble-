@@ -251,7 +251,7 @@ const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagn
 // Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
 function isLead(d){return d.source==="site_vitrine";}
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",prix_m2:30}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -486,10 +486,205 @@ function initDirecteur(){
   }
 }
 
+function buildDescription(dv){
+  const sol=dv.type_sol,fin=dv.finition||"brillant",trav=(dv.travaux||"").toLowerCase(),etat=dv.etat||"moyen";
+  const L=[];
+  if(sol==="marbre"){
+    if(trav.includes("rénovation")||trav.includes("complet")){
+      L.push("Nettoyage dégraissant alcalin et rinçage abondant");
+      L.push("Diagnostic : profondeur des rayures, état des joints");
+      L.push("Rebouchage des fissures et reprise des joints");
+      L.push("Ponçage diamant progressif : grain 50 → 400 → 800 → 1 500 → 3 000");
+      L.push("Cristallisation "+fin+" au cristalliseur professionnel à la monobrosse");
+      L.push("Protection finale hydrofuge et oléofuge");
+    }else if(trav.includes("polissage")){
+      L.push("Nettoyage et préparation de la surface");
+      L.push("Affinage : grain 800 → 1 500 → 3 000");
+      L.push("Cristallisation "+fin+" à la monobrosse professionnelle");
+    }else if(trav.includes("cristallis")){
+      L.push("Nettoyage de la surface");
+      L.push("Application cristalliseur professionnel — finition "+fin);
+    }else if(trav.includes("protection")||trav.includes("imperméabil")){
+      L.push("Nettoyage et dégraissage de la surface");
+      L.push("Application traitement hydrofuge et oléofuge");
+    }else{L.push(dv.travaux);}
+  }else if(sol==="travertin"){
+    if(trav.includes("rénovation")||trav.includes("complet")){
+      L.push("Nettoyage dégraissant et rinçage abondant");
+      L.push("Diagnostic : état des pores, fissures et joints");
+      L.push("Rebouchage des pores et fissures (résine époxy / ciment fin)");
+      L.push("Ponçage diamant progressif : grain 50 → 400 → 800 → 1 500 → 3 000");
+      L.push("Cristallisation "+fin+" au cristalliseur professionnel");
+      L.push("Protection finale hydrofuge et oléofuge");
+    }else if(trav.includes("ponçage")||trav.includes("bouchage")){
+      L.push("Nettoyage et évaluation des pores");
+      L.push("Rebouchage des pores et fissures à la résine époxy");
+      L.push("Ponçage diamant : grain 50 → 1 500");
+      L.push("Cristallisation "+fin);
+    }else if(trav.includes("hydrofuge")||trav.includes("protection")){
+      L.push("Nettoyage de la surface");
+      L.push("Application traitement hydrofuge et oléofuge");
+    }else{L.push(dv.travaux);}
+  }else if(sol==="granito"){
+    if(trav.includes("rénovation")||trav.includes("complet")){
+      L.push("Nettoyage dégraissant spécial granito");
+      L.push("Diagnostic : état des joints et des granulats");
+      L.push("Réparation des joints à la résine époxy teintée assortie");
+      L.push("Ponçage diamant révélateur : grain 50 → 400 → 800 → 1 500 → 3 000");
+      L.push("Cristallisation "+fin+" — mise en valeur des granulats colorés");
+      L.push("Protection finale hydrofuge et oléofuge");
+    }else if(trav.includes("nettoyage")){
+      L.push("Nettoyage professionnel dégraissant spécial granito");
+      L.push("Rinçage et séchage complet");
+    }else{
+      L.push("Ponçage diamant progressif : grain 50 → 3 000");
+      L.push("Cristallisation "+fin);
+    }
+  }else if(sol==="parquet"){
+    const finLabel=fin==="ciré"?"cirage à la cire naturelle (2 couches)":"vitrification polyuréthane mat/brillant (2 couches)";
+    L.push("Préparation : déplacement des obstacles, nettoyage initial");
+    L.push("Rebouchage des fentes, nœuds et irrégularités (Sintobois)");
+    if(trav.includes("vitrification")||trav.includes("ponçage")||trav.includes("complet")||trav.includes("cirage")){
+      L.push("Ponçage progressif : grain 40 → grain 60 → grain 80 → grain 120");
+      L.push("Aspiration complète et dépoussiérage entre chaque passe");
+    }
+    L.push("Finition : "+finLabel);
+    if(etat==="mauvais")L.push("Traitement préventif anti-champignons si nécessaire");
+  }else{L.push(dv.travaux||"");}
+  if(etat==="mauvais")L.push("Note : coefficient de majoration appliqué pour état très dégradé");
+  return L;
+}
+
 function genPDF(dv,type="devis"){
-  const ht=dv.montant_ht||0,tva=(ht*0.2).toFixed(2),ttc=(ht*1.2).toFixed(2),titre=type==="devis"?"DEVIS":"FACTURE",num=type==="facture"?"FAC-"+dv.numero.replace("MSN-",""):dv.numero;
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:40px;}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #c9a84c;}.lm{font-size:9px;letter-spacing:3px;color:#c9a84c;text-transform:uppercase;}.ls{font-size:20px;font-weight:300;}.dt{font-size:26px;font-weight:700;letter-spacing:4px;}.bl{display:flex;justify-content:space-between;margin:25px 0;}.bl h3{font-size:9px;letter-spacing:2px;color:#c9a84c;text-transform:uppercase;margin-bottom:6px;}.bl p{line-height:1.7;}table{width:100%;border-collapse:collapse;margin:20px 0;}th{background:#1a1a1a;color:#fff;padding:9px 12px;text-align:left;font-size:11px;}td{padding:9px 12px;border-bottom:1px solid #eee;}.tot{margin-left:auto;width:260px;margin-top:15px;}.tr{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;}.ttc{border-top:2px solid #1a1a1a;font-size:15px;font-weight:700;padding-top:8px;margin-top:3px;}.gold{color:#c9a84c;font-weight:700;}.ft{margin-top:40px;padding-top:15px;border-top:1px solid #eee;font-size:10px;color:#999;text-align:center;}.nt{background:#f9f7f3;border-left:3px solid #c9a84c;padding:10px 14px;margin:15px 0;font-size:11px;color:#555;}</style></head><body><div class="hd"><div><div class="lm">Maison</div><div class="ls">Sol Noble</div><div style="font-size:11px;color:#888;margin-top:4px;">${INFO.adresse}, ${INFO.cp} ${INFO.ville}</div><div style="font-size:11px;color:#888;">${INFO.tel} · ${INFO.email}</div></div><div style="text-align:right"><div class="dt">${titre}</div><div style="font-size:12px;color:#888">N° ${num}</div><div style="font-size:11px;color:#888;margin-top:3px">Date : ${new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR")}</div><div style="font-size:11px;color:#888">${type==="devis"?"Valable 30 jours":"Échéance : "+new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR")}</div></div></div><div class="bl"><div><h3>Émetteur</h3><p><strong>${INFO.nom}</strong><br>${INFO.forme}<br>SIRET : ${INFO.siret}<br>TVA : ${INFO.tva}</p></div><div><h3>Client</h3><p><strong>${dv.client_nom}</strong><br>${dv.client_tel||""}<br>${dv.client_email||""}<br>${dv.ville||""}</p></div></div><table><thead><tr><th>Description</th><th>Type de sol</th><th>Surface</th><th>Prix/m²</th><th>Total HT</th></tr></thead><tbody><tr><td>${dv.travaux}</td><td>${TARIFS[dv.type_sol]?.label||dv.type_sol}</td><td>${dv.surface} m²</td><td>${dv.prix_m2} €</td><td><strong>${ht.toFixed(2)} €</strong></td></tr>${dv.description?`<tr><td colspan="5" style="font-size:11px;color:#666;font-style:italic">${dv.description}</td></tr>`:""}</tbody></table><div class="tot"><div class="tr"><span>Montant HT</span><span>${ht.toFixed(2)} €</span></div><div class="tr"><span>TVA 20%</span><span>${tva} €</span></div><div class="tr ttc"><span>TOTAL TTC</span><span class="gold">${ttc} €</span></div></div><div class="nt">${type==="devis"?"<strong>Conditions :</strong> Devis valable 30 jours. Déplacement inclus. Acompte 30% à la commande.":"<strong>Règlement :</strong> Paiement à réception. Pénalités de retard : 3x le taux légal."}</div><div class="ft">${INFO.nom} · SIRET ${INFO.siret} · TVA ${INFO.tva}<br>${INFO.adresse}, ${INFO.cp} ${INFO.ville} · ${INFO.email} · ${INFO.site}</div></body></html>`;
+  const ht=dv.montant_ht||0,tva=ht*0.2,ttc=ht*1.2;
+  const titre=type==="devis"?"DEVIS":"FACTURE";
+  const num=type==="facture"?"FAC-"+dv.numero.replace("MSN-","").replace("LEAD-",""):dv.numero;
+  const dateDoc=new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR");
+  const echeance=new Date(Date.now()+30*86400000).toLocaleDateString("fr-FR");
+  const acompte=(ttc*0.3).toFixed(2),solde=(ttc*0.7).toFixed(2);
+  const descLines=buildDescription(dv);
+  const descHTML=descLines.map(l=>`<div class="dl">&#8226; ${l}</div>`).join("");
+  const notesHTML=dv.description?`<div class="notes-extra"><em>Notes complémentaires :</em> ${dv.description}</div>`:"";
+  const solLabel=TARIFS[dv.type_sol]?.label||dv.type_sol;
+  const finLabel=dv.finition?(dv.type_sol==="parquet"?(dv.finition==="ciré"?"Ciré":"Vitrifié"):(dv.finition==="mat"?"Mat":"Brillant")):"—";
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"><title>${titre} ${num}</title><style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Inter,Arial,sans-serif;font-size:12px;color:#1a1611;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.page{max-width:794px;margin:0 auto;padding:48px 52px 44px;min-height:1060px;display:flex;flex-direction:column;}
+/* HEADER */
+.hd{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;margin-bottom:28px;border-bottom:2px solid #c9a84c;}
+.logo-m{font-size:8px;letter-spacing:4px;color:#c9a84c;text-transform:uppercase;font-weight:600;margin-bottom:2px;}
+.logo-n{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;color:#1a1611;line-height:1;}
+.logo-s{font-size:8.5px;color:#9a8858;letter-spacing:2px;text-transform:uppercase;margin-top:5px;}
+.logo-addr{font-size:10px;color:#6a6258;margin-top:12px;line-height:1.9;}
+.doc-t{text-align:right;}
+.doc-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:600;letter-spacing:5px;color:#1a1611;margin-bottom:8px;}
+.doc-ref{font-size:10.5px;color:#6a6258;margin-bottom:3px;}
+.doc-ref strong{color:#1a1611;}
+/* PARTIES */
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;padding:18px 22px;background:#faf9f6;border:1px solid #eceae4;border-radius:6px;}
+.p-label{font-size:7.5px;letter-spacing:2.5px;text-transform:uppercase;color:#c9a84c;font-weight:600;margin-bottom:7px;}
+.p-name{font-size:14px;font-weight:600;color:#1a1611;margin-bottom:5px;}
+.p-detail{font-size:10.5px;color:#5a5450;line-height:1.85;}
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+thead th{background:#1a1611;color:#fff;padding:9px 13px;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;font-weight:500;text-align:left;}
+thead th:last-child{text-align:right;}
+tbody td{padding:13px;border-bottom:1px solid #eceae4;vertical-align:top;font-size:11.5px;}
+tbody td:last-child{text-align:right;font-weight:600;white-space:nowrap;}
+.t-main{font-weight:600;color:#1a1611;margin-bottom:10px;font-size:12.5px;}
+.dl{font-size:10.5px;color:#5a5450;line-height:1.85;padding-left:14px;text-indent:-14px;}
+.notes-extra{margin-top:10px;font-size:10.5px;color:#6a6258;font-style:italic;padding-top:10px;border-top:1px solid #f0ece4;}
+.t-badge{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:#8a6a20;font-size:9px;padding:2px 8px;border-radius:12px;margin-top:6px;letter-spacing:0.5px;}
+/* TOTAUX */
+.totals{display:flex;justify-content:flex-end;margin-bottom:22px;}
+.totals-box{width:270px;}
+.trow{display:flex;justify-content:space-between;padding:7px 14px;font-size:11.5px;border-bottom:1px solid #f0ece4;}
+.trow.ttc-row{background:#1a1611;color:#fff;padding:11px 14px;border-radius:0 0 6px 6px;border-bottom:none;}
+.trow.ttc-row .gold{color:#c9a84c;font-size:14px;font-weight:700;}
+.totals-box{border:1px solid #e8e4dc;border-radius:6px;overflow:hidden;}
+/* PAIEMENT */
+.pay-box{border:1px solid rgba(201,168,76,0.3);border-radius:6px;padding:16px 20px;margin-bottom:18px;background:rgba(201,168,76,0.04);}
+.pay-title{font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:#c9a84c;font-weight:600;margin-bottom:12px;}
+.pay-row{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;padding:3px 0;}
+.pay-sub{font-size:9.5px;color:#9a9488;padding-bottom:10px;margin-bottom:10px;border-bottom:1px dashed rgba(201,168,76,0.25);}
+/* CONDITIONS */
+.cond{border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:10px;color:#5a5450;line-height:1.8;margin-bottom:18px;}
+/* FOOTER */
+.ft{margin-top:auto;padding-top:14px;border-top:1px solid #eceae4;font-size:9px;color:#9a9488;text-align:center;line-height:1.9;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:32px 40px;}}
+</style></head><body><div class="page">
+<div class="hd">
+  <div>
+    <div class="logo-m">Maison</div>
+    <div class="logo-n">Sol Noble</div>
+    <div class="logo-s">Rénovation de sols de prestige</div>
+    <div class="logo-addr">${INFO.adresse}<br>${INFO.cp} ${INFO.ville}<br>${INFO.tel}<br>${INFO.email}<br>${INFO.site}</div>
+  </div>
+  <div class="doc-t">
+    <div class="doc-title">${titre}</div>
+    <div class="doc-ref">N° <strong>${num}</strong></div>
+    <div class="doc-ref">Date : <strong>${dateDoc}</strong></div>
+    <div class="doc-ref">${type==="devis"?"Validité : 30 jours":"Échéance : "+echeance}</div>
+    ${type==="facture"?`<div class="doc-ref">Réf. devis : ${dv.numero}</div>`:""}
+  </div>
+</div>
+<div class="parties">
+  <div>
+    <div class="p-label">Prestataire</div>
+    <div class="p-name">${INFO.nom}</div>
+    <div class="p-detail">${INFO.forme}<br>SIRET : ${INFO.siret}<br>N° TVA : ${INFO.tva}<br>Capital social : ${INFO.capital}</div>
+  </div>
+  <div>
+    <div class="p-label">Client</div>
+    <div class="p-name">${dv.client_nom}</div>
+    <div class="p-detail">${[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).join("<br>")}</div>
+  </div>
+</div>
+<table>
+  <thead><tr><th style="width:52%">Désignation et description des travaux</th><th>Sol</th><th>Surface</th><th>Prix / m²</th><th>Total HT</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>
+        <div class="t-main">${dv.travaux}</div>
+        ${descHTML}
+        <div class="t-badge">Finition : ${finLabel}</div>
+        ${notesHTML}
+      </td>
+      <td>${solLabel}</td>
+      <td>${dv.surface} m²</td>
+      <td>${dv.prix_m2} €/m²</td>
+      <td>${ht.toFixed(2)} €</td>
+    </tr>
+  </tbody>
+</table>
+<div class="totals">
+  <div class="totals-box">
+    <div class="trow"><span>Montant HT</span><span>${ht.toFixed(2)} €</span></div>
+    <div class="trow"><span>TVA 20 %</span><span>${tva.toFixed(2)} €</span></div>
+    <div class="trow ttc-row"><span style="font-weight:600">TOTAL TTC</span><span class="gold">${ttc.toFixed(2)} €</span></div>
+  </div>
+</div>
+<div class="pay-box">
+  <div class="pay-title">Modalités de règlement</div>
+  <div class="pay-row"><span><strong>Acompte à la commande — 30 %</strong></span><span style="font-weight:700;color:#1a1611">${acompte} € TTC</span></div>
+  <div class="pay-sub">Dû à la signature du présent ${titre.toLowerCase()}</div>
+  <div class="pay-row"><span><strong>Solde à la livraison du chantier — 70 %</strong></span><span style="font-weight:700;color:#1a1611">${solde} € TTC</span></div>
+  <div style="font-size:9.5px;color:#9a9488;padding-top:3px;">Dû à la réception et validation des travaux par le client</div>
+</div>
+<div class="cond">
+${type==="devis"
+  ?"<strong>Conditions générales :</strong> Devis valable 30 jours à compter de la date d'émission. Déplacement inclus dans la zone d'intervention. Validité sous réserve de disponibilité des créneaux. Ce devis est établi sur la base des informations communiquées et d'une visite préalable si nécessaire. Tout travaux supplémentaire fera l'objet d'un avenant."
+  :"<strong>Conditions de règlement :</strong> Paiement à réception de facture. En cas de retard de paiement, des pénalités de 3 fois le taux d'intérêt légal seront appliquées (art. L.441-10 du Code de commerce). Indemnité forfaitaire de recouvrement : 40 €."
+}
+</div>
+<div class="ft">
+  ${INFO.nom} — ${INFO.forme} — Capital social ${INFO.capital}<br>
+  SIRET ${INFO.siret} — N° TVA intracommunautaire ${INFO.tva}<br>
+  ${INFO.adresse}, ${INFO.cp} ${INFO.ville} — Tél. ${INFO.tel} — ${INFO.email} — ${INFO.site}
+</div>
+</div></body></html>`;
   const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();w.print();}
 }
 
@@ -1043,7 +1238,7 @@ function renderFormDevis(){
   function sel(name,options){
     const s=el("select",{style:{fontSize:"16px"}});
     options.forEach(([v,l])=>{const o=el("option",{value:v},l);if(f[name]===v)o.selected=true;s.appendChild(o);});
-    s.addEventListener("change",e=>{S.form[name]=e.target.value;if(name==="type_sol"){S.form.travaux=TARIFS[e.target.value].trav[0];S.form.prix_m2=TARIFS[e.target.value].prix[0];}if(name==="travaux"){const idx=TARIFS[S.form.type_sol].trav.indexOf(e.target.value);S.form.prix_m2=TARIFS[S.form.type_sol].prix[idx]||S.form.prix_m2;}render();});
+    s.addEventListener("change",e=>{S.form[name]=e.target.value;if(name==="type_sol"){S.form.travaux=TARIFS[e.target.value].trav[0];S.form.prix_m2=TARIFS[e.target.value].prix[0];S.form.finition=e.target.value==="parquet"?"vitrifié":"brillant";}if(name==="travaux"){const idx=TARIFS[S.form.type_sol].trav.indexOf(e.target.value);S.form.prix_m2=TARIFS[S.form.type_sol].prix[idx]||S.form.prix_m2;}render();});
     return s;
   }
   form.appendChild(row(grp("Nom client *",inp("client_nom","Jean Dupont"),0),grp("Téléphone",inp("client_tel","06 12 34 56 78"),0)));
@@ -1051,6 +1246,8 @@ function renderFormDevis(){
   form.appendChild(el("div",{style:{height:"1px",background:"#e8e4dc",margin:"0.5rem 0 1rem"}}));
   form.appendChild(row(grp("Type de sol *",sel("type_sol",Object.entries(TARIFS).map(([k,v])=>[k,v.label])),0),grp("État du sol",sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]]),0)));
   form.appendChild(row(grp("Travaux *",sel("travaux",tarif.trav.map((t,i)=>[t,`${t} — ${tarif.prix[i]} €/m²`])),0),grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
+  const finOpts=f.type_sol==="parquet"?[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]:[["brillant","Brillant"],["mat","Mat"]];
+  form.appendChild(row(grp("Finition",sel("finition",finOpts),0)));
   const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
   form.appendChild(grp("Notes",ta));
   if(f.surface>0){
@@ -1088,7 +1285,7 @@ function renderFormDevis(){
       await saveDevisToSupabase(payload);
       S.devis=[payload,...S.devis];
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",prix_m2:30};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30};
     set({modal:null});
   });
   return form;
