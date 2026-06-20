@@ -285,7 +285,7 @@ function genNumeroDevis(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -310,6 +310,7 @@ function mergeDevisLocal(remote){
     rebouchage:lm[d.numero]?.rebouchage||false,
     preparation:lm[d.numero]?.preparation||false,
     cristallisation:lm[d.numero]?.cristallisation||false,
+    mineralisation:lm[d.numero]?.mineralisation||false,
     hydrofuge:lm[d.numero]?.hydrofuge||false,
     oleofuge:lm[d.numero]?.oleofuge||false,
     date_intervention:lm[d.numero]?.date_intervention||null,
@@ -334,7 +335,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,rebouchage,preparation,cristallisation,hydrofuge,oleofuge,date_intervention,tva_taux,cerfa,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,rebouchage,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,date_intervention,tva_taux,cerfa,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -616,8 +617,16 @@ function buildDescription(dv){
     else if(sol==="travertin")L.push("Rebouchage des pores ouverts, fissures et lacunes au mortier de restauration ou résine époxy fluide");
     else if(sol==="granito")L.push("Réparation des joints endommagés et rebouchage des manques à la résine époxy teintée assortie au granulat");
   }
-  // Étape 2 : Ponçage — grains sélectionnés uniquement
-  if(grains)L.push("Ponçage — grain "+grains.join(" → "));
+  // Étape 2 : Ponçage — avec minéralisation intégrée entre grain 100 et 200
+  if(dv.mineralisation&&sol!=="parquet"){
+    const coarse=grains?grains.filter(g=>g<=100):[];
+    const fine=grains?grains.filter(g=>g>=200):[];
+    if(coarse.length)L.push("Ponçage — grain "+coarse.join(" → "));
+    L.push("Minéralisation — traitement durcisseur pénétrant solidifiant le sol en profondeur");
+    if(fine.length)L.push("Ponçage fin — grain "+fine.join(" → "));
+  }else if(grains){
+    L.push("Ponçage — grain "+grains.join(" → "));
+  }
   // Étape 3 : Cristallisation
   if(dv.cristallisation&&sol!=="parquet")L.push("Cristallisation — traitement thermochimique en surface restituant l'éclat naturel de la pierre et augmentant sa résistance");
   // Étape 4 : Traitements de protection
@@ -1894,6 +1903,12 @@ function renderFormDevis(){
       pWrap.appendChild(el("div",{style:{fontSize:"11px",color:"#706a62",fontWeight:"600",marginBottom:"6px"}},"✨ Ponçage — grains"));
       const gBtns=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"6px"}});
       GRAINS_LIST.forEach(g=>{
+        if(g===200&&f.type_sol!=="parquet"){
+          const mActive=S.form.mineralisation||false;
+          const mBtn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px dashed "+(mActive?"#7a5a9a":"#c4b0d8"),background:mActive?"rgba(122,90,154,0.1)":"#faf8fc",color:mActive?"#5a3a7a":"#9a86aa",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},"🪨 Minéralisation");
+          mBtn.addEventListener("click",()=>{S.form.mineralisation=!S.form.mineralisation;render();});
+          gBtns.appendChild(mBtn);
+        }
         const active=(S.form.grains||[]).includes(g);
         const btn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},`${g}`);
         btn.addEventListener("click",()=>{
@@ -1995,7 +2010,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,cristallisation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
     set({modal:null,selected:null});
   });
   return form;
@@ -2314,7 +2329,7 @@ function renderClients(){
           etat:etatInit,
           description:leadDevis?.description||"",
           finition:sol==="parquet"?"vitrifié":"brillant",
-          grains:[],rebouchage:false,preparation:false,cristallisation:false,hydrofuge:false,oleofuge:false,
+          grains:[],rebouchage:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,
           tva_taux:20,cerfa:false,
           _leadPrefilled:true
         };
