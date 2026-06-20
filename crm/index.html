@@ -671,6 +671,7 @@ function renderCRM(){
     ...(hasAccess("employes")?[["👤","employes","Équipe"]]:[]),
     ...(hasAccess("fiches")?[["🔧","fiches","Fiches tech."]]:[]),
     ...(hasAccess("parametres")?[["⚙️","parametres","Paramètres"]]:[]),
+    ["📊","statistiques","Statistiques"],
   ];
   const app=el("div",{style:{minHeight:"100vh",background:"#f5f4f0",display:"flex",overflow:"hidden"}});
   const sb=el("div",{style:{position:"fixed",top:0,left:0,bottom:0,width:"220px",background:"#ffffff",borderRight:"1px solid #eceae4",display:"flex",flexDirection:"column",zIndex:"100",overflowY:"auto"}});
@@ -685,7 +686,12 @@ function renderCRM(){
     const btn=el("button",{style:{width:"100%",display:"flex",alignItems:"center",gap:"12px",padding:"0.65rem 1.5rem",background:active?"rgba(201,168,76,0.1)":"transparent",border:"none",borderLeft:`2px solid ${active?"#c9a84c":"transparent"}`,color:active?"#b08030":"#8a8278",fontSize:"13px",fontWeight:active?"500":"300",textAlign:"left",transition:"all 0.15s",borderRadius:"0 6px 6px 0",marginRight:"8px"}},el("span",{style:{fontSize:"15px",opacity:active?"1":"0.6"}},icon),label);
     btn.addEventListener("mouseenter",()=>{if(!active)btn.style.background="rgba(201,168,76,0.06)";btn.style.color=active?"#c9a84c":"#4a4440";});
     btn.addEventListener("mouseleave",()=>{if(!active)btn.style.background="transparent";btn.style.color=active?"#c9a84c":"#8a8278";});
-    btn.addEventListener("click",()=>set({onglet:id}));nav.appendChild(btn);
+    if(id==="statistiques"){
+      btn.addEventListener("click",()=>window.open("https://analytics.google.com","_blank"));
+    } else {
+      btn.addEventListener("click",()=>set({onglet:id}));
+    }
+    nav.appendChild(btn);
   });
   sb.appendChild(nav);
   const sf=el("div",{style:{padding:"1rem 1.5rem",borderTop:"1px solid #eceae4",background:"#f5f4f0"}});
