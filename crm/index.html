@@ -282,6 +282,7 @@ function mergeDevisLocal(remote){
     finition:lm[d.numero]?.finition||d.finition||"brillant",
     rebouchage:lm[d.numero]?.rebouchage||false,
     preparation:lm[d.numero]?.preparation||false,
+    cristallisation:lm[d.numero]?.cristallisation||false,
     hydrofuge:lm[d.numero]?.hydrofuge||false,
     oleofuge:lm[d.numero]?.oleofuge||false,
     date_intervention:lm[d.numero]?.date_intervention||null,
@@ -306,7 +307,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,rebouchage,preparation,hydrofuge,oleofuge,date_intervention,tva_taux,cerfa,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,rebouchage,preparation,cristallisation,hydrofuge,oleofuge,date_intervention,tva_taux,cerfa,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -579,9 +580,7 @@ function buildDescription(dv){
   const grains=dv.grains&&dv.grains.length?dv.grains:null;
   const grainSeq=grains?"grain "+grains.join(" → "):null;
   const L=[];
-  // Prestations complémentaires — toujours en premier si sélectionnées
-  if(dv.preparation)L.push("Protection et préparation du chantier : bâchage et protection des surfaces environnantes, aspiration et nettoyage initial du sol");
-  // Le toggle rebouchage n'est ajouté que si le bloc travaux ne le contient pas déjà
+  // Étape 1 : Rebouchage
   const travInclutRebouchage=
     (sol==="marbre"&&(trav.includes("rénovation")||trav.includes("complet")))||
     (sol==="travertin"&&(trav.includes("rénovation")||trav.includes("complet")||trav.includes("ponçage")||trav.includes("bouchage")))||
@@ -591,6 +590,11 @@ function buildDescription(dv){
     else if(sol==="travertin")L.push("Rebouchage des pores ouverts, fissures et lacunes au mortier de restauration ou résine époxy fluide");
     else if(sol==="granito")L.push("Réparation des joints endommagés et rebouchage des manques à la résine époxy teintée assortie au granulat");
   }
+  // Étape 2 : Ponçage
+  if(dv.preparation)L.push("Ponçage — préparation et mise à niveau du support par ponçage mécanique (disques abrasifs diamant)");
+  // Étape 3 : Cristallisation
+  if(dv.cristallisation&&sol!=="parquet")L.push("Cristallisation — traitement thermochimique en surface restituant l'éclat naturel de la pierre et augmentant sa résistance");
+  // Étape 4 : Traitements de protection
   if(dv.hydrofuge)L.push("Application d'un traitement hydrofuge — imperméabilisation en profondeur contre les infiltrations d'eau et les taches humides");
   if(dv.oleofuge)L.push("Application d'un traitement oléofuge — protection contre les taches grasses, huiles et corps gras");
   if(sol==="marbre"){
@@ -1808,8 +1812,9 @@ function renderFormDevis(){
       b.addEventListener("click",()=>{S.form[key]=!S.form[key];render();});
       return b;
     }
-    optRow.appendChild(optBtn("🛡 Préparation & protection chantier","preparation"));
-    if(f.type_sol!=="parquet")optRow.appendChild(optBtn("🔨 Réparation / Rebouchage","rebouchage"));
+    if(f.type_sol!=="parquet")optRow.appendChild(optBtn("🔨 Rebouchage","rebouchage"));
+    optRow.appendChild(optBtn("✨ Ponçage","preparation"));
+    if(f.type_sol!=="parquet")optRow.appendChild(optBtn("💎 Cristallisation","cristallisation"));
     optRow.appendChild(optBtn("💧 Traitement hydrofuge","hydrofuge"));
     optRow.appendChild(optBtn("🛢 Traitement oléofuge","oleofuge"));
     optWrap.appendChild(optRow);
@@ -1889,7 +1894,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,cristallisation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
     set({modal:null,selected:null});
   });
   return form;
@@ -2208,7 +2213,7 @@ function renderClients(){
           etat:etatInit,
           description:leadDevis?.description||"",
           finition:sol==="parquet"?"vitrifié":"brillant",
-          grains:[],rebouchage:false,preparation:false,hydrofuge:false,oleofuge:false,
+          grains:[],rebouchage:false,preparation:false,cristallisation:false,hydrofuge:false,oleofuge:false,
           tva_taux:20,cerfa:false,
           _leadPrefilled:true
         };
