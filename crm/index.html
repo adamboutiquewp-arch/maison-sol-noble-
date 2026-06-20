@@ -320,7 +320,20 @@ async function saveTarifsToSupabase(){
   }catch(e){console.error("saveTarifsToSupabase:",e);saveTarifs();}
 }
 
-// ── AUTO-REFRESH quand on revient sur l'onglet/app ───────────
+// ── AUTO-REFRESH : polling toutes les 20 secondes + retour d'onglet ──
+let _pollTimer=null;
+function startPolling(){
+  if(_pollTimer)return;
+  _pollTimer=setInterval(async()=>{
+    if(S.page!=="crm"||document.hidden)return;
+    const devis=await loadDevisFromSupabase();
+    if(!devis.length)return;
+    const changed=devis.length!==S.devis.length||devis.map(d=>d.numero).join()!==S.devis.map(d=>d.numero).join();
+    if(changed){S.devis=devis;render();}
+  },20000);
+}
+function stopPolling(){clearInterval(_pollTimer);_pollTimer=null;}
+
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&S.page==="crm"){
     loadDevisFromSupabase().then(devis=>{if(devis.length){S.devis=devis;render();}});
@@ -597,6 +610,7 @@ function renderLogin(){
       clearLoginBlock();
       set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true,loginLoading:false,loginPin:"",loginError:""});
       loadTarifsFromSupabase();
+      startPolling();
       loadDevisFromSupabase().then(devis=>{
         set({devis:devis.length?devis:DEMO_DEVIS,loading:false});
       });
@@ -685,7 +699,7 @@ function renderSetup(){
               setTimeout(()=>{
                 loginPin(compte.email,pin1);
                 set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true});
-              loadTarifsFromSupabase();
+              loadTarifsFromSupabase();startPolling();
               loadDevisFromSupabase().then(devis=>{set({devis:devis.length?devis:DEMO_DEVIS,loading:false});});
               },1000);
             }catch(e){errDiv.textContent="Erreur: "+e.message;}
@@ -1619,7 +1633,7 @@ function render(){
   const session=getSession();
   if(session){
     S={...S,page:"crm",session,role:session.role,devis:[],loading:true};
-    loadTarifsFromSupabase();
+    loadTarifsFromSupabase();startPolling();
     loadDevisFromSupabase().then(devis=>{S.devis=devis.length?devis:DEMO_DEVIS;S.loading=false;render();});
   }else{
     // Vérifier si le directeur n'a pas encore de PIN
