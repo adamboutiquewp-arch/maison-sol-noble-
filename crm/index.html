@@ -234,6 +234,8 @@ let TARIFS={
   granito:{label:"Granito",trav:["Ponçage + cristallisation","Rénovation complète","Nettoyage professionnel"],prix:[40,48,14]},
   parquet:{label:"Parquet massif",trav:["Ponçage + vitrification","Ponçage + cirage","Vitrification seule","Ponçage seul"],prix:[28,32,16,12]},
 };
+try{const saved=localStorage.getItem("msn_tarifs");if(saved)TARIFS=JSON.parse(saved);}catch{}
+function saveTarifs(){localStorage.setItem("msn_tarifs",JSON.stringify(TARIFS));}
 
 let FICHES={
   marbre:{titre:"Rénovation des sols en marbre",materiel:["Monobrosse professionnelle","Disques diamantés (du grain 50 au grain 3000)","Cristalliseur professionnel","Produit imperméabilisant et oléofuge","Aspirateur eau et poussière","Chiffons microfibre","EPI : lunettes, gants en nitrile, masque FFP2"],etapes:[{titre:"1. Nettoyage initial",desc:"Nettoyer avec un produit alcalin pour éliminer la cire, les graisses et les résidus, puis rincer abondamment."},{titre:"2. Diagnostic",desc:"Évaluer la profondeur des rayures, des taches et des fissures pour définir le grain de départ."},{titre:"3. Rebouchage",desc:"Reboucher les petites fissures et les joints."},{titre:"4. Ponçage progressif",desc:"Utiliser des disques diamantés du grain 50 au grain 400 pour éliminer les rayures, en veillant à ce que chaque passe soit perpendiculaire à la précédente."},{titre:"5. Affinage",desc:"Utiliser les grains 800 puis 1500 pour lisser la surface, en aspirant la poussière entre chaque changement de grain."},{titre:"6. Polissage de fin",desc:"Passer au grain 3000 pour obtenir la brillance finale souhaitée."},{titre:"7. Cristallisation",desc:"Appliquer le cristalliseur avec la monobrosse professionnelle pour durcir et sublimer la surface."},{titre:"8. Protection finale",desc:"Appliquer les traitements hydrofuge et oléofuge pour protéger durablement le sol."}]},
@@ -1461,20 +1463,41 @@ function renderParametres(){
     wrap.appendChild(el("p",{style:{color:"#8a8278",fontSize:"13px",marginBottom:"1.5rem"}},"Ces tarifs sont pré-remplis lors de la création d'un devis."));
     Object.entries(TARIFS).forEach(([key,sol])=>{
       const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"1.2rem",marginBottom:"1rem"}});
-      card.appendChild(el("div",{style:{color:"#c9a84c",fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"1rem",fontWeight:"500"}},sol.label));
-      sol.trav.forEach((t,i)=>{
-        const row=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 120px",gap:"1rem",alignItems:"center",marginBottom:"8px"}});
-        const ti=el("input",{value:t,style:{padding:"0.5rem 0.8rem",fontSize:"13px"}});ti.addEventListener("input",e=>TARIFS[key].trav[i]=e.target.value);
-        const pw=el("div",{style:{position:"relative"}});
-        const pi=el("input",{type:"number",value:sol.prix[i],style:{padding:"0.5rem 0.8rem",fontSize:"13px"}});pi.addEventListener("input",e=>TARIFS[key].prix[i]=parseFloat(e.target.value)||0);
-        pw.appendChild(pi);pw.appendChild(el("span",{style:{position:"absolute",right:"8px",top:"50%",transform:"translateY(-50%)",color:"#8a8278",fontSize:"12px",pointerEvents:"none"}},"€/m²"));
-        row.appendChild(ti);row.appendChild(pw);card.appendChild(row);
-      });
-      const badd=el("button",{type:"button",style:{...BS,fontSize:"12px",marginTop:"8px",padding:"0.4rem 0.8rem"}},"+ Ajouter une prestation");
-      badd.addEventListener("click",()=>{TARIFS[key].trav.push("Nouvelle prestation");TARIFS[key].prix.push(0);set({paramTab:"tarifs"});});
-      card.appendChild(badd);wrap.appendChild(card);
+      const cardHdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem"}});
+      cardHdr.appendChild(el("div",{style:{color:"#c9a84c",fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:"500"}},sol.label));
+      cardHdr.appendChild(el("div",{style:{fontSize:"11px",color:"#9a9488"}},sol.trav.length+" prestation"+(sol.trav.length!==1?"s":"")));
+      card.appendChild(cardHdr);
+      function renderRows(){
+        // Remove old rows (all children after header)
+        while(card.children.length>1)card.removeChild(card.lastChild);
+        sol.trav.forEach((t,i)=>{
+          const row=el("div",{style:{display:"grid",gridTemplateColumns:"1fr 130px 36px",gap:"8px",alignItems:"center",marginBottom:"8px"}});
+          const ti=el("input",{value:t,placeholder:"Nom de la prestation",style:{padding:"0.5rem 0.8rem",fontSize:"13px"}});
+          ti.addEventListener("input",e=>{TARIFS[key].trav[i]=e.target.value;});
+          const pw=el("div",{style:{position:"relative"}});
+          const pi=el("input",{type:"number",value:sol.prix[i],style:{padding:"0.5rem 0.8rem",fontSize:"13px",paddingRight:"44px"}});
+          pi.addEventListener("input",e=>{TARIFS[key].prix[i]=parseFloat(e.target.value)||0;});
+          pw.appendChild(pi);
+          pw.appendChild(el("span",{style:{position:"absolute",right:"8px",top:"50%",transform:"translateY(-50%)",color:"#8a8278",fontSize:"11px",pointerEvents:"none"}},"€/m²"));
+          const bDel=el("button",{type:"button",style:{width:"36px",height:"36px",borderRadius:"6px",border:"1px solid rgba(163,45,45,0.25)",background:"rgba(163,45,45,0.05)",color:"#A32D2D",fontSize:"15px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:"0",WebkitAppearance:"none"}},"🗑");
+          bDel.addEventListener("click",()=>{
+            TARIFS[key].trav.splice(i,1);
+            TARIFS[key].prix.splice(i,1);
+            cardHdr.querySelector("div:last-child").textContent=sol.trav.length+" prestation"+(sol.trav.length!==1?"s":"");
+            renderRows();
+          });
+          row.appendChild(ti);row.appendChild(pw);row.appendChild(bDel);card.appendChild(row);
+        });
+        const badd=el("button",{type:"button",style:{...BS,fontSize:"12px",marginTop:"4px",padding:"0.4rem 0.8rem"}},"+ Ajouter une prestation");
+        badd.addEventListener("click",()=>{TARIFS[key].trav.push("Nouvelle prestation");TARIFS[key].prix.push(0);cardHdr.querySelector("div:last-child").textContent=sol.trav.length+" prestation"+(sol.trav.length!==1?"s":"");renderRows();});
+        card.appendChild(badd);
+      }
+      renderRows();
+      wrap.appendChild(card);
     });
-    const bs=el("button",{style:BP},"Sauvegarder les tarifs");bs.addEventListener("click",()=>{bs.textContent="✓ Sauvegardé !";setTimeout(()=>bs.textContent="Sauvegarder les tarifs",2000);});wrap.appendChild(bs);
+    const bs=el("button",{style:BP},"Sauvegarder les tarifs");
+    bs.addEventListener("click",()=>{saveTarifs();bs.textContent="✓ Sauvegardé !";bs.style.background="#3B6D11";setTimeout(()=>{bs.textContent="Sauvegarder les tarifs";bs.style.background="#c9a84c";},2000);});
+    wrap.appendChild(bs);
   }
   return wrap;
 }
