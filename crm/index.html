@@ -886,7 +886,7 @@ a{color:inherit!important;text-decoration:none!important;}
   <div>
     <div class="p-label">Client</div>
     <div class="p-name">${dv.client_nom}</div>
-    <div class="p-detail">${[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).join("<br>")}</div>
+    <div class="p-detail">${[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).map(v=>`<span>${v}</span>`).join("<br>")}</div>
   </div>
 </div>
 <table>
@@ -926,7 +926,7 @@ ${type==="devis"
   :"<strong>Conditions de règlement :</strong> Paiement à réception de facture. En cas de retard de paiement, des pénalités de 3 fois le taux d'intérêt légal seront appliquées (art. L.441-10 du Code de commerce). Indemnité forfaitaire de recouvrement : 40 €."
 }
 </div>
-${dv.cerfa&&type==="devis"?`<div class="cond" style="border-left-color:#1a6fa8;margin-top:10px;color:#1a4f7a;">
+${dv.cerfa&&type==="devis"?`<div class="cond" style="border-left-color:#c9a84c;margin-top:10px;color:#2a2520;">
 <strong>TVA au taux réduit de ${tvaPct}% — Article 279-0 bis du Code Général des Impôts :</strong> Ce taux s'applique aux travaux de rénovation portant sur des locaux à usage d'habitation achevés depuis plus de 2 ans. L'attestation CERFA n°1301-SD (n°13948*05) doit être signée par le client et conservée par les deux parties pendant 6 ans.
 </div>`:""}
 
