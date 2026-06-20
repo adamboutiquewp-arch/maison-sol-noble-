@@ -1,0 +1,25 @@
+{
+  "name": "Maison Sol Noble — CRM",
+  "short_name": "MSN CRM",
+  "description": "Gestion des devis et interventions — Maison Sol Noble",
+  "start_url": "/crm/",
+  "scope": "/crm/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#c9a84c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/logo-embleme.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo-embleme.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

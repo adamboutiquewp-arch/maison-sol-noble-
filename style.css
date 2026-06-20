@@ -565,13 +565,17 @@ em { font-style: italic; color: #c9a84c; }
   h1 { font-size: 2.4rem; }
   h2 { font-size: 1.8rem; }
   .section-header { margin-bottom: 2.5rem; }
-  .services-section, .why-section, .temoignages-section, .contact-section, .zone-section, .problem-section { padding: 4rem 0; }
+  .services-section, .why-section, .temoignages-section, .contact-section, .zone-section, .problem-section, .galerie-section { padding: 4rem 0; }
+}
+
+@media (max-width: 768px) {
+  .urgence-bar > span { display: none; }
+  .urgence-bar { justify-content: center; padding: 10px 1rem; }
 }
 
 @media (max-width: 480px) {
   .hero-ctas { flex-direction: column; }
   .btn-primary, .btn-secondary { text-align: center; justify-content: center; }
-  .urgence-bar { font-size: 0.7rem; gap: 0.8rem; }
 }
 
 /* ===== ANIMATIONS ===== */
@@ -754,4 +758,99 @@ em { font-style: italic; color: #c9a84c; }
 @media (max-width: 768px) {
   .avant-apres-grid { grid-template-columns: 1fr; }
   .aa-img img { height: 140px; }
+}
+
+/* ===== TARIFS ===== */
+.tarifs-section { padding: 7rem 0; background: #0a0a0a; border-top: 1px solid #1a1a1a; }
+.tarifs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-bottom: 2rem;
+}
+.tarif-card {
+  background: #111;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  transition: background 0.3s;
+}
+.tarif-card:hover { background: #141414; }
+.tarif-matiere {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c9a84c;
+  font-weight: 500;
+}
+.tarif-fourchette {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 300;
+  color: #f0ece4;
+  line-height: 1;
+}
+.tarif-unit { font-size: 1rem; color: #6a6050; margin-left: 2px; }
+.tarif-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+.tarif-list li {
+  font-size: 0.82rem;
+  color: #7a7060;
+  padding-left: 1rem;
+  position: relative;
+}
+.tarif-list li::before { content: '—'; position: absolute; left: 0; color: #c9a84c; font-size: 0.7rem; }
+.tarif-cta {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #c9a84c;
+  border: 1px solid rgba(201,168,76,0.3);
+  padding: 0.6rem 1.2rem;
+  transition: background 0.2s, color 0.2s;
+  text-align: center;
+}
+.tarif-cta:hover { background: #c9a84c; color: #111; }
+.tarifs-mention {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #4a4030;
+  letter-spacing: 0.05em;
+}
+@media (max-width: 1024px) { .tarifs-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .tarifs-grid { grid-template-columns: 1fr; } }
+
+/* ===== ENTRETIEN ===== */
+.entretien-section { padding: 7rem 0; background: #111; border-top: 1px solid #1a1a1a; }
+.entretien-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+.entretien-card {
+  background: #141414;
+  padding: 2.5rem;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s, background 0.3s;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s, transform 0.6s, border-color 0.3s, background 0.3s;
+}
+.entretien-card.visible { opacity: 1; transform: translateY(0); }
+.entretien-card:hover { border-bottom-color: #c9a84c; background: #181818; }
+.entretien-icon { margin-bottom: 1.5rem; }
+.entretien-card h3 { color: #f0ece4; margin-bottom: 0.8rem; font-size: 1.1rem; font-weight: 500; font-family: 'Inter', sans-serif; }
+.entretien-card p { color: #6a6050; font-size: 0.88rem; line-height: 1.7; }
+@media (max-width: 768px) {
+  .entretien-grid { grid-template-columns: 1fr; }
+  .tarifs-section, .entretien-section { padding: 4rem 0; }
 }

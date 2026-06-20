@@ -1,6 +1,19 @@
 ﻿// ===== NAVBAR SCROLL =====
 const navbar = document.getElementById('navbar');
-const urgenceHeight = document.querySelector('.urgence-bar')?.offsetHeight || 38;
+const urgenceBar = document.querySelector('.urgence-bar');
+
+function getUrgenceHeight() {
+  return urgenceBar ? Math.round(urgenceBar.getBoundingClientRect().height) : 38;
+}
+
+function setNavbarTop() {
+  if (window.scrollY > 60) return;
+  navbar.style.top = getUrgenceHeight() + 'px';
+}
+
+// Appliquer dès le départ, puis après le chargement complet (fonts incluses)
+setNavbarTop();
+window.addEventListener('load', setNavbarTop);
 
 window.addEventListener('scroll', () => {
   if (window.scrollY > 60) {
@@ -8,7 +21,7 @@ window.addEventListener('scroll', () => {
     navbar.style.top = '0';
   } else {
     navbar.classList.remove('scrolled');
-    navbar.style.top = urgenceHeight + 'px';
+    setNavbarTop();
   }
 });
 
