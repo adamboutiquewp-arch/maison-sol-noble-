@@ -607,12 +607,8 @@ function buildDescription(dv){
   const sol=dv.type_sol,fin=dv.finition||"brillant",trav=(dv.travaux||"").toLowerCase(),etat=dv.etat||"moyen";
   const grains=dv.grains&&dv.grains.length?dv.grains:null;
   const L=[];
-  // Étape 1 : Rebouchage
-  const travInclutRebouchage=
-    (sol==="marbre"&&(trav.includes("rénovation")||trav.includes("complet")))||
-    (sol==="travertin"&&(trav.includes("rénovation")||trav.includes("complet")||trav.includes("ponçage")||trav.includes("bouchage")))||
-    (sol==="granito"&&(trav.includes("rénovation")||trav.includes("complet")));
-  if(dv.rebouchage&&sol!=="parquet"&&!travInclutRebouchage){
+  // Étape 1 : Rebouchage — toujours affiché si la case est cochée
+  if(dv.rebouchage&&sol!=="parquet"){
     if(sol==="marbre")L.push("Réparation et rebouchage des fissures, éclats et jointures défectueuses (résine époxy teintée assortie)");
     else if(sol==="travertin")L.push("Rebouchage des pores ouverts, fissures et lacunes au mortier de restauration ou résine époxy fluide");
     else if(sol==="granito")L.push("Réparation des joints endommagés et rebouchage des manques à la résine époxy teintée assortie au granulat");
@@ -633,9 +629,7 @@ function buildDescription(dv){
   if(dv.hydrofuge)L.push("Application d'un traitement hydrofuge — imperméabilisation en profondeur contre les infiltrations d'eau et les taches humides");
   if(dv.oleofuge)L.push("Application d'un traitement oléofuge — protection contre les taches grasses, huiles et corps gras");
   if(sol==="marbre"){
-    if(trav.includes("rénovation")||trav.includes("complet")){
-      L.push(dv.travaux);
-    }else if(trav.includes("polissage")){
+    if(trav.includes("polissage")){
       if(!grains)L.push("Affinage : grain 800 → 1 500 → 3 000");
     }else if(trav.includes("cristallis")){
       L.push("Nettoyage de la surface");
@@ -643,31 +637,22 @@ function buildDescription(dv){
     }else if(trav.includes("protection")||trav.includes("imperméabil")){
       L.push("Nettoyage et dégraissage de la surface");
       L.push("Application traitement hydrofuge et oléofuge");
-    }else{
-      L.push(dv.travaux);
     }
   }else if(sol==="travertin"){
-    if(trav.includes("rénovation")||trav.includes("complet")){
-      L.push(dv.travaux);
-    }else if(trav.includes("ponçage")||trav.includes("bouchage")){
-      L.push("Nettoyage et évaluation des pores");
-      L.push("Rebouchage des pores et fissures à la résine époxy");
+    if(trav.includes("ponçage")||trav.includes("bouchage")){
+      if(!dv.rebouchage)L.push("Rebouchage des pores et fissures à la résine époxy");
       if(!grains)L.push("Ponçage diamant : grain 50 → 1 500");
-      L.push("Cristallisation "+fin);
+      if(!dv.cristallisation)L.push("Cristallisation "+fin);
     }else if(trav.includes("hydrofuge")||trav.includes("protection")){
       L.push("Nettoyage de la surface");
       L.push("Application traitement hydrofuge et oléofuge");
-    }else{
-      L.push(dv.travaux);
     }
   }else if(sol==="granito"){
-    if(trav.includes("rénovation")||trav.includes("complet")){
-      L.push(dv.travaux);
-    }else if(trav.includes("nettoyage")){
+    if(trav.includes("nettoyage")){
       L.push("Nettoyage professionnel dégraissant spécial granito");
       L.push("Rinçage et séchage complet");
-    }else{
-      if(!grains)L.push("Ponçage diamant progressif : grain 50 → 3 000");
+    }else if(!grains&&!dv.cristallisation){
+      L.push("Ponçage diamant progressif : grain 50 → 3 000");
       L.push("Cristallisation "+fin);
     }
   }else if(sol==="parquet"){
@@ -679,7 +664,7 @@ function buildDescription(dv){
     }
     L.push("Finition : "+finLabel);
     if(etat==="mauvais")L.push("Traitement préventif anti-champignons si nécessaire");
-  }else{L.push(dv.travaux||"");}
+  }
   if(etat==="mauvais")L.push("Note : coefficient de majoration appliqué pour état très dégradé");
   return L;
 }
