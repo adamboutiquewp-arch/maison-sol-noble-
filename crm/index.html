@@ -964,7 +964,7 @@ async function downloadPDFFile(dv,type="devis"){
   const descLines=buildDescription(dv);
   const solLabel=TARIFS[dv.type_sol]?.label||dv.type_sol;
   const finLabel=dv.finition?(dv.type_sol==="parquet"?(dv.finition==="ciré"?"Ciré":"Vitrifié"):(dv.finition==="mat"?"Mat":"Brillant")):"—";
-  const GOLD="#c9a84c",DARK="#1a1611",GREY="#6a6258",MID="#5a5450",LIGHT="#9a9488",DGOLD="#8a6a20";
+  const GOLD="#c9a84c",DARK="#111111",GREY="#444444",MID="#333333",LIGHT="#666666",DGOLD="#7a5a10";
   const logoImg=LOGO_B64?{image:"data:image/png;base64,"+LOGO_B64,fit:[130,32],margin:[0,0,0,6]}:{text:INFO.nom,fontSize:16,bold:true,color:DARK};
   const condTitle=type==="devis"?"Conditions générales :":"Conditions de règlement :";
   const condText=type==="devis"
@@ -974,31 +974,31 @@ async function downloadPDFFile(dv,type="devis"){
     pageSize:"A4",pageMargins:[40,50,40,65],
     footer:()=>({stack:[
       {canvas:[{type:"line",x1:0,y1:0,x2:515,y2:0,lineWidth:0.5,lineColor:"#eceae4"}],margin:[40,0,40,4]},
-      {text:INFO.nom+" — "+INFO.forme+" — SIRET "+INFO.siret+" — N° TVA "+INFO.tva,fontSize:7,color:LIGHT,alignment:"center"},
-      {text:INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+INFO.tel+" — "+INFO.email+" — "+INFO.site,fontSize:7,color:LIGHT,alignment:"center",margin:[0,1,0,0]}
+      {text:INFO.nom+" — "+INFO.forme+" — SIRET "+INFO.siret+" — N° TVA "+INFO.tva,fontSize:8,color:LIGHT,alignment:"center"},
+      {text:INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+INFO.tel+" — "+INFO.email+" — "+INFO.site,fontSize:8,color:LIGHT,alignment:"center",margin:[0,1,0,0]}
     ],margin:[40,8,40,0]}),
     content:[
       {columns:[
         {stack:[logoImg,{stack:[
-          {text:INFO.adresse,fontSize:8.5,color:GREY},{text:INFO.cp+" "+INFO.ville,fontSize:8.5,color:GREY},
-          {text:INFO.tel,fontSize:8.5,color:GREY},{text:INFO.email,fontSize:8.5,color:GREY},{text:INFO.site,fontSize:8.5,color:GREY}
-        ],margin:[0,3,0,0]}],width:"*"},
+          {text:INFO.adresse,fontSize:10,color:GREY},{text:INFO.cp+" "+INFO.ville,fontSize:10,color:GREY},
+          {text:INFO.tel,fontSize:10,color:GREY},{text:INFO.email,fontSize:10,color:GREY},{text:INFO.site,fontSize:10,color:GREY}
+        ],margin:[0,4,0,0]}],width:"*"},
         {stack:[
           {text:titre,fontSize:30,bold:true,color:DARK,alignment:"right",characterSpacing:5},
-          {text:"N° "+num,fontSize:9,color:GREY,alignment:"right",margin:[0,6,0,0]},
-          {text:"Date : "+dateDoc,fontSize:9,color:GREY,alignment:"right",margin:[0,1,0,0]},
-          {text:type==="devis"?"Validité : 30 jours":"Échéance : "+echeance,fontSize:9,color:GREY,alignment:"right",margin:[0,1,0,0]},
-          ...(type==="facture"?[{text:"Réf. devis : "+dv.numero,fontSize:9,color:GREY,alignment:"right",margin:[0,1,0,0]}]:[])
+          {text:"N° "+num,fontSize:10,color:GREY,alignment:"right",margin:[0,6,0,0]},
+          {text:"Date : "+dateDoc,fontSize:10,color:GREY,alignment:"right",margin:[0,1,0,0]},
+          {text:type==="devis"?"Validité : 30 jours":"Échéance : "+echeance,fontSize:10,color:GREY,alignment:"right",margin:[0,1,0,0]},
+          ...(type==="facture"?[{text:"Réf. devis : "+dv.numero,fontSize:10,color:GREY,alignment:"right",margin:[0,1,0,0]}]:[])
         ],width:"auto"}
       ],columnGap:20,margin:[0,0,0,12]},
       {canvas:[{type:"line",x1:0,y1:0,x2:515,y2:0,lineWidth:1.5,lineColor:GOLD}],margin:[0,0,0,16]},
       {table:{widths:["*","*"],body:[[
-        {stack:[{text:"PRESTATAIRE",fontSize:6.5,bold:true,color:GOLD,characterSpacing:2,margin:[0,0,0,5]},{text:INFO.nom,fontSize:12,bold:true,color:DARK,margin:[0,0,0,3]},{text:INFO.forme,fontSize:9,color:MID},{text:"SIRET : "+INFO.siret,fontSize:9,color:MID},{text:"N° TVA : "+INFO.tva,fontSize:9,color:MID},{text:"Capital social : "+INFO.capital,fontSize:9,color:MID}],margin:[10,10,8,10],fillColor:"#faf9f6"},
-        {stack:[{text:"CLIENT",fontSize:6.5,bold:true,color:GOLD,characterSpacing:2,margin:[0,0,0,5]},{text:dv.client_nom,fontSize:12,bold:true,color:DARK,margin:[0,0,0,3]},...[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).map(v=>({text:v,fontSize:9,color:MID}))],margin:[10,10,8,10],fillColor:"#faf9f6"}
+        {stack:[{text:"PRESTATAIRE",fontSize:7,bold:true,color:GOLD,characterSpacing:2,margin:[0,0,0,5]},{text:INFO.nom,fontSize:12,bold:true,color:DARK,margin:[0,0,0,3]},{text:INFO.forme,fontSize:10,color:MID},{text:"SIRET : "+INFO.siret,fontSize:10,color:MID},{text:"N° TVA : "+INFO.tva,fontSize:10,color:MID},{text:"Capital social : "+INFO.capital,fontSize:10,color:MID}],margin:[10,10,8,10],fillColor:"#faf9f6"},
+        {stack:[{text:"CLIENT",fontSize:7,bold:true,color:GOLD,characterSpacing:2,margin:[0,0,0,5]},{text:dv.client_nom,fontSize:12,bold:true,color:DARK,margin:[0,0,0,3]},...[dv.client_tel,dv.client_email,dv.ville].filter(Boolean).map(v=>({text:v,fontSize:10,color:MID}))],margin:[10,10,8,10],fillColor:"#faf9f6"}
       ]]},layout:{hLineColor:"#eceae4",vLineColor:"#eceae4",hLineWidth:()=>0.5,vLineWidth:()=>0.5},margin:[0,0,0,16]},
       {table:{headerRows:1,widths:["*",60,55,55,55],body:[
         [{text:"DÉSIGNATION ET DESCRIPTION DES TRAVAUX",style:"th"},{text:"SOL",style:"th"},{text:"SURFACE",style:"th"},{text:"PRIX / M²",style:"th"},{text:"TOTAL HT",style:"thR"}],
-        [{stack:[{text:dv.travaux,fontSize:11.5,bold:true,color:DARK,margin:[0,0,0,7]},...descLines.map(l=>({text:"• "+l,fontSize:9,color:MID,margin:[0,1,0,1]})),{text:"Finition : "+finLabel,fontSize:8,color:DGOLD,margin:[0,6,0,0]},...(dv.description?[{text:"Notes : "+dv.description,fontSize:9,color:GREY,italics:true,margin:[0,5,0,0]}]:[])],margin:[2,8,2,8]},
+        [{stack:[{text:dv.travaux,fontSize:12,bold:true,color:DARK,margin:[0,0,0,7]},...descLines.map(l=>({text:"• "+l,fontSize:10,color:MID,margin:[0,1,0,1]})),{text:"Finition : "+finLabel,fontSize:9,color:DGOLD,margin:[0,6,0,0]},...(dv.description?[{text:"Notes : "+dv.description,fontSize:10,color:GREY,italics:true,margin:[0,5,0,0]}]:[])],margin:[2,8,2,8]},
         {text:solLabel,fontSize:10,color:DARK,margin:[2,8,2,8]},{text:dv.surface+" m²",fontSize:10,color:DARK,margin:[2,8,2,8]},{text:dv.prix_m2+" €/m²",fontSize:10,color:DARK,margin:[2,8,2,8]},{text:ht.toFixed(2)+" €",fontSize:10,bold:true,color:DARK,alignment:"right",margin:[2,8,2,8]}]
       ]},layout:{hLineColor:"#eceae4",vLineColor:"#eceae4",hLineWidth:()=>0.5,vLineWidth:()=>0.5},margin:[0,0,0,16]},
       {columns:[{text:"",width:"*"},{table:{widths:[160,75],body:[
@@ -1009,11 +1009,11 @@ async function downloadPDFFile(dv,type="devis"){
       {table:{widths:["*","auto"],body:[
         [{text:"MODALITÉS DE RÈGLEMENT",fontSize:6.5,bold:true,color:GOLD,characterSpacing:1.5,colSpan:2,margin:[0,0,0,8]},{}],
         [{text:"Acompte à la commande — 30 %",fontSize:10,bold:true,color:DARK},{text:acompte+" € TTC",fontSize:10,bold:true,color:DARK,alignment:"right"}],
-        [{text:"Dû à la signature du présent "+titre.toLowerCase(),fontSize:8.5,color:LIGHT,colSpan:2,margin:[0,2,0,8]},{}],
+        [{text:"Dû à la signature du présent "+titre.toLowerCase(),fontSize:9,color:LIGHT,colSpan:2,margin:[0,2,0,8]},{}],
         [{text:"Solde à la livraison du chantier — 70 %",fontSize:10,bold:true,color:DARK},{text:solde+" € TTC",fontSize:10,bold:true,color:DARK,alignment:"right"}],
-        [{text:"Dû à la réception et validation des travaux par le client",fontSize:8.5,color:LIGHT,colSpan:2,margin:[0,2,0,0]},{}]
+        [{text:"Dû à la réception et validation des travaux par le client",fontSize:9,color:LIGHT,colSpan:2,margin:[0,2,0,0]},{}]
       ]},layout:"noBorders",margin:[0,0,0,16]},
-      {table:{widths:["*"],body:[[{stack:[{text:condTitle,fontSize:8.5,bold:true,color:DARK,margin:[0,0,0,3]},{text:condText,fontSize:8.5,color:MID,lineHeight:1.5}],margin:[10,8,8,8],fillColor:"#faf9f6"}]]},layout:{hLineColor:"#eceae4",vLineColor:GOLD,hLineWidth:()=>0.3,vLineWidth:(i)=>i===0?2.5:0},margin:[0,0,0,dv.cerfa&&type==="devis"?8:0]},
+      {table:{widths:["*"],body:[[{stack:[{text:condTitle,fontSize:9.5,bold:true,color:DARK,margin:[0,0,0,3]},{text:condText,fontSize:9,color:MID,lineHeight:1.5}],margin:[10,8,8,8],fillColor:"#faf9f6"}]]},layout:{hLineColor:"#eceae4",vLineColor:GOLD,hLineWidth:()=>0.3,vLineWidth:(i)=>i===0?2.5:0},margin:[0,0,0,dv.cerfa&&type==="devis"?8:0]},
       ...(dv.cerfa&&type==="devis"?[{table:{widths:["*"],body:[[{stack:[{text:"TVA au taux réduit de "+tvaPct+"% — Article 279-0 bis du Code Général des Impôts :",fontSize:8.5,bold:true,color:DARK,margin:[0,0,0,3]},{text:"Ce taux s'applique aux travaux de rénovation portant sur des locaux à usage d'habitation achevés depuis plus de 2 ans. L'attestation CERFA n°1301-SD doit être signée par le client et conservée par les deux parties pendant 6 ans.",fontSize:8.5,color:MID,lineHeight:1.5}],margin:[10,8,8,8],fillColor:"#faf9f6"}]]},layout:{hLineColor:"#eceae4",vLineColor:GOLD,hLineWidth:()=>0.3,vLineWidth:(i)=>i===0?2.5:0}}]:[])
     ],
     styles:{th:{fontSize:7.5,bold:true,color:"#ffffff",fillColor:DARK,characterSpacing:1,margin:[2,6,2,6]},thR:{fontSize:7.5,bold:true,color:"#ffffff",fillColor:DARK,characterSpacing:1,alignment:"right",margin:[2,6,2,6]}},
