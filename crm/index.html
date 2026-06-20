@@ -976,32 +976,41 @@ async function _pdfSetup(dv,type){
   document.head.appendChild(st);
   const div=document.createElement("div");
   div.innerHTML=body;
-  // position:fixed dans le viewport (pas hors-écran) — z-index négatif pour masquer visuellement
-  // html2canvas ne capte pas les éléments à left:-9999px (hors viewport horizontal)
-  div.style.cssText="position:fixed;top:0;left:0;width:794px;z-index:-9999;pointer-events:none;";
+  // z-index:9998 — visible pour html2canvas (l'overlay de chargement est à 9999 devant)
+  // html2canvas capture l'élément ciblé indépendamment de ce qui est visuellement devant
+  div.style.cssText="position:fixed;top:0;left:0;width:794px;background:#fff;z-index:9998;pointer-events:none;";
   document.body.appendChild(div);
-  // Laisser le navigateur faire un rendu réel avant la capture
-  await new Promise(r=>setTimeout(r,250));
+  await new Promise(r=>setTimeout(r,350));
   const cleanup=()=>{if(st.parentNode)document.head.removeChild(st);if(div.parentNode)document.body.removeChild(div);};
   return{div,cleanup};
 }
 
 const _PDF_OPT={margin:0,image:{type:"jpeg",quality:0.95},html2canvas:{scale:1.5,useCORS:true,logging:false,allowTaint:true,windowWidth:794,scrollX:0,scrollY:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
 
+function _pdfLoadingOverlay(){
+  const ov=document.createElement("div");
+  ov.style.cssText="position:fixed;inset:0;background:rgba(248,247,243,0.97);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;font-size:14px;color:#706a62;gap:10px;";
+  ov.innerHTML='<span style="font-size:20px">📄</span> Génération du PDF en cours…';
+  document.body.appendChild(ov);
+  return()=>{if(ov.parentNode)document.body.removeChild(ov);};
+}
+
 async function genPDFBase64(dv,type="devis"){
+  const removeOverlay=_pdfLoadingOverlay();
   const{div,cleanup}=await _pdfSetup(dv,type);
   try{
     const uri=await html2pdf().set(_PDF_OPT).from(div).outputPdf("datauristring");
-    cleanup();return uri.split(",")[1];
-  }catch(err){cleanup();throw err;}
+    cleanup();removeOverlay();return uri.split(",")[1];
+  }catch(err){cleanup();removeOverlay();throw err;}
 }
 
 async function downloadPDFFile(dv,type="devis"){
+  const removeOverlay=_pdfLoadingOverlay();
   const{div,cleanup}=await _pdfSetup(dv,type);
   try{
     await html2pdf().set({..._PDF_OPT,filename:`${type}-${dv.numero}.pdf`}).from(div).save();
-    cleanup();
-  }catch(err){cleanup();throw err;}
+    cleanup();removeOverlay();
+  }catch(err){cleanup();removeOverlay();throw err;}
 }
 
 function genCERFA(dv){
