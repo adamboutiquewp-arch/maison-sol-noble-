@@ -976,13 +976,17 @@ async function _pdfSetup(dv,type){
   document.head.appendChild(st);
   const div=document.createElement("div");
   div.innerHTML=body;
-  div.style.cssText="position:absolute;left:-9999px;top:0;width:794px;";
+  // position:fixed dans le viewport (pas hors-écran) — z-index négatif pour masquer visuellement
+  // html2canvas ne capte pas les éléments à left:-9999px (hors viewport horizontal)
+  div.style.cssText="position:fixed;top:0;left:0;width:794px;z-index:-9999;pointer-events:none;";
   document.body.appendChild(div);
+  // Laisser le navigateur faire un rendu réel avant la capture
+  await new Promise(r=>setTimeout(r,250));
   const cleanup=()=>{if(st.parentNode)document.head.removeChild(st);if(div.parentNode)document.body.removeChild(div);};
   return{div,cleanup};
 }
 
-const _PDF_OPT={margin:0,image:{type:"jpeg",quality:0.95},html2canvas:{scale:1.5,useCORS:true,logging:false,allowTaint:true,windowWidth:794},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
+const _PDF_OPT={margin:0,image:{type:"jpeg",quality:0.95},html2canvas:{scale:1.5,useCORS:true,logging:false,allowTaint:true,windowWidth:794,scrollX:0,scrollY:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
 
 async function genPDFBase64(dv,type="devis"){
   const{div,cleanup}=await _pdfSetup(dv,type);
