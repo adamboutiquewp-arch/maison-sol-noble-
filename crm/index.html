@@ -819,6 +819,7 @@ function buildPDFHtml(dv,type="devis"){
 *{margin:0;padding:0;box-sizing:border-box;}
 a,a:link,a:visited,a:hover,a:active{color:#1a1611!important;text-decoration:none!important;}
 body{font-family:Inter,Arial,sans-serif;font-size:12px;color:#1a1611;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+@page{margin:0;size:A4;}
 .page{max-width:794px;margin:0 auto;padding:48px 52px 44px;min-height:1060px;display:flex;flex-direction:column;}
 /* HEADER */
 .hd{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;margin-bottom:28px;border-bottom:2px solid #c9a84c;}
@@ -861,12 +862,12 @@ tbody td:last-child{text-align:right;font-weight:600;white-space:nowrap;}
 .cond{border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:10px;color:#5a5450;line-height:1.8;margin-bottom:18px;}
 /* FOOTER */
 .ft{margin-top:auto;padding-top:14px;border-top:1px solid #eceae4;font-size:9px;color:#9a9488;text-align:center;line-height:1.9;}
-a,a:link,a:visited,a:hover,a:active{color:inherit!important;text-decoration:none!important;}
 @media print{
   body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .page{padding:32px 40px;}
   a[href]::after,a[href]::before{content:none!important;display:none!important;}
   *,*::before,*::after{color:#1a1611!important;text-decoration:none!important;}
+  a,a:link,a:visited,a:hover,a:active{color:#1a1611!important;text-decoration:none!important;}
   .logo-m,.pay-title,.p-label,.gold{color:#c9a84c!important;}
   .logo-s{color:#9a8858!important;}
   .logo-addr,.doc-ref,.t-sub,.notes-extra{color:#6a6258!important;}
