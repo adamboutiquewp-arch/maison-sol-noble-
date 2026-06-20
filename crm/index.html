@@ -910,124 +910,171 @@ ${dv.cerfa&&type==="devis"?`<div class="cond" style="border-left-color:#1a6fa8;m
 }
 
 function genCERFA(dv){
-  const dateDoc=new Date().toLocaleDateString("fr-FR");
   const solLabel=TARIFS[dv.type_sol]?.label||dv.type_sol;
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"><title>CERFA n°13948*05 — ${dv.client_nom}</title><style>
+  const tvaPct=dv.tva_taux||10;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"><title>CERFA n°13948*05</title><style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:Inter,Arial,sans-serif;font-size:12px;color:#1a1611;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-.page{max-width:794px;margin:0 auto;padding:44px 52px;min-height:1060px;}
-.cerfa-header{display:flex;justify-content:space-between;align-items:flex-start;border:2px solid #1a1611;padding:14px 18px;margin-bottom:20px;}
-.cerfa-title{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#1a1611;}
-.cerfa-ref{font-size:10px;color:#5a5450;margin-top:4px;}
-.cerfa-num{text-align:right;font-size:11px;color:#5a5450;line-height:1.8;}
-.cerfa-num strong{font-size:14px;color:#1a1611;display:block;}
-.section{border:1px solid #aaa;margin-bottom:16px;border-radius:0;}
-.section-title{background:#1a1611;color:#fff;padding:7px 14px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
-.section-body{padding:14px 18px;}
-.field{margin-bottom:12px;}
-.field label{font-size:9.5px;letter-spacing:0.08em;text-transform:uppercase;color:#8a8278;display:block;margin-bottom:4px;font-weight:600;}
-.field-line{border-bottom:1px solid #aaa;min-height:22px;padding:2px 4px;font-size:12px;}
-.field-line.filled{color:#1a1611;font-weight:500;}
-.check-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:11.5px;}
-.box{display:inline-block;width:14px;height:14px;border:1.5px solid #555;vertical-align:middle;position:relative;flex-shrink:0;}
-.box.checked::after{content:"✓";position:absolute;top:-2px;left:1px;font-size:13px;font-weight:700;color:#1a1611;}
-.attestation{font-size:11.5px;line-height:1.9;margin-bottom:14px;}
-.attestation p{margin-bottom:10px;}
-.num-item{display:flex;gap:10px;margin-bottom:10px;}
-.num-label{font-size:12px;font-weight:700;flex-shrink:0;}
-.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:10px;}
-.sig-block{border:1px solid #aaa;padding:12px 14px;min-height:90px;}
-.sig-label{font-size:9.5px;letter-spacing:0.08em;text-transform:uppercase;color:#8a8278;margin-bottom:6px;font-weight:600;}
-.sig-value{font-size:11.5px;font-weight:600;color:#1a1611;margin-bottom:4px;}
-.sig-blank{border-bottom:1px solid #aaa;margin-top:40px;}
-.notice{font-size:9.5px;color:#7a7268;border-top:1px solid #ddd;margin-top:20px;padding-top:12px;line-height:1.8;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:30px 40px;}}
+body{font-family:Inter,Arial,sans-serif;font-size:11.5px;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.page{max-width:794px;margin:0 auto;padding:36px 46px;min-height:1060px;}
+.top-ref{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.top-ref-left{font-size:9px;color:#444;line-height:1.7;}
+.cerfa-num-box{border:2px solid #000;padding:6px 14px;text-align:center;}
+.cerfa-num-box strong{font-size:13px;display:block;letter-spacing:1px;}
+.cerfa-num-box span{font-size:9px;color:#444;}
+h1{text-align:center;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border:2px solid #000;padding:10px;margin-bottom:4px;}
+.subtitle{text-align:center;font-size:10px;color:#333;margin-bottom:18px;border-bottom:1px solid #000;padding-bottom:8px;}
+.section{border:1px solid #000;margin-bottom:14px;}
+.section-title{background:#000;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.section-body{padding:12px 16px;}
+.field{margin-bottom:10px;}
+.field-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;}
+.field-line{border-bottom:1px solid #888;min-height:20px;width:100%;margin-top:2px;}
+.field-line-short{border-bottom:1px solid #888;min-height:20px;width:60%;display:inline-block;margin-top:2px;}
+.check-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:11px;}
+.box{display:inline-block;width:13px;height:13px;border:1.5px solid #000;vertical-align:middle;flex-shrink:0;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.attestation-text{font-size:11px;line-height:1.85;}
+.num-item{display:flex;gap:10px;margin-bottom:9px;font-size:11px;line-height:1.7;}
+.num-label{font-weight:700;flex-shrink:0;min-width:16px;}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;}
+.sig-block{border:1px solid #888;padding:10px 12px;min-height:80px;}
+.sig-block-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:6px;}
+.sig-line{border-bottom:1px solid #888;margin-top:50px;}
+.notice-box{font-size:9px;color:#444;border-top:1px solid #ccc;margin-top:16px;padding-top:10px;line-height:1.75;}
+.prestataire-box{background:#f5f5f5;border:1px solid #ccc;padding:10px 14px;margin-bottom:14px;font-size:10.5px;}
+.prestataire-box strong{display:block;font-size:12px;margin-bottom:2px;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:24px 36px;}}
 </style></head><body><div class="page">
-<div class="cerfa-header">
-  <div>
-    <div class="cerfa-title">Attestation simplifiée</div>
-    <div class="cerfa-title" style="margin-top:2px;">Taux réduit de TVA — Travaux de rénovation</div>
-    <div class="cerfa-ref">Article 279-0 bis du Code Général des Impôts</div>
-    <div class="cerfa-ref" style="margin-top:8px;">PRESTATAIRE : <strong>Maison Sol Noble</strong> — SIRET ${INFO.siret}</div>
+
+<div class="top-ref">
+  <div class="top-ref-left">
+    Ministère de l'Économie et des Finances<br>
+    Direction Générale des Finances Publiques
   </div>
-  <div class="cerfa-num">
-    <strong>CERFA N° 1301-SD</strong>
-    N° 13948*05<br>
-    <span style="font-size:9.5px;">Formulaire officiel</span>
+  <div class="cerfa-num-box">
+    <strong>N° 1301-SD</strong>
+    <span>N° 13948*05</span>
+  </div>
+</div>
+
+<h1>Attestation simplifiée</h1>
+<div class="subtitle">
+  Travaux de rénovation dans les logements — Taux réduit de TVA (article 279-0 bis du CGI)<br>
+  <em style="font-size:9px;">À conserver par le client et l'entreprise pendant 6 ans — À remettre à l'entreprise avant facturation</em>
+</div>
+
+<div class="prestataire-box">
+  <strong>Entreprise prestataire : ${INFO.nom}</strong>
+  ${INFO.adresse}, ${INFO.cp} ${INFO.ville} &nbsp;|&nbsp; Tél. ${INFO.tel} &nbsp;|&nbsp; SIRET : ${INFO.siret} &nbsp;|&nbsp; N° TVA : ${INFO.tva}
+  <div style="margin-top:6px;font-size:10px;color:#555;">Référence devis : <strong>${dv.numero||"—"}</strong> &nbsp;|&nbsp; Nature des travaux : <strong>${dv.travaux||""} — ${solLabel}${dv.surface?" ("+dv.surface+" m²)":""}</strong></div>
+</div>
+
+<div class="section">
+  <div class="section-title">1 — Identification du preneur des travaux</div>
+  <div class="section-body">
+    <div class="row2">
+      <div class="field">
+        <div class="field-label">Nom et prénom</div>
+        <div class="field-line"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">Prénom</div>
+        <div class="field-line"></div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">Adresse du logement sur lequel portent les travaux (n°, rue, code postal, ville)</div>
+      <div class="field-line" style="margin-bottom:6px;"></div>
+      <div class="field-line"></div>
+    </div>
+    <div class="row2" style="margin-top:8px;">
+      <div class="field">
+        <div class="field-label">Qualité du preneur</div>
+        <div style="margin-top:6px;">
+          <div class="check-row"><span class="box"></span> Propriétaire occupant</div>
+          <div class="check-row"><span class="box"></span> Locataire</div>
+          <div class="check-row"><span class="box"></span> Bailleur / propriétaire non occupant</div>
+          <div class="check-row"><span class="box"></span> Usufruitier</div>
+          <div class="check-row"><span class="box"></span> Autre (préciser) : ____________</div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Usage du logement</div>
+        <div style="margin-top:6px;">
+          <div class="check-row"><span class="box"></span> Résidence principale</div>
+          <div class="check-row"><span class="box"></span> Résidence secondaire</div>
+          <div class="check-row"><span class="box"></span> Logement donné en location</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="section">
-  <div class="section-title">1 — Identification du preneur des travaux (client)</div>
+  <div class="section-title">2 — Caractéristiques du logement</div>
   <div class="section-body">
-    <div class="field"><label>Nom et prénom ou raison sociale</label><div class="field-line filled">${dv.client_nom||""}</div></div>
-    <div class="field"><label>Adresse du logement sur lequel portent les travaux</label><div class="field-line filled">${dv.ville||""}</div></div>
-    <div class="field"><label>Qualité</label>
+    <div class="row2">
+      <div class="field">
+        <div class="field-label">Date d'achèvement du logement (ou année approximative)</div>
+        <div class="field-line"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">Surface habitable (m²)</div>
+        <div class="field-line"></div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:4px;">
+      <div class="field-label">Type de logement</div>
       <div style="display:flex;gap:24px;margin-top:6px;">
-        <div class="check-row"><span class="box checked"></span> Propriétaire</div>
-        <div class="check-row"><span class="box"></span> Locataire</div>
+        <div class="check-row"><span class="box"></span> Appartement</div>
+        <div class="check-row"><span class="box"></span> Maison individuelle</div>
         <div class="check-row"><span class="box"></span> Autre</div>
       </div>
     </div>
-    <div class="field"><label>Usage du logement</label>
-      <div style="display:flex;gap:24px;margin-top:6px;">
-        <div class="check-row"><span class="box checked"></span> Résidence principale</div>
-        <div class="check-row"><span class="box"></span> Résidence secondaire</div>
-        <div class="check-row"><span class="box"></span> Location</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="section">
-  <div class="section-title">2 — Nature des travaux</div>
-  <div class="section-body">
-    <div class="field"><label>Désignation des travaux effectués</label>
-      <div class="field-line filled">${dv.travaux||""} — ${solLabel}${dv.surface?" — Surface : "+dv.surface+" m²":""}</div>
-    </div>
-    <div class="field"><label>Référence devis</label><div class="field-line filled">${dv.numero||""}</div></div>
   </div>
 </div>
 
 <div class="section">
   <div class="section-title">3 — Attestation du preneur des travaux</div>
   <div class="section-body">
-    <div class="attestation">
-      <p>Le preneur des travaux soussigné certifie sur l'honneur que :</p>
+    <div class="attestation-text">
+      <p style="margin-bottom:10px;">Je soussigné(e), preneur des travaux désigné(e) ci-dessus, <strong>certifie sur l'honneur</strong> que :</p>
       <div class="num-item">
         <span class="num-label">1.</span>
-        <span>Les locaux sur lesquels portent les travaux sont affectés à <strong>l'habitation</strong> et sont <strong>achevés depuis plus de 2 ans</strong> à la date du début des travaux.</span>
+        <span>Les locaux dans lesquels sont réalisés les travaux sont <strong>affectés à l'usage d'habitation</strong> (résidence principale, secondaire ou logement locatif) et sont <strong>achevés depuis plus de deux ans</strong> à la date de début des travaux.</span>
       </div>
       <div class="num-item">
         <span class="num-label">2.</span>
-        <span>Les travaux ne concourent pas à la <strong>construction d'un immeuble neuf</strong> au sens du 2° du I de l'article 257 du CGI, ni à des travaux qui conduisent à des locaux neufs au sens de l'article 245 A de l'annexe II à ce code.</span>
+        <span>Les travaux réalisés ne concourent pas à la <strong>construction d'un immeuble neuf</strong> au sens du 2° du I de l'article 257 du Code Général des Impôts et ne consistent pas en des travaux qui conduisent à la production d'immeubles neufs au sens de l'article 245 A de l'annexe II au CGI.</span>
       </div>
       <div class="num-item">
         <span class="num-label">3.</span>
-        <span>Le preneur des travaux s'engage à <strong>conserver cette attestation pendant 6 ans</strong> à compter de la date d'émission de la facture.</span>
+        <span>Les informations portées sur la présente attestation sont exactes. Je suis informé(e) qu'en cas de fausse déclaration, je serais solidairement tenu(e) au paiement du complément de TVA et des pénalités y afférentes <em>(article 1840 F ter du CGI)</em>.</span>
+      </div>
+      <div class="num-item">
+        <span class="num-label">4.</span>
+        <span>Je m'engage à <strong>conserver cette attestation pendant 6 ans</strong> et à la présenter à toute demande de l'administration fiscale.</span>
       </div>
     </div>
-    <p style="font-size:10px;color:#8a8278;margin-bottom:14px;">Cette attestation est établie en deux exemplaires : l'un est conservé par le preneur des travaux, l'autre est remis à l'entreprise prestataire.</p>
-    <div class="signature-grid">
+    <p style="font-size:9.5px;color:#555;margin-top:10px;margin-bottom:14px;font-style:italic;">Cette attestation est établie en deux exemplaires originaux : l'un est remis à l'entreprise avant émission de la facture, l'autre est conservé par le preneur des travaux.</p>
+    <div class="sig-grid">
       <div class="sig-block">
-        <div class="sig-label">Fait à</div>
-        <div class="field-line" style="margin-top:6px;">${dv.ville||""}</div>
-        <div class="sig-label" style="margin-top:12px;">Le</div>
-        <div class="field-line" style="margin-top:6px;">${dateDoc}</div>
+        <div class="sig-block-label">Fait à</div>
+        <div class="sig-line"></div>
+        <div class="sig-block-label" style="margin-top:12px;">Le</div>
+        <div class="sig-line" style="margin-top:8px;"></div>
       </div>
       <div class="sig-block">
-        <div class="sig-label">Signature du preneur des travaux</div>
-        <div class="sig-blank" style="margin-top:55px;"></div>
-        <div style="font-size:10px;color:#9a9488;margin-top:4px;text-align:center;">${dv.client_nom||""}</div>
+        <div class="sig-block-label">Signature du preneur des travaux<br><span style="font-weight:400;font-style:italic;">(précédée de la mention « Lu et approuvé »)</span></div>
+        <div class="sig-line"></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="notice">
-  <strong>Important :</strong> Cette attestation permet l'application du taux de TVA réduit de ${dv.tva_taux||10}% prévu à l'article 279-0 bis du CGI pour les travaux de rénovation portant sur des locaux à usage d'habitation achevés depuis plus de 2 ans.
-  Le preneur est informé qu'il peut être solidairement tenu responsable du paiement de la TVA et des pénalités dues si les renseignements fournis s'avèrent inexacts (art. 1840 F ter du CGI).
-  En cas de fausse attestation, l'ensemble des travaux sera soumis à la TVA au taux normal de 20%.
+<div class="notice-box">
+  <strong>Base légale :</strong> Article 279-0 bis du Code Général des Impôts — TVA au taux réduit de ${tvaPct}% applicable aux travaux de rénovation, d'amélioration, de transformation, d'aménagement et d'entretien portant sur des locaux à usage d'habitation achevés depuis plus de 2 ans.
+  <br><strong>Mise en garde :</strong> Toute fausse attestation entraîne le reversement du différentiel de TVA (20% − ${tvaPct}%) majoré des pénalités légales à la charge du preneur des travaux (art. 1840 F ter du CGI).
 </div>
 </div></body></html>`;
   const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();w.print();}
