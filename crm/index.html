@@ -251,7 +251,7 @@ const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagn
 // Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
 function isLead(d){return d.source==="site_vitrine";}
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,search:"",filterStatut:"Tous",semaine:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[]}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -488,56 +488,65 @@ function initDirecteur(){
 
 function buildDescription(dv){
   const sol=dv.type_sol,fin=dv.finition||"brillant",trav=(dv.travaux||"").toLowerCase(),etat=dv.etat||"moyen";
+  const grains=dv.grains&&dv.grains.length?dv.grains:null;
+  const grainSeq=grains?"grain "+grains.join(" → "):null;
   const L=[];
   if(sol==="marbre"){
     if(trav.includes("rénovation")||trav.includes("complet")){
       L.push("Nettoyage dégraissant alcalin et rinçage abondant");
       L.push("Diagnostic : profondeur des rayures, état des joints");
       L.push("Rebouchage des fissures et reprise des joints");
-      L.push("Ponçage diamant progressif : grain 50 → 400 → 800 → 1 500 → 3 000");
+      L.push("Ponçage diamant progressif : "+(grainSeq||"grain 50 → 400 → 800 → 1 500 → 3 000"));
       L.push("Cristallisation "+fin+" au cristalliseur professionnel à la monobrosse");
       L.push("Protection finale hydrofuge et oléofuge");
     }else if(trav.includes("polissage")){
       L.push("Nettoyage et préparation de la surface");
-      L.push("Affinage : grain 800 → 1 500 → 3 000");
+      L.push("Affinage : "+(grainSeq||"grain 800 → 1 500 → 3 000"));
       L.push("Cristallisation "+fin+" à la monobrosse professionnelle");
     }else if(trav.includes("cristallis")){
       L.push("Nettoyage de la surface");
+      if(grainSeq)L.push("Affinage préalable : "+grainSeq);
       L.push("Application cristalliseur professionnel — finition "+fin);
     }else if(trav.includes("protection")||trav.includes("imperméabil")){
       L.push("Nettoyage et dégraissage de la surface");
       L.push("Application traitement hydrofuge et oléofuge");
-    }else{L.push(dv.travaux);}
+    }else{
+      if(grainSeq)L.push("Ponçage diamant : "+grainSeq);
+      L.push(dv.travaux);
+    }
   }else if(sol==="travertin"){
     if(trav.includes("rénovation")||trav.includes("complet")){
       L.push("Nettoyage dégraissant et rinçage abondant");
       L.push("Diagnostic : état des pores, fissures et joints");
       L.push("Rebouchage des pores et fissures (résine époxy / ciment fin)");
-      L.push("Ponçage diamant progressif : grain 50 → 400 → 800 → 1 500 → 3 000");
+      L.push("Ponçage diamant progressif : "+(grainSeq||"grain 50 → 400 → 800 → 1 500 → 3 000"));
       L.push("Cristallisation "+fin+" au cristalliseur professionnel");
       L.push("Protection finale hydrofuge et oléofuge");
     }else if(trav.includes("ponçage")||trav.includes("bouchage")){
       L.push("Nettoyage et évaluation des pores");
       L.push("Rebouchage des pores et fissures à la résine époxy");
-      L.push("Ponçage diamant : grain 50 → 1 500");
+      L.push("Ponçage diamant : "+(grainSeq||"grain 50 → 1 500"));
       L.push("Cristallisation "+fin);
     }else if(trav.includes("hydrofuge")||trav.includes("protection")){
       L.push("Nettoyage de la surface");
       L.push("Application traitement hydrofuge et oléofuge");
-    }else{L.push(dv.travaux);}
+    }else{
+      if(grainSeq)L.push("Ponçage diamant : "+grainSeq);
+      L.push(dv.travaux);
+    }
   }else if(sol==="granito"){
     if(trav.includes("rénovation")||trav.includes("complet")){
       L.push("Nettoyage dégraissant spécial granito");
       L.push("Diagnostic : état des joints et des granulats");
       L.push("Réparation des joints à la résine époxy teintée assortie");
-      L.push("Ponçage diamant révélateur : grain 50 → 400 → 800 → 1 500 → 3 000");
+      L.push("Ponçage diamant révélateur : "+(grainSeq||"grain 50 → 400 → 800 → 1 500 → 3 000"));
       L.push("Cristallisation "+fin+" — mise en valeur des granulats colorés");
       L.push("Protection finale hydrofuge et oléofuge");
     }else if(trav.includes("nettoyage")){
       L.push("Nettoyage professionnel dégraissant spécial granito");
       L.push("Rinçage et séchage complet");
     }else{
-      L.push("Ponçage diamant progressif : grain 50 → 3 000");
+      L.push("Ponçage diamant progressif : "+(grainSeq||"grain 50 → 3 000"));
       L.push("Cristallisation "+fin);
     }
   }else if(sol==="parquet"){
@@ -1174,7 +1183,7 @@ function renderDevis(){
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30};set({modal:"modifier",selected:d});});acts.appendChild(bm);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[]};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bp=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"PDF");bp.addEventListener("click",()=>genPDF(d,"devis"));acts.appendChild(bp);
     if(d.statut!=="Gagné"){const bf=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"→ Facture");bf.addEventListener("click",()=>{const f={...d,statut:"Gagné"};S.devis=S.devis.map(x=>x.numero===d.numero?f:x);genPDF(f,"facture");render();});acts.appendChild(bf);}
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
@@ -1239,7 +1248,7 @@ function renderFormDevis(){
   function sel(name,options){
     const s=el("select",{style:{fontSize:"16px"}});
     options.forEach(([v,l])=>{const o=el("option",{value:v},l);if(f[name]===v)o.selected=true;s.appendChild(o);});
-    s.addEventListener("change",e=>{S.form[name]=e.target.value;if(name==="type_sol"){S.form.travaux=TARIFS[e.target.value].trav[0];S.form.prix_m2=TARIFS[e.target.value].prix[0];S.form.finition=e.target.value==="parquet"?"vitrifié":"brillant";}if(name==="travaux"){const idx=TARIFS[S.form.type_sol].trav.indexOf(e.target.value);S.form.prix_m2=TARIFS[S.form.type_sol].prix[idx]||S.form.prix_m2;}render();});
+    s.addEventListener("change",e=>{S.form[name]=e.target.value;if(name==="type_sol"){S.form.travaux=TARIFS[e.target.value].trav[0];S.form.prix_m2=TARIFS[e.target.value].prix[0];S.form.finition=e.target.value==="parquet"?"vitrifié":"brillant";S.form.grains=[];}if(name==="travaux"){const idx=TARIFS[S.form.type_sol].trav.indexOf(e.target.value);S.form.prix_m2=TARIFS[S.form.type_sol].prix[idx]||S.form.prix_m2;}render();});
     return s;
   }
   form.appendChild(row(grp("Nom client *",inp("client_nom","Jean Dupont"),0),grp("Téléphone",inp("client_tel","06 12 34 56 78"),0)));
@@ -1249,6 +1258,29 @@ function renderFormDevis(){
   form.appendChild(row(grp("Travaux *",sel("travaux",tarif.trav.map((t,i)=>[t,`${t} — ${tarif.prix[i]} €/m²`])),0),grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
   const finOpts=f.type_sol==="parquet"?[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]:[["brillant","Brillant"],["mat","Mat"]];
   form.appendChild(row(grp("Finition",sel("finition",finOpts),0)));
+  if(f.type_sol!=="parquet"){
+    const GRAINS_LIST=[50,100,200,400,800,1500,3000,5000];
+    const grainWrap=el("div",{style:{marginBottom:"1rem"}});
+    grainWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Grains de ponçage sélectionnés"));
+    const grainBtns=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"6px"}});
+    GRAINS_LIST.forEach(g=>{
+      const active=(S.form.grains||[]).includes(g);
+      const btn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},`${g}`);
+      btn.addEventListener("click",()=>{
+        const arr=S.form.grains||[];
+        S.form.grains=arr.includes(g)?arr.filter(x=>x!==g):[...arr,g].sort((a,b)=>a-b);
+        render();
+      });
+      grainBtns.appendChild(btn);
+    });
+    grainWrap.appendChild(grainBtns);
+    if((S.form.grains||[]).length>0){
+      const preview=el("div",{style:{marginTop:"8px",fontSize:"11px",color:"#8a6a20",background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"5px 10px"}});
+      preview.textContent="Séquence : grain "+(S.form.grains.join(" → "));
+      grainWrap.appendChild(preview);
+    }
+    form.appendChild(grainWrap);
+  }
   const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
   form.appendChild(grp("Notes",ta));
   if(f.surface>0){
@@ -1297,7 +1329,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[]};
     set({modal:null,selected:null});
   });
   return form;
