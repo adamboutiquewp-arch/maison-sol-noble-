@@ -1246,7 +1246,7 @@ function renderFormDevis(){
     }
   }
   const f=S.form,tarif=TARIFS[f.type_sol];
-  const ht=f.surface?Math.round(f.prix_m2*parseFloat(f.surface)*COEFF[f.etat]):0;
+  const ht=f.surface?Math.round(f.prix_m2*parseFloat(f.surface)):0;
   const form=el("form",{});
   function row(...items){
     if(isMobile()){
@@ -1263,7 +1263,24 @@ function renderFormDevis(){
   function sel(name,options){
     const s=el("select",{style:{fontSize:"16px"}});
     options.forEach(([v,l])=>{const o=el("option",{value:v},l);if(f[name]===v)o.selected=true;s.appendChild(o);});
-    s.addEventListener("change",e=>{S.form[name]=e.target.value;if(name==="type_sol"){S.form.travaux=TARIFS[e.target.value].trav[0];S.form.prix_m2=TARIFS[e.target.value].prix[0];S.form.finition=e.target.value==="parquet"?"vitrifié":"brillant";S.form.grains=[];}if(name==="travaux"){const idx=TARIFS[S.form.type_sol].trav.indexOf(e.target.value);S.form.prix_m2=TARIFS[S.form.type_sol].prix[idx]||S.form.prix_m2;}render();});
+    s.addEventListener("change",e=>{
+      S.form[name]=e.target.value;
+      if(name==="type_sol"){
+        S.form.travaux=TARIFS[e.target.value].trav[0];
+        S.form.prix_m2=Math.round(TARIFS[e.target.value].prix[0]*COEFF[S.form.etat]);
+        S.form.finition=e.target.value==="parquet"?"vitrifié":"brillant";
+        S.form.grains=[];
+      }
+      if(name==="travaux"){
+        const idx=TARIFS[S.form.type_sol].trav.indexOf(e.target.value);
+        if(idx>=0)S.form.prix_m2=Math.round(TARIFS[S.form.type_sol].prix[idx]*COEFF[S.form.etat]);
+      }
+      if(name==="etat"){
+        const trav=TARIFS[S.form.type_sol];
+        if(trav){const idx=trav.trav.indexOf(S.form.travaux);if(idx>=0)S.form.prix_m2=Math.round(trav.prix[idx]*COEFF[e.target.value]);}
+      }
+      render();
+    });
     return s;
   }
   form.appendChild(row(grp("Nom client *",inp("client_nom","Jean Dupont"),0),grp("Téléphone",inp("client_tel","06 12 34 56 78"),0)));
@@ -1300,7 +1317,8 @@ function renderFormDevis(){
   form.appendChild(grp("Notes",ta));
   if(f.surface>0){
     const rc=el("div",{style:{background:"#f0eeea",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"1rem",marginBottom:"1.2rem"}});
-    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},`${f.surface} m² × ${f.prix_m2} €/m² × coeff. ${COEFF[f.etat]}`)]));
+    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},`${f.surface} m² × ${f.prix_m2} €/m²`)]));
+
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#1a1611",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"TTC (TVA 20%)"),el("span",{style:{color:"#c9a84c",fontSize:"17px",fontWeight:"700"}},(ht*1.2).toFixed(2)+" €")]));
     form.appendChild(rc);
