@@ -733,16 +733,10 @@ function showEmailModal(d){
   card.querySelector("#em-pdf").addEventListener("click",()=>genPDF(d,"devis"));
 
   const dlBtn=card.querySelector("#em-pdf-dl");
-  dlBtn.addEventListener("click",async()=>{
-    dlBtn.textContent="⏳ Génération…";dlBtn.disabled=true;
-    try{
-      await downloadPDFFile(d,"devis");
-      dlBtn.textContent="✅ PDF téléchargé !";
-      setTimeout(()=>{dlBtn.textContent="📥 Télécharger le PDF";dlBtn.disabled=false;},3000);
-    }catch(e){
-      dlBtn.textContent="❌ Erreur — réessayer";
-      setTimeout(()=>{dlBtn.textContent="📥 Télécharger le PDF";dlBtn.disabled=false;},3000);
-    }
+  dlBtn.addEventListener("click",()=>{
+    downloadPDFFile(d,"devis");
+    dlBtn.textContent="✅ Fenêtre ouverte — imprimez en PDF";
+    setTimeout(()=>{dlBtn.textContent="📥 Télécharger le PDF";},4000);
   });
 
   card.querySelector("#em-send").addEventListener("click",()=>{
@@ -755,20 +749,13 @@ function showEmailModal(d){
       fb.innerHTML="📥 Le PDF se télécharge — joignez-le à votre email puis cliquez Envoyer.";
       const sendBtn=card.querySelector("#em-send");
       sendBtn.disabled=true;
-      downloadPDFFile(d,"devis").then(()=>{
+      downloadPDFFile(d,"devis");
+      setTimeout(()=>{
         sendBtn.disabled=false;
         const sujet=encodeURIComponent(card.querySelector("#em-sujet").value);
         const corps=encodeURIComponent(card.querySelector("#em-corps").value);
         window.location.href=`mailto:${encodeURIComponent(email)}?subject=${sujet}&body=${corps}`;
-      }).catch(()=>{
-        sendBtn.disabled=false;
-        genPDF(d,"devis");
-        setTimeout(()=>{
-          const sujet=encodeURIComponent(card.querySelector("#em-sujet").value);
-          const corps=encodeURIComponent(card.querySelector("#em-corps").value);
-          window.location.href=`mailto:${encodeURIComponent(email)}?subject=${sujet}&body=${corps}`;
-        },600);
-      });
+      },800);
       return;
     }
     // Afficher la zone de confirmation
@@ -965,52 +952,47 @@ async function _pdfInit(){
   });
 }
 
-async function _pdfSetup(dv,type){
-  await _pdfInit();
-  const full=buildPDFHtml(dv,type);
-  const css=(full.match(/<style>([\s\S]*?)<\/style>/)||["",""])[1];
-  const body=(full.match(/<body>([\s\S]*?)<\/body>/)||["",""])[1];
-  const st=document.createElement("style");
-  st.setAttribute("data-pdf-tmp","1");
-  st.textContent=css;
-  document.head.appendChild(st);
-  const div=document.createElement("div");
-  div.innerHTML=body;
-  // z-index:9998 — visible pour html2canvas (l'overlay de chargement est à 9999 devant)
-  // html2canvas capture l'élément ciblé indépendamment de ce qui est visuellement devant
-  div.style.cssText="position:fixed;top:0;left:0;width:794px;background:#fff;z-index:9998;pointer-events:none;";
-  document.body.appendChild(div);
-  await new Promise(r=>setTimeout(r,350));
-  const cleanup=()=>{if(st.parentNode)document.head.removeChild(st);if(div.parentNode)document.body.removeChild(div);};
-  return{div,cleanup};
+function downloadPDFFile(dv,type="devis"){
+  // Utilise le moteur PDF natif du navigateur — identique à genPDF mais avec impression auto
+  // html2canvas/html2pdf.js génèrent des PDF blancs à cause des conflits CSS avec la page CRM
+  const html=buildPDFHtml(dv,type);
+  const nom=`${type}-${dv.numero}`;
+  const script=`<script>window.addEventListener('load',function(){document.title=${JSON.stringify(nom)};setTimeout(function(){window.print();},500);});<\/script>`;
+  const blob=new Blob([html.replace('</body>',script+'</body>')],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const w=window.open(url,'_blank');
+  if(!w)alert('Autorisez les fenêtres popup dans votre navigateur puis réessayez.');
+  setTimeout(()=>URL.revokeObjectURL(url),120000);
 }
 
-const _PDF_OPT={margin:0,image:{type:"jpeg",quality:0.95},html2canvas:{scale:1.5,useCORS:true,logging:false,allowTaint:true,windowWidth:794,scrollX:0,scrollY:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
-
-function _pdfLoadingOverlay(){
-  const ov=document.createElement("div");
-  ov.style.cssText="position:fixed;inset:0;background:rgba(248,247,243,0.97);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;font-size:14px;color:#706a62;gap:10px;";
-  ov.innerHTML='<span style="font-size:20px">📄</span> Génération du PDF en cours…';
-  document.body.appendChild(ov);
-  return()=>{if(ov.parentNode)document.body.removeChild(ov);};
+async function _pdfInit(){
+  if(window.html2pdf)return;
+  await new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+    s.onload=resolve;s.onerror=reject;
+    document.head.appendChild(s);
+  });
 }
 
 async function genPDFBase64(dv,type="devis"){
-  const removeOverlay=_pdfLoadingOverlay();
-  const{div,cleanup}=await _pdfSetup(dv,type);
+  // Pour l'envoi par email (Resend) : tente html2pdf, sinon renvoie null
   try{
-    const uri=await html2pdf().set(_PDF_OPT).from(div).outputPdf("datauristring");
-    cleanup();removeOverlay();return uri.split(",")[1];
-  }catch(err){cleanup();removeOverlay();throw err;}
-}
-
-async function downloadPDFFile(dv,type="devis"){
-  const removeOverlay=_pdfLoadingOverlay();
-  const{div,cleanup}=await _pdfSetup(dv,type);
-  try{
-    await html2pdf().set({..._PDF_OPT,filename:`${type}-${dv.numero}.pdf`}).from(div).save();
-    cleanup();removeOverlay();
-  }catch(err){cleanup();removeOverlay();throw err;}
+    await _pdfInit();
+    const html=buildPDFHtml(dv,type);
+    const css=(html.match(/<style>([\s\S]*?)<\/style>/)||["",""])[1];
+    const body=(html.match(/<body>([\s\S]*?)<\/body>/)||["",""])[1];
+    const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
+    const div=document.createElement("div");div.innerHTML=body;
+    div.style.cssText="position:fixed;top:0;left:0;width:794px;background:#fff;z-index:9998;pointer-events:none;";
+    document.body.appendChild(div);
+    await new Promise(r=>setTimeout(r,400));
+    const opt={margin:0,image:{type:"jpeg",quality:0.92},html2canvas:{scale:1.5,useCORS:true,allowTaint:true,windowWidth:794,scrollX:0,scrollY:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
+    const uri=await html2pdf().set(opt).from(div).outputPdf("datauristring");
+    if(st.parentNode)document.head.removeChild(st);
+    if(div.parentNode)document.body.removeChild(div);
+    return uri.split(",")[1];
+  }catch(e){return null;}
 }
 
 function genCERFA(dv){
