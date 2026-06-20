@@ -842,7 +842,7 @@ a,a:link,a:visited,a:hover,a:active{color:inherit!important;text-decoration:none
 
 <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;margin-bottom:28px;border-bottom:2px solid #c9a84c;">
   <div>
-    <img src="data:image/png;base64,${LOGO_B64}" style="height:70px;display:block;margin-bottom:8px;border:none;outline:none;box-shadow:none;">
+    <img src="data:image/png;base64,${LOGO_B64}" style="height:48px;display:block;margin-bottom:8px;border:none;outline:none;box-shadow:none;">
     <div style="font-size:10px;color:#6a6258;margin-top:12px;line-height:1.9;">
       <span>${INFO.adresse}</span><br>
       <span>${INFO.cp}&nbsp;${INFO.ville}</span><br>
@@ -965,7 +965,7 @@ async function downloadPDFFile(dv,type="devis"){
   const solLabel=TARIFS[dv.type_sol]?.label||dv.type_sol;
   const finLabel=dv.finition?(dv.type_sol==="parquet"?(dv.finition==="ciré"?"Ciré":"Vitrifié"):(dv.finition==="mat"?"Mat":"Brillant")):"—";
   const GOLD="#c9a84c",DARK="#1a1611",GREY="#6a6258",MID="#5a5450",LIGHT="#9a9488",DGOLD="#8a6a20";
-  const logoImg=LOGO_B64?{image:"data:image/png;base64,"+LOGO_B64,height:52,margin:[0,0,0,6]}:{text:INFO.nom,fontSize:16,bold:true,color:DARK};
+  const logoImg=LOGO_B64?{image:"data:image/png;base64,"+LOGO_B64,fit:[130,32],margin:[0,0,0,6]}:{text:INFO.nom,fontSize:16,bold:true,color:DARK};
   const condTitle=type==="devis"?"Conditions générales :":"Conditions de règlement :";
   const condText=type==="devis"
     ?"Devis valable 30 jours à compter de la date d'émission. Déplacement inclus dans la zone d'intervention. Validité sous réserve de disponibilité des créneaux. Ce devis est établi sur la base des informations communiquées et d'une visite préalable si nécessaire. Tout travaux supplémentaire fera l'objet d'un avenant."
