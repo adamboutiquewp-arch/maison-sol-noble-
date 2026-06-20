@@ -1142,6 +1142,7 @@ function renderDevis(){
     const sb=el("div",{className:"mob-search"});
     sb.appendChild(el("span",{style:{color:"#8a8278",fontSize:"16px"}},"🔍"));
     const si=el("input",{placeholder:"Rechercher un client...",value:S.search,style:{fontSize:"16px"}});
+    si.dataset.formKey="mob-search";
     si.addEventListener("input",e=>{S.search=e.target.value;render();});
     sb.appendChild(si);
     wrap.appendChild(sb);
@@ -1286,8 +1287,10 @@ function renderFormDevis(){
     const g=el("div",{style:{display:"grid",gridTemplateColumns:`repeat(${items.length},1fr)`,gap:"1rem",marginBottom:"1rem"}});items.forEach(i=>g.appendChild(i));return g;
   }
   function inp(name,placeholder,type="text"){
-    const i=el("input",{type,placeholder,value:f[name]||"",style:{fontSize:"16px"}}); // 16px évite zoom iOS
-    i.addEventListener("input",e=>{S.form[name]=e.target.value;if(name==="surface"||name==="prix_m2")render();});
+    const i=el("input",{type,placeholder,value:f[name]||"",style:{fontSize:"16px"}});
+    i.dataset.formKey="inp-"+name;
+    i.addEventListener("input",e=>{S.form[name]=e.target.value;});
+    i.addEventListener("change",e=>{S.form[name]=e.target.value;render();});
     return i;
   }
   function sel(name,options){
@@ -1359,7 +1362,7 @@ function renderFormDevis(){
     optWrap.appendChild(optRow);
     form.appendChild(optWrap);
   }
-  const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
+  const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.dataset.formKey="inp-description";ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
   form.appendChild(grp("Notes",ta));
   if(f.surface>0){
     const rc=el("div",{style:{background:"#f0eeea",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"1rem",marginBottom:"1.2rem"}});
@@ -2114,10 +2117,17 @@ const DEMO_DEVIS=[
 ];
 
 function render(){
+  const scrollY=window.scrollY||window.pageYOffset||0;
+  const focEl=document.activeElement;
+  const focKey=focEl&&focEl.dataset&&focEl.dataset.formKey?focEl.dataset.formKey:null;
+  const selStart=focKey&&focEl.selectionStart!=null?focEl.selectionStart:null;
+  const selEnd=focKey&&focEl.selectionEnd!=null?focEl.selectionEnd:null;
   const app=document.getElementById("app");app.innerHTML="";
   if(S.page==="setup")app.appendChild(renderSetup());
   else if(S.page==="login")app.appendChild(renderLogin());
   else app.appendChild(renderCRM());
+  if(scrollY)window.scrollTo(0,scrollY);
+  if(focKey){const re=document.querySelector(`[data-form-key="${focKey}"]`);if(re){re.focus();if(selStart!=null)try{re.setSelectionRange(selStart,selEnd);}catch(e){}}}
 }
 
 (function(){
