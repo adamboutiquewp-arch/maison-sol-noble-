@@ -658,7 +658,7 @@ function ouvrirApercu(dv){
     +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
     +"<title>Devis "+num+" — "+(dv.client_nom||"")+"</title>"
     +"<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap\" rel=\"stylesheet\">"
-    +"<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}table{border-collapse:collapse;width:100%;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}}</style>"
+    +"<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}table{border-collapse:collapse;width:100%;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}}</style>"
     +"</head><body><div class=\"page\">"
     // Header row
     +"<div style=\"display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;\">"
@@ -695,19 +695,19 @@ function ouvrirApercu(dv){
     // Payment
     +"<div style=\"margin-bottom:18px;\"><div style=\"font-size:7.5px;font-weight:700;color:#c9a84c;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;\">MODALITÉS DE RÈGLEMENT</div>"
     +"<div style=\"display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;\"><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">Acompte à la commande — 30 %</span><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">"+acompte+" € TTC</span></div>"
-    +"<div style=\"font-size:9px;color:#555555;padding-bottom:10px;margin-bottom:10px;border-bottom:1px dashed rgba(201,168,76,0.3);\">Dû à la signature du présent devis</div>"
+    +"<div style=\"font-size:9px;color:#333333;padding-bottom:10px;margin-bottom:10px;border-bottom:1px dashed rgba(201,168,76,0.3);\">Dû à la signature du présent devis</div>"
     +"<div style=\"display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;\"><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">Solde à la livraison du chantier — 70 %</span><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">"+solde+" € TTC</span></div>"
-    +"<div style=\"font-size:9px;color:#555555;padding-top:3px;\">Dû à la réception et validation des travaux par le client</div></div>"
+    +"<div style=\"font-size:9px;color:#333333;padding-top:3px;\">Dû à la réception et validation des travaux par le client</div></div>"
     // Conditions
     +"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;\"><strong style=\"font-size:9.5px;color:#111111;display:block;margin-bottom:4px;\">Conditions générales :</strong>Devis valable 30 jours à compter de la date d’émission. Déplacement inclus dans la zone d’intervention. Validité sous réserve de disponibilité des créneaux. Ce devis est établi sur la base des informations communiquées et d’une visite préalable si nécessaire. Tout travaux supplémentaire fera l’objet d’un avenant.</div>"
     +cerfaBlock
     // Signatures
     +"<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;\">"
-    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#555555;margin-bottom:4px;\">Signature du prestataire</div><div style=\"font-size:8.5px;color:#111111;margin-bottom:2px;\">Maison Sol Noble</div><div style=\"border-bottom:1px solid #aaaaaa;margin-top:40px;\"></div></div>"
-    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#555555;margin-bottom:4px;\">Bon pour accord — Signature du client</div><div style=\"font-size:8.5px;color:#333333;margin-bottom:2px;\">Date : ___/___/______</div><div style=\"border-bottom:1px solid #aaaaaa;margin-top:40px;\"></div></div>"
+    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Signature du prestataire</div><div style=\"font-size:8.5px;color:#111111;margin-bottom:2px;\">Maison Sol Noble</div><div style=\"border-bottom:1px solid #aaaaaa;margin-top:40px;\"></div></div>"
+    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Bon pour accord — Signature du client</div><div style=\"font-size:8.5px;color:#333333;margin-bottom:2px;\">Date : ___/___/______</div><div style=\"border-bottom:1px solid #aaaaaa;margin-top:40px;\"></div></div>"
     +"</div>"
     // Footer
-    +"<div style=\"margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;font-size:8px;color:#666666;text-align:center;line-height:1.9;\">"+INFO.nom+" — "+INFO.forme+" — Capital "+INFO.capital+"<br>SIRET "+fTel(INFO.siret)+" — N&deg; TVA "+INFO.tva+"<br>"+INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+fTel(INFO.tel)+" — "+fMail(INFO.email)+" — "+fSite(INFO.site)+"</div>"
+    +"<div style=\"margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;font-size:8px;color:#333333;text-align:center;line-height:1.9;\">"+INFO.nom+" — "+INFO.forme+" — Capital "+INFO.capital+"<br>SIRET "+fTel(INFO.siret)+" — N&deg; TVA "+INFO.tva+"<br>"+INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+fTel(INFO.tel)+" — "+fMail(INFO.email)+" — "+fSite(INFO.site)+"</div>"
     +"</div></body></html>";
   const w=window.open("","_blank");
   if(w){w.document.write(html);w.document.close();}
