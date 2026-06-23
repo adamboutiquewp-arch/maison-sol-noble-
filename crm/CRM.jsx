@@ -209,6 +209,7 @@ function FormulaireDevis({ onSave, onClose, clientPrefill }) {
     prix_m2: TARIFS.marbre.prix[0],
   });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   const montantHT = form.surface ? Math.round(form.prix_m2 * parseFloat(form.surface) * ETAT_COEFF[form.etat]) : 0;
 
@@ -231,13 +232,16 @@ function FormulaireDevis({ onSave, onClose, clientPrefill }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
+    setSaveError(null);
     const numero = `MSN-${Date.now().toString().slice(-6)}`;
     const payload = { ...form, numero, montant_ht: montantHT, statut: "Devis envoyé", created_at: new Date().toISOString() };
     try {
       await sb("devis", { method: "POST", body: JSON.stringify(payload) });
       onSave(payload);
-    } catch {
-      onSave(payload); // mode démo sans Supabase
+    } catch (err) {
+      setSaveError("Erreur de connexion — données non enregistrées. Vérifiez votre connexion internet et réessayez.");
+      setSaving(false);
+      return;
     }
     setSaving(false);
   }
@@ -317,6 +321,12 @@ function FormulaireDevis({ onSave, onClose, clientPrefill }) {
             <span style={{ color: "#a09080", fontSize: 13 }}>TTC (TVA 20%)</span>
             <span style={{ color: "#c9a84c", fontSize: 17, fontWeight: 700 }}>{(montantHT * 1.2).toFixed(2)} €</span>
           </div>
+        </div>
+      )}
+
+      {saveError && (
+        <div style={{ background: "rgba(163,45,45,0.12)", border: "1px solid rgba(163,45,45,0.4)", borderRadius: 6, padding: "0.8rem 1rem", marginBottom: "1rem", color: "#e07070", fontSize: 13 }}>
+          {saveError}
         </div>
       )}
 
@@ -667,19 +677,35 @@ export default function CRM() {
   if (authChecking) return <div style={{ minHeight: "100vh", background: "#0d0d0d", display: "flex", alignItems: "center", justifyContent: "center", color: "#5a5040", fontFamily: "Inter,sans-serif" }}>Chargement...</div>;
   if (!authToken) return <LoginScreen onLogin={handleLogin} />;
 
+  const chargerDevis = useCallback(async () => {
+    try {
+      const data = await sb("devis?order=created_at.desc", {}, authToken);
+      setDevis(data || []);
+    } catch {
+      setDevis([]);
+    }
+    setLoading(false);
+  }, [authToken]);
+
   // Chargement initial
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await sb("devis?order=created_at.desc", {}, authToken);
-        setDevis(data || []);
-      } catch {
-        // Pas de connexion Supabase configurée — liste vide, prêt pour tes premiers vrais devis
-        setDevis([]);
-      }
-      setLoading(false);
-    })();
-  }, []);
+    chargerDevis();
+  }, [chargerDevis]);
+
+  // Sync auto : rechargement quand l'app revient au premier plan (mobile ou onglet)
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === "visible") chargerDevis();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [chargerDevis]);
+
+  // Sync auto : polling toutes les 30 secondes
+  useEffect(() => {
+    const id = setInterval(chargerDevis, 30000);
+    return () => clearInterval(id);
+  }, [chargerDevis]);
 
   function handleNouveauDevisClient(c) {
     setClientPrefill({ nom: c.nom, tel: c.tel, email: c.email, ville: c.ville });
@@ -728,6 +754,7 @@ export default function CRM() {
           </h1>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
             <span style={{ fontSize: 11, color: "#4a4030" }}>{new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</span>
+            <button style={{ ...btnSecondary, padding: "0.5rem 1rem", fontSize: 12 }} onClick={chargerDevis} title="Synchroniser les données">↺ Sync</button>
             <button style={{ ...btnPrimary, padding: "0.5rem 1rem", fontSize: 12 }} onClick={() => { setClientPrefill(null); setOnglet("devis"); }}>+ Devis rapide</button>
             <button style={{ ...btnSecondary, padding: "0.5rem 1rem", fontSize: 12 }} onClick={handleLogout} title="Se déconnecter">⏻</button>
           </div>
