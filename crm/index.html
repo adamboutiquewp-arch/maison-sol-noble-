@@ -658,7 +658,7 @@ function ouvrirApercu(dv){
     +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
     +"<title>Devis "+num+" — "+(dv.client_nom||"")+"</title>"
     +"<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap\" rel=\"stylesheet\">"
-    +"<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}table{border-collapse:collapse;width:100%;}.topbar{max-width:794px;margin:20px auto 0;display:flex;gap:10px;justify-content:flex-end;padding:0 4px;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}.topbar{display:none;}}</style>"
+    +"<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}table{border-collapse:collapse;width:100%;}.topbar{max-width:794px;margin:20px auto 0;display:flex;gap:10px;justify-content:flex-end;padding:0 4px;}.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}.topbar{display:none;}}@media screen and (max-width:640px){body{background:#fff!important;font-size:13px;}.topbar{padding:12px 14px;flex-wrap:wrap;gap:8px;max-width:100%;margin:0;justify-content:stretch;}.topbar a,.topbar button{font-size:13px!important;padding:11px 16px!important;flex:1;min-width:130px;text-align:center;justify-content:center;border-radius:8px!important;}.page{padding:18px 14px!important;margin:0!important;box-shadow:none!important;max-width:100%!important;}.page table th,.page table td{white-space:normal!important;word-break:break-word;font-size:11px;}.page thead th{font-size:9px!important;padding:7px 8px!important;}.scroll-x table{min-width:500px;}.header-flex{flex-direction:column!important;gap:16px!important;}.header-flex>div:last-child{text-align:left!important;}.parties-table td{display:block!important;width:100%!important;border-left:1px solid #e8e4dc!important;border-top:none!important;}.parties-table tr{display:block!important;}.sig-grid{grid-template-columns:1fr!important;gap:12px!important;}}</style>"
     +"</head><body>"
     +"<div class=\"topbar\">"
     +"<a href=\"mailto:"+(dv.client_email||"")+"?subject="+encodeURIComponent("Devis N° "+num+" — Maison Sol Noble")+"&body="+encodeURIComponent("Bonjour "+(dv.client_nom||"")+",\n\nVeuillez trouver ci-joint votre devis N° "+num+" d'un montant de "+ttc.toFixed(2)+" € TTC.\n\nNous restons à votre disposition pour toute question.\n\nCordialement,\nMaison Sol Noble\n"+INFO.tel+" — "+INFO.email)+"\" style=\"display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#111111;color:#ffffff;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;text-decoration:none;border-radius:6px;\">&#9993; Envoyer par email</a>"
@@ -666,19 +666,19 @@ function ouvrirApercu(dv){
     +"</div>"
     +"<div class=\"page\">"
     // Header row
-    +"<div style=\"display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;\">"
+    +"<div class=\"header-flex\" style=\"display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;\">"
     +"<div>"+logoHTML+"<div style=\"font-size:9.5px;color:#444444;line-height:1.85;margin-top:6px;\"><div>"+INFO.adresse+"</div><div>"+INFO.cp+" "+INFO.ville+"</div><div>"+fTel(INFO.tel)+"</div><div>"+fMail(INFO.email)+"</div><div>"+fSite(INFO.site)+"</div></div></div>"
     +"<div style=\"text-align:right;\"><div style=\"font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:#111111;letter-spacing:6px;\">DEVIS</div><div style=\"font-size:10px;color:#444444;margin-top:8px;\">N&deg; <strong>"+num+"</strong></div><div style=\"font-size:10px;color:#444444;margin-top:2px;\">Date : "+dateDoc+"</div><div style=\"font-size:10px;color:#444444;margin-top:2px;\">Validité : 30 jours</div></div>"
     +"</div>"
     // Gold line
     +"<div style=\"height:2px;background:#c9a84c;margin-bottom:20px;\"></div>"
     // Parties
-    +"<table style=\"margin-bottom:20px;\"><tr>"
+    +"<table class=\"parties-table\" style=\"margin-bottom:20px;\"><tr>"
     +"<td style=\"width:50%;padding:12px 14px;background:#faf9f6;border:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:7px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;\">PRESTATAIRE</div><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:4px;\">"+INFO.nom+"</div><div style=\"font-size:10px;color:#333333;line-height:1.7;\"><div>"+INFO.forme+"</div><div>SIRET : "+fTel(INFO.siret)+"</div><div>N&deg; TVA : "+INFO.tva+"</div><div>Capital social : "+INFO.capital+"</div></div></td>"
     +"<td style=\"width:50%;padding:12px 14px;background:#faf9f6;border:1px solid #e8e4dc;border-left:none;vertical-align:top;\"><div style=\"font-size:7px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;\">CLIENT</div><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:4px;\">"+(dv.client_nom||"—")+"</div><div style=\"font-size:10px;color:#333333;line-height:1.7;\">"+telBlock+mailBlock+villeBlock+"</div></td>"
     +"</tr></table>"
     // Work table
-    +"<table style=\"margin-bottom:20px;border:1px solid #e8e4dc;\"><thead><tr>"
+    +"<div class=\"scroll-x\"><table style=\"margin-bottom:20px;border:1px solid #e8e4dc;\"><thead><tr>"
     +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;\">DÉSIGNATION ET DESCRIPTION DES TRAVAUX</th>"
     +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">SOL</th>"
     +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">SURFACE</th>"
@@ -690,7 +690,7 @@ function ouvrirApercu(dv){
     +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+surfaceStr+"</td>"
     +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+prixStr+"</td>"
     +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;font-weight:700;color:#111111;text-align:right;vertical-align:top;white-space:nowrap;\">"+ht.toFixed(2)+" €</td>"
-    +"</tr></tbody></table>"
+    +"</tr></tbody></table></div>"
     // Totals
     +"<div style=\"display:flex;justify-content:flex-end;margin-bottom:22px;\"><table style=\"width:260px;border:1px solid #e0ddd5;\">"
     +"<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">Montant HT</td><td style=\"padding:7px 10px;font-size:10.5px;font-weight:600;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+ht.toFixed(2)+" €</td></tr>"
@@ -707,7 +707,7 @@ function ouvrirApercu(dv){
     +"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;\"><strong style=\"font-size:9.5px;color:#111111;display:block;margin-bottom:4px;\">Conditions générales :</strong>Devis valable 30 jours à compter de la date d’émission. Déplacement inclus dans la zone d’intervention. Validité sous réserve de disponibilité des créneaux. Ce devis est établi sur la base des informations communiquées et d’une visite préalable si nécessaire. Tout travaux supplémentaire fera l’objet d’un avenant.</div>"
     +cerfaBlock
     // Signatures
-    +"<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;\">"
+    +"<div class=\"sig-grid\" style=\"display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;\">"
     +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Signature du prestataire</div><div style=\"font-size:8.5px;color:#111111;margin-bottom:2px;\">Maison Sol Noble</div><div style=\"border-bottom:1px solid #aaaaaa;margin-top:40px;\"></div></div>"
     +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Bon pour accord — Signature du client</div><div style=\"font-size:8.5px;color:#333333;margin-bottom:2px;\">Date : ___/___/______</div><div style=\"border-bottom:1px solid #aaaaaa;margin-top:40px;\"></div></div>"
     +"</div>"
@@ -1788,9 +1788,11 @@ function renderClients(){
     if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0,devisFait:false,dateIntervention:null};
     map[d.client_nom].nb++;
     if(!isLead(d))map[d.client_nom].devisFait=true;
-    if(d.statut==="Gagné"){
+    if(!isLead(d)&&d.statut!=="Perdu"){
       map[d.client_nom].ca+=d.montant_ht||0;
-      if(d.date_intervention)map[d.client_nom].dateIntervention=d.date_intervention;
+    }
+    if(d.statut==="Gagné"&&d.date_intervention){
+      map[d.client_nom].dateIntervention=d.date_intervention;
     }
   });
   const clients=Object.values(map);
@@ -1815,7 +1817,7 @@ function renderClients(){
     card.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278",marginBottom:"0.8rem"}},c.email||"—"));
     const bot=el("div",{style:{display:"flex",justifyContent:"space-between",padding:"0.6rem 0",borderTop:"1px solid #eceae4"}});
     bot.appendChild(el("span",{style:{fontSize:"11px",color:"#8a8278"}},c.nb+" devis"));
-    bot.appendChild(el("span",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},c.ca.toFixed(0)+" € CA"));
+    bot.appendChild(el("span",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},c.ca.toFixed(0)+" € HT"));
     card.appendChild(bot);
     if(c.dateIntervention){
       const di=el("div",{style:{marginTop:"0.5rem",padding:"7px 12px",background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"6px",fontSize:"12px",color:"#3B6D11",fontWeight:"500"}});
