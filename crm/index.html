@@ -1330,9 +1330,9 @@ function renderModal(){
     sheet.appendChild(body);ov.appendChild(sheet);return ov;
   }
   // ── MODAL DESKTOP ──
-  const ov=el("div",{style:{position:"fixed",inset:"0",background:"rgba(0,0,0,0.32)",zIndex:"1000",display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",overflowY:"auto"}});
+  const ov=el("div",{style:{position:"fixed",inset:"0",background:"rgba(0,0,0,0.32)",zIndex:"1000",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"1.5rem 1rem",overflowY:"auto"}});
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
-  const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px"}});
+  const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px",marginBottom:"1.5rem"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
   const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
