@@ -1411,10 +1411,16 @@ function renderFormDevis(){
   {
     const optWrap=el("div",{style:{marginBottom:"1rem"}});
     optWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"10px"}},"Prestations complémentaires"));
+    // Met à jour le style d'un bouton toggle sans render()
+    function applyToggleStyle(btn,active){
+      btn.style.border="1px solid "+(active?"#c9a84c":"#dddad2");
+      btn.style.background=active?"rgba(201,168,76,0.12)":"#fff";
+      btn.style.color=active?"#8a6a20":"#706a62";
+    }
     function optBtn(label,key){
       const active=!!S.form[key];
       const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},label);
-      b.addEventListener("click",()=>{S.form[key]=!S.form[key];render();});
+      b.addEventListener("click",()=>{S.form[key]=!S.form[key];applyToggleStyle(b,S.form[key]);});
       return b;
     }
     // 1. Rebouchage
@@ -1429,11 +1435,25 @@ function renderFormDevis(){
       const pWrap=el("div",{style:{marginBottom:"10px"}});
       pWrap.appendChild(el("div",{style:{fontSize:"11px",color:"#706a62",fontWeight:"600",marginBottom:"6px"}},"✨ Ponçage — grains"));
       const gBtns=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"6px"}});
+      // Preview créé en avance pour être mis à jour sans render()
+      const prev=el("div",{style:{marginTop:"7px",fontSize:"11px",color:"#8a6a20",background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"5px 10px",display:(S.form.grains||[]).length>0?"block":"none"}});
+      prev.textContent=(S.form.grains||[]).length>0?"Ponçage grain "+S.form.grains.join(" → "):"";
+      function refreshGrainPreview(){
+        const g=S.form.grains||[];
+        prev.style.display=g.length>0?"block":"none";
+        prev.textContent=g.length>0?"Ponçage grain "+g.join(" → "):"";
+      }
       GRAINS_LIST.forEach(g=>{
         if(g===200&&f.type_sol!=="parquet"){
           const mActive=S.form.mineralisation||false;
           const mBtn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px dashed "+(mActive?"#7a5a9a":"#c4b0d8"),background:mActive?"rgba(122,90,154,0.1)":"#faf8fc",color:mActive?"#5a3a7a":"#9a86aa",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},"🪨 Minéralisation");
-          mBtn.addEventListener("click",()=>{S.form.mineralisation=!S.form.mineralisation;render();});
+          mBtn.addEventListener("click",()=>{
+            S.form.mineralisation=!S.form.mineralisation;
+            const a=S.form.mineralisation;
+            mBtn.style.border="1px dashed "+(a?"#7a5a9a":"#c4b0d8");
+            mBtn.style.background=a?"rgba(122,90,154,0.1)":"#faf8fc";
+            mBtn.style.color=a?"#5a3a7a":"#9a86aa";
+          });
           gBtns.appendChild(mBtn);
         }
         const active=(S.form.grains||[]).includes(g);
@@ -1441,16 +1461,13 @@ function renderFormDevis(){
         btn.addEventListener("click",()=>{
           const arr=S.form.grains||[];
           S.form.grains=arr.includes(g)?arr.filter(x=>x!==g):[...arr,g].sort((a,b)=>a-b);
-          render();
+          applyToggleStyle(btn,S.form.grains.includes(g));
+          refreshGrainPreview();
         });
         gBtns.appendChild(btn);
       });
       pWrap.appendChild(gBtns);
-      if((S.form.grains||[]).length>0){
-        const prev=el("div",{style:{marginTop:"7px",fontSize:"11px",color:"#8a6a20",background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"5px 10px"}});
-        prev.textContent="Ponçage grain "+(S.form.grains.join(" → "));
-        pWrap.appendChild(prev);
-      }
+      pWrap.appendChild(prev);
       optWrap.appendChild(pWrap);
     }
     // 3. Cristallisation, Hydrofuge, Oléofuge
