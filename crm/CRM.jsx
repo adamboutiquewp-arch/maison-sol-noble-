@@ -188,8 +188,8 @@ function Badge({ statut }) {
 }
 
 // ─── INPUT & SELECT STYLES ────────────────────────────────────────────────────
-const inputStyle = { background: "#0d0d0d", border: "1px solid #2a2a2a", color: "#e0d8cc", padding: "0.7rem 0.9rem", fontFamily: "Inter,sans-serif", fontSize: 14, borderRadius: 4, width: "100%", outline: "none" };
-const labelStyle = { display: "block", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "#6a6050", marginBottom: 5, fontWeight: 400 };
+const inputStyle = { background: "#181818", border: "1px solid #3a3a3a", color: "#e0d8cc", padding: "0.7rem 0.9rem", fontFamily: "Inter,sans-serif", fontSize: 14, borderRadius: 4, width: "100%", outline: "none" };
+const labelStyle = { display: "block", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "#a09080", marginBottom: 5, fontWeight: 500 };
 const btnPrimary = { background: "#c9a84c", color: "#111", border: "none", padding: "0.7rem 1.4rem", fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", cursor: "pointer", borderRadius: 4, textTransform: "uppercase" };
 const btnSecondary = { background: "transparent", color: "#a09080", border: "1px solid #2a2a2a", padding: "0.6rem 1.2rem", fontSize: 12, cursor: "pointer", borderRadius: 4 };
 const btnDanger = { background: "transparent", color: "#A32D2D", border: "1px solid #A32D2D44", padding: "0.5rem 1rem", fontSize: 12, cursor: "pointer", borderRadius: 4 };
@@ -250,7 +250,7 @@ function FormulaireDevis({ onSave, onClose, clientPrefill }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+      <div className="form-grid-2">
         <div>
           <label style={labelStyle}>Nom client *</label>
           <input style={inputStyle} name="client_nom" value={form.client_nom} onChange={handleChange} required placeholder="Jean Dupont" />
@@ -271,7 +271,7 @@ function FormulaireDevis({ onSave, onClose, clientPrefill }) {
 
       <div style={{ height: 1, background: "#1e1e1e", margin: "1rem 0" }} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+      <div className="form-grid-2">
         <div>
           <label style={labelStyle}>Type de sol *</label>
           <select style={inputStyle} name="type_sol" value={form.type_sol} onChange={handleChange}>
@@ -782,12 +782,15 @@ export default function CRM() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap');
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
         @media (max-width: 768px) {
           div[style*="marginLeft: 220"] { margin-left: 0 !important; padding-bottom: 70px; }
           div[style*="width: 220"] { display: none !important; }
           .mobile-nav { display: flex !important; }
+          .form-grid-2 { grid-template-columns: 1fr !important; }
         }
-        input:focus, select:focus, textarea:focus { border-color: #c9a84c !important; }
+        input:focus, select:focus, textarea:focus { border-color: #c9a84c !important; outline: none; }
+        input::placeholder, textarea::placeholder { color: #4a4038; }
         button:hover { opacity: 0.9; }
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #0d0d0d; } ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
       `}</style>
