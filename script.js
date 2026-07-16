@@ -79,9 +79,14 @@ if (floatBtns) {
   }, { passive: true });
 }
 
-// ===== FORMULAIRE — envoie dans Supabase comme "lead" =====
-const SUPA_URL = window._SUPA_URL || '__SUPABASE_URL__';
-const SUPA_KEY = window._SUPA_KEY || '__SUPABASE_ANON_KEY__';
+// ===== FORMULAIRE — envoie directement vers HubSpot Forms API (CRM) =====
+const HS_PORTAL_ID = '148913514';
+const HS_FORM_ID = '360e24b5-f2f9-40e4-b5fe-0b9a358ab44e';
+
+function getHubspotUtk() {
+  const match = document.cookie.match(/(?:^|;\s*)hubspotutk=([^;]+)/);
+  return match ? match[1] : undefined;
+}
 
 async function handleSubmit(e) {
   e.preventDefault();
@@ -93,45 +98,39 @@ async function handleSubmit(e) {
   btn.disabled = true;
   btnText.textContent = 'Envoi en cours...';
 
-  const num = 'LEAD-' + Date.now().toString().slice(-6);
-  const formData = {
-    numero: num,
-    client_nom: document.getElementById('nom').value,
-    client_tel: document.getElementById('tel').value,
-    client_email: document.getElementById('email').value,
-    ville: document.getElementById('ville').value,
-    type_sol: document.getElementById('type').value.toLowerCase().replace(' massif','').replace('autre pierre naturelle','marbre'),
-    travaux: 'Demande de devis',
-    surface: document.getElementById('surface').value || '0',
-    etat: 'moyen',
-    description: document.getElementById('message').value,
-    prix_m2: 0,
-    montant_ht: 0,
-    statut: 'Nouveau',
-    created_at: new Date().toISOString(),
-    source: 'site_vitrine',
+  const payload = {
+    fields: [
+      { name: 'firstname', value: document.getElementById('firstname').value },
+      { name: 'lastname', value: document.getElementById('lastname').value },
+      { name: 'email', value: document.getElementById('email').value },
+      { name: 'phone', value: document.getElementById('phone').value },
+      { name: 'city', value: document.getElementById('city').value },
+      { name: 'message', value: document.getElementById('message').value },
+    ],
+    context: {
+      pageUri: window.location.href,
+      pageName: document.title,
+      hutk: getHubspotUtk(),
+    },
   };
 
   try {
-    const response = await fetch(`${SUPA_URL}/rest/v1/devis`, {
+    const response = await fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${HS_PORTAL_ID}/${HS_FORM_ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': SUPA_KEY,
-        'Authorization': `Bearer ${SUPA_KEY}`,
-        'Prefer': 'return=representation',
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     });
 
-    if (response.ok || response.status === 201) {
+    if (response.ok) {
       form.style.display = 'none';
       successDiv.style.display = 'flex';
       successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       const errData = await response.json().catch(() => ({}));
-      console.error('Supabase error:', response.status, errData);
-      throw new Error('Supabase ' + response.status);
+      console.error('HubSpot error:', response.status, errData);
+      throw new Error('HubSpot ' + response.status);
     }
   } catch (err) {
     // Afficher un message d'erreur visible
