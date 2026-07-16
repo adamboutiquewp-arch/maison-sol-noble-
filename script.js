@@ -103,7 +103,7 @@ async function handleSubmit(e) {
       { name: 'firstname', value: document.getElementById('firstname').value },
       { name: 'lastname', value: document.getElementById('lastname').value },
       { name: 'email', value: document.getElementById('email').value },
-      { name: 'phone', value: document.getElementById('phone').value },
+      { name: 'phone', value: document.getElementById('phoneCode').value + ' ' + document.getElementById('phone').value },
       { name: 'city', value: document.getElementById('city').value },
       { name: 'message', value: document.getElementById('message').value },
     ],

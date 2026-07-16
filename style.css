@@ -419,6 +419,9 @@ em { font-style: italic; color: #c9a84c; }
 .form-group input::placeholder,
 .form-group textarea::placeholder { color: #4a4030; }
 .form-group select option { background: #141414; }
+.phone-input-group { display: flex; gap: 0.6rem; }
+.phone-input-group select { flex: 0 0 92px; padding-left: 0.6rem; padding-right: 0.3rem; }
+.phone-input-group input { flex: 1; min-width: 0; }
 .form-group textarea { resize: vertical; min-height: 100px; }
 .btn-submit {
   display: flex;
