@@ -230,10 +230,10 @@ function isMobile(){return window.innerWidth<=768;}
 const INFO={nom:"Maison Sol Noble",forme:"SAS à associé unique",siret:"105 745 806 00015",tva:"FR3102.105745806",adresse:"6 place du Président Thomas Woodrow Wilson",cp:"31000",ville:"Toulouse",tel:"05 54 54 28 64",email:"contact@maisonsolnoble.com",president:"TAHAR Adam",capital:"50,00 €",site:"maisonsolnoble.com"};
 
 let TARIFS={
-  marbre:{label:"Marbre",trav:["Polissage simple","Rénovation complète","Cristallisation","Protection imperméabilisante"],prix:[30,55,45,14]},
-  travertin:{label:"Travertin",trav:["Bouchage + ponçage","Rénovation complète","Protection hydrofuge"],prix:[35,50,12]},
-  granito:{label:"Granito",trav:["Ponçage + cristallisation","Rénovation complète","Nettoyage professionnel"],prix:[40,48,14]},
-  parquet:{label:"Parquet massif",trav:["Ponçage + vitrification","Ponçage + cirage","Vitrification seule","Ponçage seul"],prix:[28,32,16,12]},
+  marbre:{label:"Marbre",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
+  travertin:{label:"Travertin",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
+  granito:{label:"Granito",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
+  parquet:{label:"Parquet massif",trav:["Ponçage + vitrification","Ponçage + parquet ciré","Rénovation complète"],prix:[0,0,0]},
 };
 // ── NETTOYAGE CACHE : change ce numéro pour vider le localStorage de tous les appareils ──
 const APP_CACHE_VERSION="3";
@@ -1554,7 +1554,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Rebouchage",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:0,grains:[],rebouchage:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
     set({modal:null,selected:null});
   });
   return form;
