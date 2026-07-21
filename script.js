@@ -212,6 +212,12 @@ function initMap() {
     { name: 'Bayonne', lat: 43.4933, lng: -1.4748 },
     { name: 'Saint-Jean-de-Luz', lat: 43.3895, lng: -1.6600 },
     { name: 'Anglet', lat: 43.4896, lng: -1.5241 },
+    { name: 'Toulouse', lat: 43.6047, lng: 1.4442 },
+    { name: 'Bordeaux', lat: 44.8378, lng: -0.5792 },
+    { name: 'Lyon', lat: 45.7640, lng: 4.8357 },
+    { name: 'Marseille', lat: 43.2965, lng: 5.3698 },
+    { name: 'Nantes', lat: 47.2184, lng: -1.5536 },
+    { name: 'Lille', lat: 50.6292, lng: 3.0573 },
   ];
 
   villes.forEach(v => {
