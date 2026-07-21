@@ -963,6 +963,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
+<!-- BANDEAU PLANNING SEPTEMBRE/OCTOBRE -->
+<div class="planning-bar" id="planningBar">
+  <div class="planning-bar-text">
+    <strong>Planning septembre / octobre — places limitées.</strong>
+    <span>Nous limitons le nombre de chantiers par semaine pour garantir la qualité de chaque intervention.</span>
+  </div>
+  <a href="#contact" class="planning-bar-btn">Demander mon devis</a>
+  <button type="button" class="planning-bar-close" id="planningBarClose" aria-label="Fermer">&times;</button>
+</div>
+
 <!-- BOUTONS FLOTTANTS -->
 <div class="float-buttons" id="floatCall">
   <a href="https://wa.me/330630729858?text=Bonjour%2C%20je%20souhaite%20un%20devis%20pour%20la%20r%C3%A9novation%20de%20mon%20sol." class="float-btn float-whatsapp" aria-label="Contacter sur WhatsApp" target="_blank" rel="noopener">
@@ -979,5 +989,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="config.js"></script>
 <script src="script.js"></script>
+<script>
+(function(){
+  var bar=document.getElementById('planningBar');
+  var closeBtn=document.getElementById('planningBarClose');
+  if(!bar||!closeBtn)return;
+  if(sessionStorage.getItem('planningBarClosed')==='1'){bar.style.display='none';return;}
+  closeBtn.addEventListener('click',function(){
+    bar.style.display='none';
+    sessionStorage.setItem('planningBarClosed','1');
+  });
+})();
+</script>
 </body>
 </html>

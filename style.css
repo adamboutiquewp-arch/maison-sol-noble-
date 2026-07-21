@@ -538,6 +538,55 @@ em { font-style: italic; color: #c9a84c; }
   50% { box-shadow: 0 4px 28px rgba(37,211,102,0.55); }
 }
 
+/* ===== BANDEAU PLANNING SEPTEMBRE/OCTOBRE ===== */
+.planning-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  z-index: 150;
+  background: rgba(13,13,13,0.97);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(201,168,76,0.35);
+  padding: 0.9rem 5.5rem 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  text-align: center;
+}
+.planning-bar-text { display: flex; flex-direction: column; gap: 2px; }
+.planning-bar-text strong { font-size: 0.85rem; color: #f0ece4; font-weight: 500; letter-spacing: 0.02em; }
+.planning-bar-text span { font-size: 0.75rem; color: #a09080; }
+.planning-bar-btn {
+  background: #c9a84c;
+  color: #111;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.planning-bar-btn:hover { background: #d4b660; }
+.planning-bar-close {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #6a6050;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.planning-bar-close:hover { color: #c9a84c; }
+
+body:has(#planningBar:not([style*="display: none"])) .float-buttons { bottom: 6.5rem; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .problem-grid, .zone-grid, .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
@@ -564,6 +613,9 @@ em { font-style: italic; color: #c9a84c; }
   .float-btn span { display: none; }
   .float-btn { padding: 1rem; border-radius: 50%; width: 52px; height: 52px; justify-content: center; }
   .float-buttons { right: 1rem; bottom: 1rem; gap: 8px; }
+  .planning-bar { padding: 0.8rem 1rem 3.5rem; gap: 0.6rem; }
+  .planning-bar-text span { display: none; }
+  body:has(#planningBar:not([style*="display: none"])) .float-buttons { bottom: 5.5rem; }
   .container { padding: 0 1.25rem; }
   h1 { font-size: 2.4rem; }
   h2 { font-size: 1.8rem; }
