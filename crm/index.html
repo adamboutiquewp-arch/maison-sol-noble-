@@ -324,6 +324,7 @@ function mergeDevisLocal(remote){
 }
 
 async function loadDevisFromSupabase(){
+  retryPendingDevis();
   const remote=await api("devis?order=created_at.desc&limit=500");
   if(remote&&Array.isArray(remote)&&remote.length){
     const merged=mergeDevisLocal(remote);
@@ -350,6 +351,26 @@ async function saveDevisToSupabase(payload){
   const entry=saved?{...payload,_pendingSync:false}:{...payload,_pendingSync:true};
   localStorage.setItem("msn_devis",JSON.stringify([entry,...localAfter.filter(d=>d.numero!==payload.numero)]));
   return r;
+}
+
+// Retente l'envoi des devis créés localement mais jamais arrivés sur Supabase
+// (échec réseau ponctuel au moment de la création) — sans ça ils restent
+// invisibles sur les autres appareils indéfiniment.
+let _retryingSync=false;
+async function retryPendingDevis(){
+  if(_retryingSync)return;
+  _retryingSync=true;
+  try{
+    let local=[];
+    try{local=JSON.parse(localStorage.getItem("msn_devis")||"[]");}catch{}
+    const pending=local.filter(d=>d._pendingSync===true);
+    for(const d of pending){
+      const {_pendingSync,...payload}=d;
+      await saveDevisToSupabase(payload);
+    }
+  }finally{
+    _retryingSync=false;
+  }
 }
 
 async function updateDevisSupabase(numero,patch){
@@ -435,6 +456,7 @@ function startPolling(){
   _pollTimer=setInterval(async()=>{
     if(S.page!=="crm"||document.hidden)return;
     _pollCount++;
+    await retryPendingDevis();
     const remote=await api("devis?order=created_at.desc&limit=500");
     if(remote===null)return;
     let devis=mergeDevisLocal(Array.isArray(remote)?remote:[]);
@@ -1243,6 +1265,7 @@ function renderDevis(){
       const numWrap=el("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}});
       numWrap.appendChild(el("span",{className:"mob-devis-num"},d.numero||"—"));
       if(isLead(d)){numWrap.appendChild(el("span",{style:{background:"rgba(226,75,74,0.15)",color:"#E24B4A",border:"1px solid rgba(226,75,74,0.3)",padding:"1px 6px",borderRadius:"10px",fontSize:"9px",fontWeight:"700"}},"LEAD"));}
+      if(d._pendingSync){numWrap.appendChild(el("span",{title:"Ce devis n'a pas encore rejoint le serveur — il n'apparaîtra sur vos autres appareils qu'une fois synchronisé.",style:{background:"rgba(239,159,39,0.15)",color:"#9a6a10",border:"1px solid rgba(239,159,39,0.35)",padding:"1px 6px",borderRadius:"10px",fontSize:"9px",fontWeight:"700"}},"⏳ Non synchronisé"));}
       top.appendChild(numWrap);
       card.appendChild(top);
       const mid=el("div",{className:"mob-devis-mid"});
@@ -1289,6 +1312,7 @@ function renderDevis(){
     const numCell=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#c9a84c",fontWeight:"600"}});
     numCell.appendChild(document.createTextNode(d.numero||"—"));
     if(isLead(d)){const lb=el("span",{style:{marginLeft:"6px",background:"rgba(226,75,74,0.15)",color:"#E24B4A",border:"1px solid rgba(226,75,74,0.3)",padding:"1px 6px",borderRadius:"10px",fontSize:"10px",fontWeight:"600"}},"LEAD");numCell.appendChild(lb);}
+    if(d._pendingSync){const pb=el("span",{title:"Ce devis n'a pas encore rejoint le serveur — il n'apparaîtra sur vos autres appareils qu'une fois synchronisé.",style:{marginLeft:"6px",background:"rgba(239,159,39,0.15)",color:"#9a6a10",border:"1px solid rgba(239,159,39,0.35)",padding:"1px 6px",borderRadius:"10px",fontSize:"10px",fontWeight:"600"}},"⏳ Non synchronisé");numCell.appendChild(pb);}
     tr.appendChild(numCell);
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#2a2520",fontWeight:"500"}},d.client_nom));
     {const zi=getZoneInfo(d.ville);const vtd=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}});vtd.appendChild(el("span",{style:{display:"inline-flex",alignItems:"center",gap:"4px"}},[el("span",{style:{color:zi.color,fontSize:"11px"}},zi.icon),document.createTextNode(d.ville||"—")]));tr.appendChild(vtd);}
