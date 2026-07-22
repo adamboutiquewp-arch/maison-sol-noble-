@@ -1352,7 +1352,7 @@ function renderFormDevis(){
     if(lead){
       const sol=lead.type_sol||"marbre";
       S.form.type_sol=sol;
-      S.form.travaux=TARIFS[sol]?.trav[0]||S.form.travaux;
+      S.form.travaux=TARIFS[sol]?.label||S.form.travaux;
       S.form.prix_m2=Math.round((TARIFS[sol]?.prix[0]||30)*COEFF[S.form.etat]);
       S.form.finition=sol==="parquet"?"vitrifié":"brillant";
       if(lead.surface&&lead.surface!=="0")S.form.surface=lead.surface;
@@ -1360,7 +1360,7 @@ function renderFormDevis(){
       S.form._leadPrefilled=true;
     }
   }
-  const f=S.form,tarif=TARIFS[f.type_sol];
+  const f=S.form;
   const ht=f.surface?Math.round(f.prix_m2*parseFloat(f.surface)):0;
   const form=el("form",{});
   function row(...items){
@@ -1383,18 +1383,14 @@ function renderFormDevis(){
     s.addEventListener("change",e=>{
       S.form[name]=e.target.value;
       if(name==="type_sol"){
-        S.form.travaux=TARIFS[e.target.value].trav[0];
-        S.form.prix_m2=Math.round(TARIFS[e.target.value].prix[0]*COEFF[S.form.etat]);
+        S.form.travaux=TARIFS[e.target.value].label;
+        S.form.prix_m2=Math.round((TARIFS[e.target.value].prix[0]||0)*COEFF[S.form.etat]);
         S.form.finition=e.target.value==="parquet"?"vitrifié":"brillant";
         S.form.grains=[];
       }
-      if(name==="travaux"){
-        const idx=TARIFS[S.form.type_sol].trav.indexOf(e.target.value);
-        if(idx>=0)S.form.prix_m2=Math.round(TARIFS[S.form.type_sol].prix[idx]*COEFF[S.form.etat]);
-      }
       if(name==="etat"){
         const trav=TARIFS[S.form.type_sol];
-        if(trav){const idx=trav.trav.indexOf(S.form.travaux);if(idx>=0)S.form.prix_m2=Math.round(trav.prix[idx]*COEFF[e.target.value]);}
+        if(trav)S.form.prix_m2=Math.round((trav.prix[0]||0)*COEFF[e.target.value]);
       }
       render();
     });
@@ -1404,7 +1400,7 @@ function renderFormDevis(){
   form.appendChild(row(grp("Email",inp("client_email","client@email.com"),0),grp("Ville",inp("ville","Paris"),0)));
   form.appendChild(el("div",{style:{height:"1px",background:"#e8e4dc",margin:"0.5rem 0 1rem"}}));
   form.appendChild(row(grp("Type de sol *",sel("type_sol",Object.entries(TARIFS).map(([k,v])=>[k,v.label])),0),grp("État du sol",sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]]),0)));
-  form.appendChild(row(grp("Travaux *",sel("travaux",tarif.trav.map((t,i)=>[t,`${t} — ${tarif.prix[i]} €/m²`])),0),grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
+  form.appendChild(row(grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
   const finOpts=f.type_sol==="parquet"?[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]:[["brillant","Brillant"],["mat","Mat"]];
   form.appendChild(row(grp("Finition",sel("finition",finOpts),0)));
   // ── PRESTATIONS COMPLÉMENTAIRES (ordre de travail) ──
@@ -1554,7 +1550,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Rebouchage",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:0,grains:[],rebouchage:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Marbre",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:0,grains:[],rebouchage:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,tva_taux:20,cerfa:false};
     set({modal:null,selected:null});
   });
   return form;
@@ -1594,7 +1590,7 @@ function renderPlanifier(){
 function renderDetailDevis(d){
   const wrap=el("div",{});
   // Infos client
-  [["Client",d.client_nom],["Téléphone",d.client_tel],["Email",d.client_email],["Ville",d.ville],["Type de sol",TARIFS[d.type_sol]?.label],["Surface",d.surface+" m²"],["Travaux",d.travaux],["Prix/m²",d.prix_m2+" €"]].forEach(([k,v])=>{
+  [["Client",d.client_nom],["Téléphone",d.client_tel],["Email",d.client_email],["Ville",d.ville],["Type de sol",TARIFS[d.type_sol]?.label],["Surface",d.surface+" m²"],["Prix/m²",d.prix_m2+" €"]].forEach(([k,v])=>{
     if(!v&&v!==0)return;
     const row=el("div",{className:"mob-detail-row"});
     row.appendChild(el("span",{className:"mob-detail-label"},k));
@@ -1854,7 +1850,7 @@ function renderClients(){
         S.form={
           client_nom:c.nom,client_tel:c.tel||"",client_email:c.email||"",ville:c.ville||"",
           type_sol:sol,
-          travaux:TARIFS[sol]?.trav[0]||"Polissage simple",
+          travaux:TARIFS[sol]?.label||"Marbre",
           prix_m2:Math.round((TARIFS[sol]?.prix[0]||30)*COEFF[etatInit]),
           surface:(leadDevis?.surface&&leadDevis.surface!=="0")?leadDevis.surface:"",
           etat:etatInit,
