@@ -228,8 +228,6 @@ async function getAppAuthToken(){
 // ── DÉTECTION MOBILE ──────────────────────────────────────────
 function isMobile(){return window.innerWidth<=768;}
 const INFO={nom:"Maison Sol Noble",forme:"SAS à associé unique",siret:"105 745 806 00015",tva:"FR3102.105745806",adresse:"6 place du Président Thomas Woodrow Wilson",cp:"31000",ville:"Toulouse",tel:"05 54 54 28 64",email:"contact@maisonsolnoble.com",president:"TAHAR Adam",capital:"50,00 €",site:"maisonsolnoble.com"};
-// Au-delà de ce montant TTC, la mention légale ne suffit plus : il faut faire remplir et retourner le Cerfa n°1300-SD signé avant le début des travaux
-const CERFA_SEUIL_TTC=4000;
 
 let TARIFS={
   marbre:{label:"Marbre",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
@@ -679,9 +677,7 @@ function ouvrirApercu(dv){
     ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin-bottom:8px;\">"
     :"<div style=\"font-size:18px;font-weight:700;color:#111111;\">"+INFO.nom+"</div>";
   const cerfaBlock=dv.cerfa
-    ?(ttc>=CERFA_SEUIL_TTC
-      ?"<div style=\"border-left:3px solid #c97827;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;margin-top:12px;\"><strong style=\"color:#111111;\">TVA au taux réduit de "+tvaPct+"% — Article 279-0 bis du CGI :</strong> Ce devis étant d’un montant supérieur à "+CERFA_SEUIL_TTC+" € TTC, l’attestation simplifiée ne suffit pas. Merci de télécharger l’attestation Cerfa n°1300-SD, de la remplir, la signer et de la retourner au prestataire avant le début des travaux afin de valider l’application de la TVA à 10 %.</div>"
-      :"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;margin-top:12px;\"><strong style=\"color:#111111;\">TVA au taux réduit de "+tvaPct+"% — Article 279-0 bis du CGI :</strong> « Je certifie que les travaux mentionnés sur ce devis se rapportent à un local d’habitation achevé depuis plus de 2 ans et qu’ils sont éligibles au taux intermédiaire de TVA de 10 % en application de l’article 279-0 bis du Code général des impôts. Je reconnais être solidairement tenu au paiement du complément de taxe si les mentions portées sur ce document sont inexactes. » Cette mention remplace l’attestation Cerfa n°1301-SD papier et vaut engagement du client par sa signature ci-dessous.</div>")
+    ?"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;margin-top:12px;\"><strong style=\"color:#111111;\">TVA au taux réduit de "+tvaPct+"% — Article 279-0 bis du CGI :</strong> « Je certifie que les travaux mentionnés sur ce devis se rapportent à un local d’habitation achevé depuis plus de 2 ans et qu’ils sont éligibles au taux intermédiaire de TVA de 10 % en application de l’article 279-0 bis du Code général des impôts. Je reconnais être solidairement tenu au paiement du complément de taxe si les mentions portées sur ce document sont inexactes. » Cette mention remplace l’attestation Cerfa n°1301-SD papier et vaut engagement du client par sa signature ci-dessous.</div>"
     :"";
   const notesBlock=dv.description?"<div style=\"font-size:9.5px;color:#444444;font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid #f0ece4;\">Notes : "+dv.description+"</div>":"";
   const telBlock=dv.client_tel?"<div>"+fTel(dv.client_tel)+"</div>":"";
@@ -1553,14 +1549,10 @@ function renderFormDevis(){
     });
     tvaWrap.appendChild(tvaRow);
     if(f.tva_taux===10){
-      const ttcActuel=ht*1.10;
-      const depasseSeuil=ttcActuel>=CERFA_SEUIL_TTC;
-      const cerfaRow=el("div",{style:{padding:"12px 14px",background:depasseSeuil?"rgba(201,120,39,0.08)":"rgba(26,111,168,0.06)",border:"1px solid "+(depasseSeuil?"rgba(201,120,39,0.35)":"rgba(26,111,168,0.35)"),borderRadius:"8px"}});
+      const cerfaRow=el("div",{style:{padding:"12px 14px",background:"rgba(26,111,168,0.06)",border:"1px solid rgba(26,111,168,0.35)",borderRadius:"8px"}});
       const cerfaTxt=el("div",{});
-      cerfaTxt.appendChild(el("div",{style:{fontSize:"13px",fontWeight:"600",color:depasseSeuil?"#9a5a10":"#1a4f7a"}},depasseSeuil?"⚠ TVA réduite 10 % — Cerfa n°1300-SD à faire remplir":"📋 TVA réduite 10 % — mention légale (ex-Cerfa 1301-SD)"));
-      cerfaTxt.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278",marginTop:"2px"}},depasseSeuil
-        ?"Devis ≥ "+CERFA_SEUIL_TTC+" € TTC : demandez au client de télécharger, remplir, signer et vous retourner le Cerfa n°1300-SD avant le début des travaux pour valider la TVA à 10 %."
-        :"Rénovation logement > 2 ans — la mention certifiée est ajoutée automatiquement sur le devis, à signer par le client."));
+      cerfaTxt.appendChild(el("div",{style:{fontSize:"13px",fontWeight:"600",color:"#1a4f7a"}},"📋 TVA réduite 10 % — mention légale (ex-Cerfa 1301-SD)"));
+      cerfaTxt.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278",marginTop:"2px"}},"Rénovation logement > 2 ans — la mention certifiée est ajoutée automatiquement sur le devis, à signer par le client."));
       cerfaRow.appendChild(cerfaTxt);
       tvaWrap.appendChild(cerfaRow);
     }
