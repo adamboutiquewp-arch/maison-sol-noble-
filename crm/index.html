@@ -227,7 +227,7 @@ async function getAppAuthToken(){
 
 // ── DÉTECTION MOBILE ──────────────────────────────────────────
 function isMobile(){return window.innerWidth<=768;}
-const INFO={nom:"Maison Sol Noble",forme:"SAS à associé unique",siret:"105 745 806 00015",tva:"FR3102.105745806",adresse:"6 place du Président Thomas Woodrow Wilson",cp:"31000",ville:"Toulouse",tel:"05 54 54 28 64",email:"contact@maisonsolnoble.com",president:"TAHAR Adam",capital:"50,00 €",site:"maisonsolnoble.com"};
+const INFO={nom:"Maison Sol Noble",forme:"SAS à associé unique",siret:"105 745 806 00015",tva:"FR3102.105745806",adresse:"6 place du Président Thomas Woodrow Wilson",cp:"31000",ville:"Toulouse",tel:"05 54 54 28 64",email:"contact@maisonsolnoble.com",president:"TAHAR Adam",capital:"50,00 €",site:"maisonsolnoble.com",iban:"FR76 1695 8000 0164 9153 7801 101"};
 
 let TARIFS={
   marbre:{label:"Marbre",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
@@ -733,7 +733,8 @@ function ouvrirApercu(dv){
     +"<div style=\"display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;\"><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">Acompte à la commande — 30 %</span><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">"+acompte+" € TTC</span></div>"
     +"<div style=\"font-size:9px;color:#333333;padding-bottom:10px;margin-bottom:10px;border-bottom:1px dashed rgba(201,168,76,0.3);\">Dû à la signature du présent devis</div>"
     +"<div style=\"display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;\"><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">Solde à la livraison du chantier — 70 %</span><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">"+solde+" € TTC</span></div>"
-    +"<div style=\"font-size:9px;color:#333333;padding-top:3px;\">Dû à la réception et validation des travaux par le client</div></div>"
+    +"<div style=\"font-size:9px;color:#333333;padding-top:3px;\">Dû à la réception et validation des travaux par le client</div>"
+    +"<div style=\"font-size:9px;color:#333333;padding-top:10px;margin-top:10px;border-top:1px dashed rgba(201,168,76,0.3);\">IBAN : <strong style=\"color:#111111;\">"+INFO.iban+"</strong></div></div>"
     // Conditions
     +"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;\"><strong style=\"font-size:9.5px;color:#111111;display:block;margin-bottom:4px;\">Conditions générales :</strong>Devis valable 30 jours à compter de la date d’émission. Déplacement inclus dans la zone d’intervention. Validité sous réserve de disponibilité des créneaux. Ce devis est établi sur la base des informations communiquées et d’une visite préalable si nécessaire. Tout travaux supplémentaire fera l’objet d’un avenant.</div>"
     +cerfaBlock
