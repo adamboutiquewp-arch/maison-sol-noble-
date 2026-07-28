@@ -319,6 +319,7 @@ function mergeDevisLocal(remote){
     nb_marches:lm[d.numero]?.nb_marches||"",
     prix_marche:lm[d.numero]?.prix_marche||"",
     date_intervention:lm[d.numero]?.date_intervention||null,
+    duree_jours:lm[d.numero]?.duree_jours||1,
     tva_taux:lm[d.numero]?.tva_taux||20,
     cerfa:lm[d.numero]?.cerfa||false,
     bon_pour_accord:lm[d.numero]?.bon_pour_accord||false,
@@ -343,7 +344,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,rebouchage,rebouchage_cavites,rebouchage_joints,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,tva_taux,cerfa,bon_pour_accord,acompte_recu,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,rebouchage,rebouchage_cavites,rebouchage_joints,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -1713,7 +1714,13 @@ function renderDetailDevis(d){
   // Date d'intervention
   if(d.date_intervention){
     const di=el("div",{style:{background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"8px",padding:"8px 14px",marginBottom:"0.8rem",fontSize:"13px",color:"#3B6D11",fontWeight:"500"}});
-    di.textContent="📅 Intervention : "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    const dureeD=d.duree_jours||1;
+    if(dureeD>1){
+      const finD=new Date(d.date_intervention+"T12:00:00");finD.setDate(finD.getDate()+dureeD-1);
+      di.textContent="📅 Intervention : du "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" au "+finD.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" ("+dureeD+" jours)";
+    }else{
+      di.textContent="📅 Intervention : "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    }
     wrap.appendChild(di);
     const bReplan=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",fontSize:"12px"}},"Modifier la date");
     bReplan.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:d}));
@@ -1734,20 +1741,44 @@ function renderDetailDevis(d){
   return wrap;
 }
 
+function dateInChantier(d,dateStr){
+  if(!d.date_intervention)return false;
+  const start=new Date(d.date_intervention+"T00:00:00");
+  const end=new Date(start);end.setDate(start.getDate()+((d.duree_jours||1)-1));
+  const cur=new Date(dateStr+"T00:00:00");
+  return cur>=start&&cur<=end;
+}
+function chantierJourLabel(d,dateStr){
+  const duree=d.duree_jours||1;
+  if(duree<=1)return "";
+  const start=new Date(d.date_intervention+"T00:00:00");
+  const cur=new Date(dateStr+"T00:00:00");
+  const jour=Math.round((cur-start)/86400000)+1;
+  return " ("+jour+"/"+duree+")";
+}
+
 function renderPlanning(){
   const wrap=el("div",{});
   const today=new Date();
   const gagnes=S.devis.filter(d=>d.statut==="Gagné");
   const selMode=!!S.planifierDevis;
+  let dureeJours=(S.planifierDevis&&S.planifierDevis.duree_jours)||1;
 
   // Bannière mode sélection de date
   if(selMode){
     const d=S.planifierDevis;
     const banner=el("div",{style:{background:"rgba(59,109,17,0.08)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"10px",padding:"0.9rem 1.2rem",marginBottom:"1rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"8px"}});
     banner.appendChild(el("div",{},[
-      el("div",{style:{fontSize:"11px",color:"#3B6D11",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"3px"}},"📅 Cliquer sur un jour pour planifier"),
+      el("div",{style:{fontSize:"11px",color:"#3B6D11",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"3px"}},"📅 Cliquer sur le 1er jour pour planifier"),
       el("div",{style:{fontSize:"14px",color:"#2a2520",fontWeight:"500"}},d.client_nom+(d.ville?" · "+d.ville:""))
     ]));
+    const dureeWrap=el("div",{style:{display:"flex",alignItems:"center",gap:"6px"}});
+    dureeWrap.appendChild(el("span",{style:{fontSize:"12px",color:"#3B6D11",fontWeight:"600",whiteSpace:"nowrap"}},"Durée (jours)"));
+    const dureeInp=el("input",{type:"number",min:"1",style:{width:"56px",padding:"5px 8px",border:"1px solid rgba(59,109,17,0.35)",borderRadius:"6px",fontSize:"13px",background:"#fff"}});
+    dureeInp.value=dureeJours;
+    dureeInp.addEventListener("input",e=>{dureeJours=parseInt(e.target.value)||1;});
+    dureeWrap.appendChild(dureeInp);
+    banner.appendChild(dureeWrap);
     const bSkip=el("button",{style:{...BS,fontSize:"12px",padding:"6px 12px"}},"Passer sans date");
     bSkip.addEventListener("click",async()=>{
       const patch={statut:"Gagné",updated_at:new Date().toISOString()};
@@ -1772,7 +1803,7 @@ function renderPlanning(){
   const clickDay=async(dateStr)=>{
     if(!selMode)return;
     const d=S.planifierDevis;
-    const patch={statut:"Gagné",date_intervention:dateStr,updated_at:new Date().toISOString()};
+    const patch={statut:"Gagné",date_intervention:dateStr,duree_jours:dureeJours,updated_at:new Date().toISOString()};
     await updateDevisSupabase(d.numero,patch);
     S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
     set({planifierDevis:null});
@@ -1796,7 +1827,7 @@ function renderPlanning(){
       const dateStr=date.toISOString().split("T")[0];
       const isToday=date.toDateString()===today.toDateString();
       const isSun=date.getDay()===0;
-      const dayChantiers=gagnes.filter(d=>d.date_intervention===dateStr);
+      const dayChantiers=gagnes.filter(d=>dateInChantier(d,dateStr));
       const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"8px",padding:isMobile()?"4px 3px":"0.75rem",minHeight:isMobile()?"52px":"110px",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:selMode?"pointer":"default",transition:"background 0.12s,border-color 0.12s"}});
       if(selMode){
         cell.addEventListener("mouseenter",()=>{cell.style.background="rgba(59,109,17,0.07)";cell.style.borderColor="rgba(59,109,17,0.35)";});
@@ -1812,7 +1843,7 @@ function renderPlanning(){
           cell.appendChild(dot);
         }else{
           const row=el("div",{style:{display:"flex",gap:"2px",alignItems:"center",marginBottom:"3px"}});
-          const chip=el("div",{style:{background:"rgba(59,109,17,0.13)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"4px",padding:"2px 5px",fontSize:"10px",color:"#3B6D11",flex:"1",cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},c.client_nom+(c.ville?" · "+c.ville:""));
+          const chip=el("div",{style:{background:"rgba(59,109,17,0.13)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"4px",padding:"2px 5px",fontSize:"10px",color:"#3B6D11",flex:"1",cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},c.client_nom+(c.ville?" · "+c.ville:"")+chantierJourLabel(c,dateStr));
           chip.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"detail",selected:c});});
           const bEd=el("button",{style:{background:"none",border:"none",color:"#b0a898",fontSize:"11px",cursor:"pointer",padding:"0 2px",lineHeight:"1",flexShrink:"0"},title:"Modifier la date"},"✎");
           bEd.addEventListener("click",(e)=>{e.stopPropagation();set({planifierDevis:c});});
@@ -1844,7 +1875,7 @@ function renderPlanning(){
       const isToday=cur.toDateString()===today.toDateString();
       const isThisMonth=cur.getMonth()===moisRef.getMonth();
       const isSun=cur.getDay()===0;
-      const dayChantiers=gagnes.filter(d=>d.date_intervention===dateStr);
+      const dayChantiers=gagnes.filter(d=>dateInChantier(d,dateStr));
       const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":!isThisMonth?"rgba(0,0,0,0.015)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"6px",padding:isMobile()?"3px":"5px 6px",minHeight:isMobile()?"38px":"72px",cursor:selMode?"pointer":"default",transition:"background 0.12s",opacity:isThisMonth?"1":"0.45"}});
       if(selMode){
         cell.addEventListener("mouseenter",()=>{cell.style.background="rgba(59,109,17,0.07)";cell.style.borderColor="rgba(59,109,17,0.35)";});
@@ -1859,7 +1890,7 @@ function renderPlanning(){
           cell.appendChild(dot);
         }else{
           const row=el("div",{style:{display:"flex",gap:"2px",alignItems:"center",marginBottom:"2px"}});
-          const chip=el("div",{style:{background:"rgba(59,109,17,0.13)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"3px",padding:"2px 4px",fontSize:"9px",color:"#3B6D11",flex:"1",cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},c.client_nom);
+          const chip=el("div",{style:{background:"rgba(59,109,17,0.13)",border:"1px solid rgba(59,109,17,0.3)",borderRadius:"3px",padding:"2px 4px",fontSize:"9px",color:"#3B6D11",flex:"1",cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},c.client_nom+chantierJourLabel(c,dateStr));
           chip.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"detail",selected:c});});
           const bEd=el("button",{style:{background:"none",border:"none",color:"#b0a898",fontSize:"10px",cursor:"pointer",padding:"0 1px",lineHeight:"1",flexShrink:"0"},title:"Modifier la date"},"✎");
           bEd.addEventListener("click",(e)=>{e.stopPropagation();set({planifierDevis:c});});
