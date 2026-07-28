@@ -1646,6 +1646,41 @@ function renderPlanifier(){
   return wrap;
 }
 
+function renderAccordAcompte(d){
+  const box=el("div",{});
+  const bpaRow=el("div",{style:{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",background:d.bon_pour_accord?"rgba(59,109,17,0.07)":"#faf9f6",border:"1px solid "+(d.bon_pour_accord?"rgba(59,109,17,0.3)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer",marginBottom:"0.6rem"}});
+  const bpaCheck=el("input",{type:"checkbox",style:{width:"18px",height:"18px",accentColor:"#3B6D11",cursor:"pointer",flexShrink:"0"}});
+  bpaCheck.checked=!!d.bon_pour_accord;
+  bpaCheck.addEventListener("change",e=>{
+    e.stopPropagation();
+    const patch={bon_pour_accord:e.target.checked};
+    S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+    if(S.selected&&S.selected.numero===d.numero)S.selected={...S.selected,...patch};
+    updateDevisSupabase(d.numero,patch);
+    render();
+  });
+  const bpaTxt=el("div",{style:{fontSize:"13px",fontWeight:"600",color:d.bon_pour_accord?"#3B6D11":"#1a1611"}},"✓ Bon pour accord (signé par le client)");
+  bpaRow.appendChild(bpaCheck);bpaRow.appendChild(bpaTxt);
+  bpaRow.addEventListener("click",e=>{e.stopPropagation();if(e.target!==bpaCheck)bpaCheck.click();});
+  box.appendChild(bpaRow);
+  const acRow=el("div",{style:{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",background:d.acompte_recu?"rgba(201,168,76,0.10)":"#faf9f6",border:"1px solid "+(d.acompte_recu?"rgba(201,168,76,0.4)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer",marginBottom:"1rem"}});
+  const acCheck=el("input",{type:"checkbox",style:{width:"18px",height:"18px",accentColor:"#c9a84c",cursor:"pointer",flexShrink:"0"}});
+  acCheck.checked=!!d.acompte_recu;
+  acCheck.addEventListener("change",e=>{
+    e.stopPropagation();
+    const patch={acompte_recu:e.target.checked};
+    S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+    if(S.selected&&S.selected.numero===d.numero)S.selected={...S.selected,...patch};
+    updateDevisSupabase(d.numero,patch);
+    render();
+  });
+  const acTxt=el("div",{style:{fontSize:"13px",fontWeight:"600",color:d.acompte_recu?"#8a6a20":"#1a1611"}},"💶 Acompte reçu");
+  acRow.appendChild(acCheck);acRow.appendChild(acTxt);
+  acRow.addEventListener("click",e=>{e.stopPropagation();if(e.target!==acCheck)acCheck.click();});
+  box.appendChild(acRow);
+  return box;
+}
+
 function renderDetailDevis(d){
   const wrap=el("div",{});
   // Infos client
@@ -1663,36 +1698,7 @@ function renderDetailDevis(d){
   ttc.appendChild(el("span",{style:{color:"#c9a84c",fontSize:"24px",fontFamily:"'Cormorant Garamond',serif"}},((d.montant_ht||0)*(1+dTva/100)).toFixed(2)+" €"));
   wrap.appendChild(ttc);
   // Bon pour accord / Acompte reçu
-  {
-    const bpaRow=el("div",{style:{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",background:d.bon_pour_accord?"rgba(59,109,17,0.07)":"#faf9f6",border:"1px solid "+(d.bon_pour_accord?"rgba(59,109,17,0.3)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer",marginBottom:"0.6rem"}});
-    const bpaCheck=el("input",{type:"checkbox",style:{width:"18px",height:"18px",accentColor:"#3B6D11",cursor:"pointer",flexShrink:"0"}});
-    bpaCheck.checked=!!d.bon_pour_accord;
-    bpaCheck.addEventListener("change",e=>{
-      const patch={bon_pour_accord:e.target.checked};
-      S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
-      S.selected={...d,...patch};
-      updateDevisSupabase(d.numero,patch);
-      render();
-    });
-    const bpaTxt=el("div",{style:{fontSize:"13px",fontWeight:"600",color:d.bon_pour_accord?"#3B6D11":"#1a1611"}},"✓ Bon pour accord (signé par le client)");
-    bpaRow.appendChild(bpaCheck);bpaRow.appendChild(bpaTxt);
-    bpaRow.addEventListener("click",e=>{if(e.target!==bpaCheck)bpaCheck.click();});
-    wrap.appendChild(bpaRow);
-    const acRow=el("div",{style:{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",background:d.acompte_recu?"rgba(201,168,76,0.10)":"#faf9f6",border:"1px solid "+(d.acompte_recu?"rgba(201,168,76,0.4)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer",marginBottom:"1rem"}});
-    const acCheck=el("input",{type:"checkbox",style:{width:"18px",height:"18px",accentColor:"#c9a84c",cursor:"pointer",flexShrink:"0"}});
-    acCheck.checked=!!d.acompte_recu;
-    acCheck.addEventListener("change",e=>{
-      const patch={acompte_recu:e.target.checked};
-      S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
-      S.selected={...d,...patch};
-      updateDevisSupabase(d.numero,patch);
-      render();
-    });
-    const acTxt=el("div",{style:{fontSize:"13px",fontWeight:"600",color:d.acompte_recu?"#8a6a20":"#1a1611"}},"💶 Acompte reçu");
-    acRow.appendChild(acCheck);acRow.appendChild(acTxt);
-    acRow.addEventListener("click",e=>{if(e.target!==acCheck)acCheck.click();});
-    wrap.appendChild(acRow);
-  }
+  wrap.appendChild(renderAccordAcompte(d));
   // Statut
   wrap.appendChild(lbl("Statut"));
   const ss=el("select",{style:{fontSize:"16px",marginBottom:"1rem"}});
@@ -1888,11 +1894,14 @@ function renderPlanning(){
 function renderClients(){
   const map={};
   S.devis.forEach(d=>{
-    if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0,devisFait:false,dateIntervention:null};
+    if(!map[d.client_nom])map[d.client_nom]={nom:d.client_nom,tel:d.client_tel,email:d.client_email,ville:d.ville,nb:0,ca:0,devisFait:false,dateIntervention:null,devisRef:null};
     map[d.client_nom].nb++;
     if(!isLead(d))map[d.client_nom].devisFait=true;
     if(!isLead(d)&&d.statut!=="Perdu"){
       map[d.client_nom].ca+=d.montant_ht||0;
+      if(!map[d.client_nom].devisRef||new Date(d.created_at||0)>new Date(map[d.client_nom].devisRef.created_at||0)){
+        map[d.client_nom].devisRef=d;
+      }
     }
     if(d.statut==="Gagné"&&d.date_intervention){
       map[d.client_nom].dateIntervention=d.date_intervention;
@@ -1931,6 +1940,11 @@ function renderClients(){
       traite.appendChild(el("span",{},"✓"));
       traite.appendChild(el("span",{},"Devis réalisé"));
       card.appendChild(traite);
+      if(c.devisRef){
+        const aa=renderAccordAcompte(c.devisRef);
+        aa.style.marginTop="0.5rem";
+        card.appendChild(aa);
+      }
     } else {
       const bnd=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Créer le devis");
       bnd.addEventListener("click",()=>{
