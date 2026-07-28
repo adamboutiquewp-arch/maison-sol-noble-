@@ -320,7 +320,9 @@ function mergeDevisLocal(remote){
     prix_marche:lm[d.numero]?.prix_marche||"",
     date_intervention:lm[d.numero]?.date_intervention||null,
     tva_taux:lm[d.numero]?.tva_taux||20,
-    cerfa:lm[d.numero]?.cerfa||false
+    cerfa:lm[d.numero]?.cerfa||false,
+    bon_pour_accord:lm[d.numero]?.bon_pour_accord||false,
+    acompte_recu:lm[d.numero]?.acompte_recu||false
   }));
   // Devis créés localement mais pas encore sauvegardés en base (_pendingSync:true uniquement)
   // Les items sans flag ou avec flag=false sont considérés comme supprimés côté serveur → ignorés
@@ -341,7 +343,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,rebouchage,rebouchage_cavites,rebouchage_joints,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,tva_taux,cerfa,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,rebouchage,rebouchage_cavites,rebouchage_joints,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,tva_taux,cerfa,bon_pour_accord,acompte_recu,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -1660,6 +1662,40 @@ function renderDetailDevis(d){
   ttc.appendChild(el("div",{},[el("span",{style:{color:"#706a62",fontSize:"13px",display:"block"}},"Montant TTC"),el("span",{style:{color:"#aaa",fontSize:"10px"}},`TVA ${dTva}%`+(d.cerfa?" — CERFA":""))]));
   ttc.appendChild(el("span",{style:{color:"#c9a84c",fontSize:"24px",fontFamily:"'Cormorant Garamond',serif"}},((d.montant_ht||0)*(1+dTva/100)).toFixed(2)+" €"));
   wrap.appendChild(ttc);
+  // Bon pour accord / Acompte reçu
+  {
+    const bpaRow=el("div",{style:{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",background:d.bon_pour_accord?"rgba(59,109,17,0.07)":"#faf9f6",border:"1px solid "+(d.bon_pour_accord?"rgba(59,109,17,0.3)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer",marginBottom:"0.6rem"}});
+    const bpaCheck=el("input",{type:"checkbox",style:{width:"18px",height:"18px",accentColor:"#3B6D11",cursor:"pointer",flexShrink:"0"}});
+    bpaCheck.checked=!!d.bon_pour_accord;
+    bpaCheck.addEventListener("change",e=>{
+      const val=e.target.checked;
+      const patch=val?{bon_pour_accord:true}:{bon_pour_accord:false,acompte_recu:false};
+      S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+      S.selected={...d,...patch};
+      updateDevisSupabase(d.numero,patch);
+      render();
+    });
+    const bpaTxt=el("div",{style:{fontSize:"13px",fontWeight:"600",color:d.bon_pour_accord?"#3B6D11":"#1a1611"}},"✓ Bon pour accord (signé par le client)");
+    bpaRow.appendChild(bpaCheck);bpaRow.appendChild(bpaTxt);
+    bpaRow.addEventListener("click",e=>{if(e.target!==bpaCheck)bpaCheck.click();});
+    wrap.appendChild(bpaRow);
+    if(d.bon_pour_accord){
+      const acRow=el("div",{style:{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",background:d.acompte_recu?"rgba(201,168,76,0.10)":"#faf9f6",border:"1px solid "+(d.acompte_recu?"rgba(201,168,76,0.4)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer",marginBottom:"1rem"}});
+      const acCheck=el("input",{type:"checkbox",style:{width:"18px",height:"18px",accentColor:"#c9a84c",cursor:"pointer",flexShrink:"0"}});
+      acCheck.checked=!!d.acompte_recu;
+      acCheck.addEventListener("change",e=>{
+        const patch={acompte_recu:e.target.checked};
+        S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+        S.selected={...d,...patch};
+        updateDevisSupabase(d.numero,patch);
+        render();
+      });
+      const acTxt=el("div",{style:{fontSize:"13px",fontWeight:"600",color:d.acompte_recu?"#8a6a20":"#1a1611"}},"💶 Acompte reçu");
+      acRow.appendChild(acCheck);acRow.appendChild(acTxt);
+      acRow.addEventListener("click",e=>{if(e.target!==acCheck)acCheck.click();});
+      wrap.appendChild(acRow);
+    }
+  }
   // Statut
   wrap.appendChild(lbl("Statut"));
   const ss=el("select",{style:{fontSize:"16px",marginBottom:"1rem"}});
