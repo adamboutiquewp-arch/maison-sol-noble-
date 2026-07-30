@@ -789,7 +789,7 @@ function renderFormRapport(){
   const d=rf._devis;
   const wrap=el("div",{});
   const info=el("div",{style:{background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1.2rem",fontSize:"13px",color:"#3B6D11",fontWeight:"500"}});
-  info.textContent="📷 Rapport d'intervention — "+d.client_nom+(d.ville?" · "+d.ville:"");
+  info.textContent="📷 Certificat d'intervention Maison Sol Noble — "+d.client_nom+(d.ville?" · "+d.ville:"");
   wrap.appendChild(info);
 
   function textField(label,key,placeholder){
@@ -876,7 +876,7 @@ function renderFormRapport(){
   wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.5rem"}},"Conclusion"));
   wrap.appendChild(textareaField("Résumé de l'intervention","conclusion","Intervention réalisée avec succès..."));
 
-  const bGen=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},"📷 Générer le rapport");
+  const bGen=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},"📷 Générer le certificat");
   bGen.addEventListener("click",()=>{
     ouvrirRapport(rf);
     set({modal:null,selected:null,rapportForm:null});
@@ -913,7 +913,7 @@ function ouvrirRapport(rf){
     :"<div style=\"font-size:22px;font-weight:700;color:#111111;text-align:center;\">"+INFO.nom+"</div>";
   const html="<!DOCTYPE html>"
     +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-    +"<title>Rapport d'intervention — "+(d.client_nom||"")+"</title>"
+    +"<title>Certificat d'intervention Maison Sol Noble — "+(d.client_nom||"")+"</title>"
     +"<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap\" rel=\"stylesheet\">"
     +"<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}.section{margin-bottom:24px;}.section h3{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:#111111;border-bottom:2px solid #c9a84c;padding-bottom:6px;margin-bottom:10px;}.topbar{max-width:794px;margin:20px auto 0;display:flex;gap:10px;justify-content:flex-end;padding:0 4px;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}.topbar{display:none;}.section{page-break-inside:avoid;}}@media screen and (max-width:640px){.page{padding:20px 16px!important;}.topbar{padding:12px 14px;}}</style>"
     +"</head><body>"
@@ -922,7 +922,8 @@ function ouvrirRapport(rf){
     // Cover
     +"<div style=\"text-align:center;padding-bottom:24px;margin-bottom:24px;border-bottom:2px solid #c9a84c;\">"
     +logoHTML
-    +"<div style=\"font-family:'Cormorant Garamond',serif;font-size:30px;letter-spacing:4px;color:#111111;margin-bottom:16px;\">RAPPORT D'INTERVENTION</div>"
+    +"<div style=\"font-family:'Cormorant Garamond',serif;font-size:28px;letter-spacing:3px;color:#111111;margin-bottom:4px;\">CERTIFICAT D'INTERVENTION</div>"
+    +"<div style=\"font-size:11px;letter-spacing:2px;color:#8a6a20;text-transform:uppercase;margin-bottom:16px;\">Maison Sol Noble</div>"
     +"<div style=\"font-size:13px;color:#333333;line-height:2;\">"
     +"<div><strong>Client :</strong> "+(d.client_nom||"—")+"</div>"
     +"<div><strong>Adresse du chantier :</strong> "+(rf.adresse||"—")+"</div>"
@@ -954,9 +955,8 @@ function ouvrirRapport(rf){
     // Conclusion
     +"<div class=\"section\"><h3>Conclusion</h3>"
     +(rf.conclusion?"<div style=\"font-size:11px;color:#333333;line-height:1.7;margin-bottom:16px;\">"+rf.conclusion+"</div>":"")
-    +"<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;\">"
+    +"<div style=\"max-width:280px;margin-top:20px;\">"
     +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Signature du technicien</div><div style=\"font-size:8.5px;color:#111111;margin-bottom:2px;\">Maison Sol Noble</div><img src=\"data:image/png;base64,"+SIGNATURE_B64+"\" alt=\"Signature\" style=\"height:34px;margin-top:8px;display:block;\"><div style=\"border-bottom:1px solid #aaaaaa;margin-top:4px;\"></div></div>"
-    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Signature du client (facultative)</div><div style=\"font-size:8.5px;color:#333333;margin-bottom:2px;\">Date : ___/___/______</div><div style=\"border-bottom:1px solid #aaaaaa;margin-top:40px;\"></div></div>"
     +"</div></div>"
     // Footer
     +"<div style=\"margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;font-size:8px;color:#333333;text-align:center;line-height:1.9;\">"+INFO.nom+" — "+INFO.forme+"<br>"+INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+fTel(INFO.tel)+" — "+fMail(INFO.email)+" — "+fSite(INFO.site)+"</div>"
@@ -1565,7 +1565,7 @@ function renderModal(){
     ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
     const sheet=el("div",{className:"mob-sheet"});
     sheet.appendChild(el("div",{className:"mob-sheet-handle"}));
-    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Rapport d'intervention",employe_new:"Nouveau compte",planifier:"Planifier l'intervention"};
+    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",employe_new:"Nouveau compte",planifier:"Planifier l'intervention"};
     const hdr=el("div",{className:"mob-sheet-header"});
     hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
     const bx=el("button",{style:{background:"rgba(0,0,0,0.06)",border:"none",color:"#9a9488",fontSize:"22px",lineHeight:"1",padding:"4px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
@@ -1585,7 +1585,7 @@ function renderModal(){
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
   const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px",marginBottom:"1.5rem"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
-  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Rapport d'intervention",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
+  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
   const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
@@ -2000,7 +2000,7 @@ function renderDetailDevis(d){
   const bap=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#7a5a10",borderColor:"#c9a84c"}},"📄 Aperçu du devis");
   bap.addEventListener("click",()=>ouvrirApercu(d));
   wrap.appendChild(bap);
-  const brap=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#3B6D11",borderColor:"#3B6D1144"}},"📷 Rapport d'intervention");
+  const brap=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#3B6D11",borderColor:"#3B6D1144"}},"📷 Certificat d'intervention");
   brap.addEventListener("click",()=>openRapport(d));
   wrap.appendChild(brap);
   const bc=el("button",{className:"mob-btn-outline"},"Fermer");
