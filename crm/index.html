@@ -285,7 +285,7 @@ function genNumeroDevis(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -748,6 +748,218 @@ function ouvrirApercu(dv){
     +"</div>"
     // Footer
     +"<div style=\"margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;font-size:8px;color:#333333;text-align:center;line-height:1.9;\">"+INFO.nom+" — "+INFO.forme+" — Capital "+INFO.capital+"<br>SIRET "+fTel(INFO.siret)+" — N&deg; TVA "+INFO.tva+"<br>"+INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+fTel(INFO.tel)+" — "+fMail(INFO.email)+" — "+fSite(INFO.site)+"</div>"
+    +"</div></body></html>";
+  const w=window.open("","_blank");
+  if(w){w.document.write(html);w.document.close();}
+}
+
+function defaultRapportForm(d){
+  return {
+    _devis:d,
+    adresse:d.ville||"",
+    materiau:(TARIFS[d.type_sol]&&TARIFS[d.type_sol].label)||"",
+    defauts:{rayures:false,taches:false,perte_brillance:false,joints:false,fissures:false},
+    niveau_usure:"moyen",
+    photos_avant:[],
+    photos_apres:[],
+    protection_lieux:true,
+    nettoyage_profondeur:true,
+    resultat_texte:"",
+    produits_recommandes:"",
+    produits_eviter:"",
+    frequence_nettoyage:"",
+    entretien_pro:"Tous les 3 à 5 ans selon l'usage",
+    conclusion:""
+  };
+}
+function openRapport(d){
+  set({modal:"rapport",rapportForm:defaultRapportForm(d)});
+}
+function readImagesAsDataURL(files){
+  return Promise.all(Array.from(files).map(file=>new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  })));
+}
+
+function renderFormRapport(){
+  const rf=S.rapportForm;
+  const d=rf._devis;
+  const wrap=el("div",{});
+  const info=el("div",{style:{background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1.2rem",fontSize:"13px",color:"#3B6D11",fontWeight:"500"}});
+  info.textContent="📷 Rapport d'intervention — "+d.client_nom+(d.ville?" · "+d.ville:"");
+  wrap.appendChild(info);
+
+  function textField(label,key,placeholder){
+    const i=el("input",{type:"text",placeholder:placeholder||"",value:rf[key]||""});
+    i.addEventListener("input",e=>{rf[key]=e.target.value;});
+    return grp(label,i);
+  }
+  function textareaField(label,key,placeholder){
+    const t=el("textarea",{placeholder:placeholder||"",style:{minHeight:"60px",resize:"vertical"}});
+    t.textContent=rf[key]||"";
+    t.addEventListener("input",e=>{rf[key]=e.target.value;});
+    return grp(label,t);
+  }
+  function toggleRow(label,active,onClick){
+    const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",fontFamily:"Inter,sans-serif"}},label);
+    b.addEventListener("click",onClick);
+    return b;
+  }
+  function photoSection(label,key){
+    const box=el("div",{style:{marginBottom:"1.2rem"}});
+    box.appendChild(lbl(label));
+    const inputFile=el("input",{type:"file",accept:"image/*",multiple:true,style:{display:"block",marginBottom:"8px",fontSize:"12px"}});
+    inputFile.addEventListener("change",async e=>{
+      const urls=await readImagesAsDataURL(e.target.files);
+      rf[key]=[...rf[key],...urls];
+      render();
+    });
+    box.appendChild(inputFile);
+    if(rf[key].length){
+      const grid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:"8px"}});
+      rf[key].forEach((url,idx)=>{
+        const thumb=el("div",{style:{position:"relative"}});
+        thumb.appendChild(el("img",{src:url,style:{width:"100%",height:"70px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e8e4dc",display:"block"}}));
+        const rm=el("button",{type:"button",style:{position:"absolute",top:"2px",right:"2px",background:"rgba(0,0,0,0.6)",color:"#fff",border:"none",borderRadius:"50%",width:"20px",height:"20px",fontSize:"12px",cursor:"pointer",lineHeight:"1"}},"×");
+        rm.addEventListener("click",()=>{rf[key]=rf[key].filter((_,i)=>i!==idx);render();});
+        thumb.appendChild(rm);
+        grid.appendChild(thumb);
+      });
+      box.appendChild(grid);
+    }
+    return box;
+  }
+
+  wrap.appendChild(textField("Adresse du chantier","adresse","12 rue des Fleurs, Toulouse"));
+  wrap.appendChild(textField("Type de matériau","materiau","Marbre"));
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.3rem"}},"État avant intervention"));
+  const defRow=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"0.8rem"}});
+  [["rayures","Rayures"],["taches","Taches"],["perte_brillance","Perte de brillance"],["joints","Joints encrassés"],["fissures","Fissures"]].forEach(([key,label])=>{
+    defRow.appendChild(toggleRow(label,!!rf.defauts[key],()=>{rf.defauts[key]=!rf.defauts[key];render();}));
+  });
+  wrap.appendChild(defRow);
+  const usureSel=el("select",{style:{fontSize:"16px"}});
+  [["leger","Léger"],["moyen","Moyen"],["important","Important"]].forEach(([v,l])=>{
+    const o=el("option",{value:v},l);if(rf.niveau_usure===v)o.selected=true;usureSel.appendChild(o);
+  });
+  usureSel.addEventListener("change",e=>{rf.niveau_usure=e.target.value;});
+  wrap.appendChild(grp("Niveau d'usure",usureSel));
+  wrap.appendChild(photoSection("Photos \"Avant\" (4 à 8 recommandées)","photos_avant"));
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.5rem"}},"Travaux réalisés"));
+  const travRow=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"0.8rem"}});
+  travRow.appendChild(toggleRow("Protection des lieux",!!rf.protection_lieux,()=>{rf.protection_lieux=!rf.protection_lieux;render();}));
+  travRow.appendChild(toggleRow("Nettoyage en profondeur",!!rf.nettoyage_profondeur,()=>{rf.nettoyage_profondeur=!rf.nettoyage_profondeur;render();}));
+  wrap.appendChild(travRow);
+  const autoTaches=buildDescription(d);
+  if(autoTaches.length){
+    const box=el("div",{style:{background:"#faf9f6",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"10px 14px",marginBottom:"1rem",fontSize:"12px",color:"#3a342c"}});
+    box.appendChild(el("div",{style:{fontSize:"11px",color:"#9a9488",fontWeight:"600",marginBottom:"4px"}},"Repris automatiquement depuis le devis :"));
+    autoTaches.forEach(t=>box.appendChild(el("div",{style:{padding:"1px 0 1px 14px",textIndent:"-14px"}},"• "+t)));
+    wrap.appendChild(box);
+  }
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.5rem"}},"Résultat après intervention"));
+  wrap.appendChild(photoSection("Photos \"Après\" (mêmes angles que l'avant)","photos_apres"));
+  wrap.appendChild(textareaField("Explication des améliorations obtenues","resultat_texte","Le sol retrouve son éclat d'origine..."));
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.5rem"}},"Conseils d'entretien"));
+  wrap.appendChild(textField("Produits recommandés","produits_recommandes","Savon neutre au pH..."));
+  wrap.appendChild(textField("Produits à éviter","produits_eviter","Vinaigre, acides, produits abrasifs..."));
+  wrap.appendChild(textField("Fréquence de nettoyage","frequence_nettoyage","1 à 2 fois par semaine"));
+  wrap.appendChild(textField("Recommandation d'entretien professionnel","entretien_pro"));
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.5rem"}},"Conclusion"));
+  wrap.appendChild(textareaField("Résumé de l'intervention","conclusion","Intervention réalisée avec succès..."));
+
+  const bGen=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},"📷 Générer le rapport");
+  bGen.addEventListener("click",()=>{
+    ouvrirRapport(rf);
+    set({modal:null,selected:null,rapportForm:null});
+  });
+  wrap.appendChild(bGen);
+  const bc=el("button",{className:"mob-btn-outline"},"Annuler");
+  bc.addEventListener("click",()=>set({modal:null,selected:null,rapportForm:null}));
+  wrap.appendChild(bc);
+  wrap.appendChild(el("div",{style:{height:"8px"}}));
+  return wrap;
+}
+
+function ouvrirRapport(rf){
+  const d=rf._devis;
+  function fTel(t){return String(t).replace(/ /g," ");}
+  function fMail(e){return String(e).replace("@","&#64;").replace(/\./g,"&#46;");}
+  function fSite(s){return String(s).replace(/\./g,"&#46;");}
+  function photoGrid(urls){
+    if(!urls.length)return "";
+    return "<div style=\"display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0;\">"
+      +urls.map(u=>"<img src=\""+u+"\" style=\"width:100%;height:160px;object-fit:cover;border-radius:6px;border:1px solid #e8e4dc;\">").join("")
+      +"</div>";
+  }
+  const defautsLabels={rayures:"Rayures",taches:"Taches",perte_brillance:"Perte de brillance",joints:"Joints encrassés",fissures:"Fissures"};
+  const defautsListe=Object.entries(rf.defauts).filter(([,v])=>v).map(([k])=>defautsLabels[k]);
+  const usureLabel={leger:"Léger",moyen:"Moyen",important:"Important"}[rf.niveau_usure]||rf.niveau_usure;
+  const travaux=[];
+  if(rf.protection_lieux)travaux.push("Protection des lieux");
+  if(rf.nettoyage_profondeur)travaux.push("Nettoyage en profondeur");
+  travaux.push(...buildDescription(d));
+  const interTxt=formatIntervention(d)||"";
+  const logoHTML=LOGO_B64
+    ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin:0 auto 12px;\">"
+    :"<div style=\"font-size:22px;font-weight:700;color:#111111;text-align:center;\">"+INFO.nom+"</div>";
+  const html="<!DOCTYPE html>"
+    +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+    +"<title>Rapport d'intervention — "+(d.client_nom||"")+"</title>"
+    +"<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap\" rel=\"stylesheet\">"
+    +"<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}.section{margin-bottom:24px;}.section h3{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:#111111;border-bottom:2px solid #c9a84c;padding-bottom:6px;margin-bottom:10px;}.topbar{max-width:794px;margin:20px auto 0;display:flex;gap:10px;justify-content:flex-end;padding:0 4px;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}.topbar{display:none;}.section{page-break-inside:avoid;}}@media screen and (max-width:640px){.page{padding:20px 16px!important;}.topbar{padding:12px 14px;}}</style>"
+    +"</head><body>"
+    +"<div class=\"topbar\"><button onclick=\"window.print()\" style=\"display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#ffffff;color:#111111;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;border:1px solid #cccccc;border-radius:6px;cursor:pointer;\">&#128438; Imprimer / Enregistrer en PDF</button></div>"
+    +"<div class=\"page\">"
+    // Cover
+    +"<div style=\"text-align:center;padding-bottom:24px;margin-bottom:24px;border-bottom:2px solid #c9a84c;\">"
+    +logoHTML
+    +"<div style=\"font-family:'Cormorant Garamond',serif;font-size:30px;letter-spacing:4px;color:#111111;margin-bottom:16px;\">RAPPORT D'INTERVENTION</div>"
+    +"<div style=\"font-size:13px;color:#333333;line-height:2;\">"
+    +"<div><strong>Client :</strong> "+(d.client_nom||"—")+"</div>"
+    +"<div><strong>Adresse du chantier :</strong> "+(rf.adresse||"—")+"</div>"
+    +(interTxt?"<div><strong>Date d'intervention :</strong> "+interTxt.replace("📅 Intervention : ","")+"</div>":"")
+    +"<div><strong>Matériau :</strong> "+(rf.materiau||"—")+"</div>"
+    +"</div></div>"
+    // État avant
+    +"<div class=\"section\"><h3>État avant intervention</h3>"
+    +(defautsListe.length?"<div style=\"font-size:11px;color:#333333;margin-bottom:6px;\"><strong>Défauts constatés :</strong> "+defautsListe.join(", ")+"</div>":"")
+    +"<div style=\"font-size:11px;color:#333333;margin-bottom:6px;\"><strong>Niveau d'usure :</strong> "+usureLabel+"</div>"
+    +photoGrid(rf.photos_avant)
+    +"</div>"
+    // Travaux réalisés
+    +"<div class=\"section\"><h3>Travaux réalisés</h3>"
+    +travaux.map(t=>"<div style=\"font-size:11px;color:#333333;padding:2px 0 2px 14px;text-indent:-14px;line-height:1.8;\">&bull; "+t+"</div>").join("")
+    +"</div>"
+    // Résultat après
+    +"<div class=\"section\"><h3>Résultat après intervention</h3>"
+    +photoGrid(rf.photos_apres)
+    +(rf.resultat_texte?"<div style=\"font-size:11px;color:#333333;line-height:1.7;margin-top:8px;\">"+rf.resultat_texte+"</div>":"")
+    +"</div>"
+    // Conseils d'entretien
+    +"<div class=\"section\"><h3>Conseils d'entretien</h3>"
+    +(rf.produits_recommandes?"<div style=\"font-size:11px;color:#333333;margin-bottom:4px;\"><strong>Produits recommandés :</strong> "+rf.produits_recommandes+"</div>":"")
+    +(rf.produits_eviter?"<div style=\"font-size:11px;color:#333333;margin-bottom:4px;\"><strong>Produits à éviter :</strong> "+rf.produits_eviter+"</div>":"")
+    +(rf.frequence_nettoyage?"<div style=\"font-size:11px;color:#333333;margin-bottom:4px;\"><strong>Fréquence de nettoyage :</strong> "+rf.frequence_nettoyage+"</div>":"")
+    +(rf.entretien_pro?"<div style=\"font-size:11px;color:#333333;\"><strong>Entretien professionnel :</strong> "+rf.entretien_pro+"</div>":"")
+    +"</div>"
+    // Conclusion
+    +"<div class=\"section\"><h3>Conclusion</h3>"
+    +(rf.conclusion?"<div style=\"font-size:11px;color:#333333;line-height:1.7;margin-bottom:16px;\">"+rf.conclusion+"</div>":"")
+    +"<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;\">"
+    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Signature du technicien</div><div style=\"font-size:8.5px;color:#111111;margin-bottom:2px;\">Maison Sol Noble</div><img src=\"data:image/png;base64,"+SIGNATURE_B64+"\" alt=\"Signature\" style=\"height:34px;margin-top:8px;display:block;\"><div style=\"border-bottom:1px solid #aaaaaa;margin-top:4px;\"></div></div>"
+    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Signature du client (facultative)</div><div style=\"font-size:8.5px;color:#333333;margin-bottom:2px;\">Date : ___/___/______</div><div style=\"border-bottom:1px solid #aaaaaa;margin-top:40px;\"></div></div>"
+    +"</div></div>"
+    // Footer
+    +"<div style=\"margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;font-size:8px;color:#333333;text-align:center;line-height:1.9;\">"+INFO.nom+" — "+INFO.forme+"<br>"+INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+fTel(INFO.tel)+" — "+fMail(INFO.email)+" — "+fSite(INFO.site)+"</div>"
     +"</div></body></html>";
   const w=window.open("","_blank");
   if(w){w.document.write(html);w.document.close();}
@@ -1353,7 +1565,7 @@ function renderModal(){
     ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
     const sheet=el("div",{className:"mob-sheet"});
     sheet.appendChild(el("div",{className:"mob-sheet-handle"}));
-    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",employe_new:"Nouveau compte",planifier:"Planifier l'intervention"};
+    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Rapport d'intervention",employe_new:"Nouveau compte",planifier:"Planifier l'intervention"};
     const hdr=el("div",{className:"mob-sheet-header"});
     hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
     const bx=el("button",{style:{background:"rgba(0,0,0,0.06)",border:"none",color:"#9a9488",fontSize:"22px",lineHeight:"1",padding:"4px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
@@ -1363,6 +1575,7 @@ function renderModal(){
     if(S.modal==="nouveau"||S.modal==="modifier")body.appendChild(renderFormDevis());
     else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
     else if(S.modal==="mission"&&S.selected)body.appendChild(renderFicheMission(S.selected));
+    else if(S.modal==="rapport"&&S.rapportForm)body.appendChild(renderFormRapport());
     else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
     else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
     sheet.appendChild(body);ov.appendChild(sheet);return ov;
@@ -1372,13 +1585,14 @@ function renderModal(){
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
   const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px",marginBottom:"1.5rem"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
-  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
+  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Rapport d'intervention",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
   const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
   if(S.modal==="nouveau"||S.modal==="modifier")body.appendChild(renderFormDevis());
   else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
   else if(S.modal==="mission"&&S.selected)body.appendChild(renderFicheMission(S.selected));
+  else if(S.modal==="rapport"&&S.rapportForm)body.appendChild(renderFormRapport());
   else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
   else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
   box.appendChild(body);ov.appendChild(box);return ov;
@@ -1786,6 +2000,9 @@ function renderDetailDevis(d){
   const bap=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#7a5a10",borderColor:"#c9a84c"}},"📄 Aperçu du devis");
   bap.addEventListener("click",()=>ouvrirApercu(d));
   wrap.appendChild(bap);
+  const brap=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#3B6D11",borderColor:"#3B6D1144"}},"📷 Rapport d'intervention");
+  brap.addEventListener("click",()=>openRapport(d));
+  wrap.appendChild(brap);
   const bc=el("button",{className:"mob-btn-outline"},"Fermer");
   bc.addEventListener("click",()=>set({modal:null,selected:null}));
   wrap.appendChild(bc);
