@@ -769,7 +769,10 @@ function defaultRapportForm(d){
     produits_eviter:"",
     frequence_nettoyage:"",
     entretien_pro:"Tous les 3 à 5 ans selon l'usage",
-    conclusion:""
+    conclusion:"",
+    intervenant_prenom:"",
+    intervenant_nom:"",
+    signature_data:null
   };
 }
 function openRapport(d){
@@ -832,6 +835,42 @@ function renderFormRapport(){
     }
     return box;
   }
+  function signatureField(){
+    const box=el("div",{style:{marginBottom:"1rem"}});
+    box.appendChild(lbl("Signature de l'intervenant"));
+    const canvas=el("canvas",{width:"320",height:"140",style:{border:"1px solid #dddad2",borderRadius:"8px",background:"#fff",touchAction:"none",cursor:"crosshair",display:"block",maxWidth:"100%"}});
+    const ctx=canvas.getContext("2d");
+    ctx.strokeStyle="#1a1611";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";
+    if(rf.signature_data){
+      const img=new Image();
+      img.onload=()=>ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      img.src=rf.signature_data;
+    }
+    let drawing=false,last=null;
+    function pos(e){
+      const r=canvas.getBoundingClientRect();
+      return {x:(e.clientX-r.left)*(canvas.width/r.width),y:(e.clientY-r.top)*(canvas.height/r.height)};
+    }
+    canvas.addEventListener("pointerdown",e=>{drawing=true;last=pos(e);canvas.setPointerCapture(e.pointerId);});
+    canvas.addEventListener("pointermove",e=>{
+      if(!drawing)return;
+      const p=pos(e);
+      ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();
+      last=p;
+    });
+    function endStroke(){
+      if(!drawing)return;
+      drawing=false;
+      rf.signature_data=canvas.toDataURL("image/png");
+    }
+    canvas.addEventListener("pointerup",endStroke);
+    canvas.addEventListener("pointerleave",endStroke);
+    box.appendChild(canvas);
+    const bClear=el("button",{type:"button",style:{...BS,marginTop:"6px",fontSize:"12px"}},"Effacer la signature");
+    bClear.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);rf.signature_data=null;});
+    box.appendChild(bClear);
+    return box;
+  }
 
   wrap.appendChild(textField("Adresse du chantier","adresse","12 rue des Fleurs, Toulouse"));
   wrap.appendChild(textField("Type de matériau","materiau","Marbre"));
@@ -876,6 +915,11 @@ function renderFormRapport(){
   wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.5rem"}},"Conclusion"));
   wrap.appendChild(textareaField("Résumé de l'intervention","conclusion","Intervention réalisée avec succès..."));
 
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.5rem"}},"Intervenant"));
+  wrap.appendChild(textField("Prénom","intervenant_prenom","Jean"));
+  wrap.appendChild(textField("Nom","intervenant_nom","Dupont"));
+  wrap.appendChild(signatureField());
+
   const bGen=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},"📷 Générer le certificat");
   bGen.addEventListener("click",()=>{
     ouvrirRapport(rf);
@@ -911,6 +955,10 @@ function ouvrirRapport(rf){
   const logoHTML=LOGO_B64
     ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin:0 auto 12px;\">"
     :"<div style=\"font-size:22px;font-weight:700;color:#111111;text-align:center;\">"+INFO.nom+"</div>";
+  const intervenantNom=((rf.intervenant_prenom||"")+" "+(rf.intervenant_nom||"")).trim();
+  const signatureImgHTML=rf.signature_data
+    ?"<img src=\""+rf.signature_data+"\" alt=\"Signature\" style=\"height:50px;margin-top:8px;display:block;\">"
+    :"<div style=\"height:50px;margin-top:8px;\"></div>";
   const html="<!DOCTYPE html>"
     +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
     +"<title>Certificat d'intervention Maison Sol Noble — "+(d.client_nom||"")+"</title>"
@@ -956,7 +1004,7 @@ function ouvrirRapport(rf){
     +"<div class=\"section\"><h3>Conclusion</h3>"
     +(rf.conclusion?"<div style=\"font-size:11px;color:#333333;line-height:1.7;margin-bottom:16px;\">"+rf.conclusion+"</div>":"")
     +"<div style=\"max-width:280px;margin-top:20px;\">"
-    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Signature du technicien</div><div style=\"font-size:8.5px;color:#111111;margin-bottom:2px;\">Maison Sol Noble</div><img src=\"data:image/png;base64,"+SIGNATURE_B64+"\" alt=\"Signature\" style=\"height:34px;margin-top:8px;display:block;\"><div style=\"border-bottom:1px solid #aaaaaa;margin-top:4px;\"></div></div>"
+    +"<div style=\"border:1px solid #cccccc;padding:10px 12px;min-height:70px;\"><div style=\"font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#222222;margin-bottom:4px;\">Signature de l'intervenant</div><div style=\"font-size:8.5px;color:#111111;margin-bottom:2px;\">"+(intervenantNom||"Maison Sol Noble")+"</div>"+signatureImgHTML+"<div style=\"border-bottom:1px solid #aaaaaa;margin-top:4px;\"></div></div>"
     +"</div></div>"
     // Footer
     +"<div style=\"margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;font-size:8px;color:#333333;text-align:center;line-height:1.9;\">"+INFO.nom+" — "+INFO.forme+"<br>"+INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+fTel(INFO.tel)+" — "+fMail(INFO.email)+" — "+fSite(INFO.site)+"</div>"
