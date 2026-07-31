@@ -233,6 +233,7 @@ let TARIFS={
   marbre:{label:"Marbre",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
   travertin:{label:"Travertin",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
   granito:{label:"Granito",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
+  tomette:{label:"Tomette en terre cuite",trav:["Rebouchage","Ponçage","Cristallisation mat","Cristallisation brillant","Protection hydrofuge & oléofuge","Rénovation complète"],prix:[0,0,0,0,0,0]},
   parquet:{label:"Parquet massif",trav:["Ponçage + vitrification","Ponçage + parquet ciré","Rénovation complète"],prix:[0,0,0]},
 };
 // ── NETTOYAGE CACHE : change ce numéro pour vider le localStorage de tous les appareils ──
@@ -241,8 +242,16 @@ if(localStorage.getItem("msn_cache_v")!==APP_CACHE_VERSION){
   localStorage.removeItem("msn_devis");
   localStorage.setItem("msn_cache_v",APP_CACHE_VERSION);
 }
-try{const saved=localStorage.getItem("msn_tarifs");if(saved)TARIFS=JSON.parse(saved);}catch{}
 function saveTarifs(){localStorage.setItem("msn_tarifs",JSON.stringify(TARIFS));}
+try{
+  const saved=localStorage.getItem("msn_tarifs");
+  if(saved){
+    const savedTarifs=JSON.parse(saved);
+    const nouveauxTypes=Object.keys(TARIFS).some(k=>!savedTarifs[k]);
+    TARIFS={...TARIFS,...savedTarifs};
+    if(nouveauxTypes)saveTarifs();
+  }
+}catch{}
 
 let FICHES={
   marbre:{titre:"Rénovation des sols en marbre",materiel:["Monobrosse professionnelle","Disques diamantés (du grain 50 au grain 3000)","Cristalliseur professionnel","Produit imperméabilisant et oléofuge","Aspirateur eau et poussière","Chiffons microfibre","EPI : lunettes, gants en nitrile, masque FFP2"],etapes:[{titre:"1. Nettoyage initial",desc:"Nettoyer avec un produit alcalin pour éliminer la cire, les graisses et les résidus, puis rincer abondamment."},{titre:"2. Diagnostic",desc:"Évaluer la profondeur des rayures, des taches et des fissures pour définir le grain de départ."},{titre:"3. Rebouchage",desc:"Reboucher les petites fissures et les joints."},{titre:"4. Ponçage progressif",desc:"Utiliser des disques diamantés du grain 50 au grain 400 pour éliminer les rayures, en veillant à ce que chaque passe soit perpendiculaire à la précédente."},{titre:"5. Affinage",desc:"Utiliser les grains 800 puis 1500 pour lisser la surface, en aspirant la poussière entre chaque changement de grain."},{titre:"6. Polissage de fin",desc:"Passer au grain 3000 pour obtenir la brillance finale souhaitée."},{titre:"7. Cristallisation",desc:"Appliquer le cristalliseur avec la monobrosse professionnelle pour durcir et sublimer la surface."},{titre:"8. Protection finale",desc:"Appliquer les traitements hydrofuge et oléofuge pour protéger durablement le sol."}]},
