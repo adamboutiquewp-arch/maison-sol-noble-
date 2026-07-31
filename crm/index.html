@@ -680,7 +680,7 @@ function ouvrirApercu(dv){
   const dateDoc=new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR");
   const descLines=buildDescription(dv);
   const solLabel=(TARIFS[dv.type_sol]&&TARIFS[dv.type_sol].label)||dv.type_sol||"—";
-  const finLabel=dv.finition?(dv.type_sol==="parquet"?(dv.finition==="ciré"?"Ciré":"Vitrifié"):(dv.finition==="mat"?"Mat":"Brillant")):"—";
+  const finLabel=dv.finition?(dv.type_sol==="parquet"?(dv.finition==="ciré"?"Ciré":"Vitrifié"):(dv.finition==="mat"?"Mat":dv.finition==="satiné"?"Satiné":"Brillant")):"—";
   function fTel(t){return String(t).replace(/ /g," ");}
   function fMail(e){return String(e).replace("@","&#64;").replace(/\./g,"&#46;");}
   function fSite(s){return String(s).replace(/\./g,"&#46;");}
@@ -1712,7 +1712,7 @@ function renderFormDevis(){
   form.appendChild(el("div",{style:{height:"1px",background:"#e8e4dc",margin:"0.5rem 0 1rem"}}));
   form.appendChild(row(grp("Type de sol *",sel("type_sol",Object.entries(TARIFS).map(([k,v])=>[k,v.label])),0),grp("État du sol",sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]]),0)));
   form.appendChild(row(grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
-  const finOpts=f.type_sol==="parquet"?[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]:[["brillant","Brillant"],["mat","Mat"]];
+  const finOpts=f.type_sol==="parquet"?[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]:[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"]];
   form.appendChild(row(grp("Finition",sel("finition",finOpts),0)));
   // ── PRESTATIONS COMPLÉMENTAIRES (ordre de travail) ──
   {
