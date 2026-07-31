@@ -294,7 +294,7 @@ function genNumeroDevis(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -319,6 +319,8 @@ function mergeDevisLocal(remote){
     rebouchage:lm[d.numero]?.rebouchage||false,
     rebouchage_cavites:lm[d.numero]?.rebouchage_cavites||false,
     rebouchage_joints:lm[d.numero]?.rebouchage_joints||false,
+    nettoyage_joints:lm[d.numero]?.nettoyage_joints||false,
+    laitance:lm[d.numero]?.laitance||false,
     preparation:lm[d.numero]?.preparation||false,
     cristallisation:lm[d.numero]?.cristallisation||false,
     mineralisation:lm[d.numero]?.mineralisation||false,
@@ -353,7 +355,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,rebouchage,rebouchage_cavites,rebouchage_joints,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,rebouchage,rebouchage_cavites,rebouchage_joints,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -659,6 +661,8 @@ function buildDescription(dv){
   if(dv.preparation)lines.push("Décapage / préparation du support");
   if(dv.rebouchage_cavites)lines.push("Rebouchage des cavités");
   if(dv.rebouchage_joints)lines.push("Rebouchage des joints");
+  if(dv.nettoyage_joints)lines.push("Nettoyage des joints");
+  if(dv.laitance)lines.push("Élimination de la laitance");
   if(coarse.length)lines.push("Ponçage : grain "+coarse.join(", grain "));
   if(dv.mineralisation)lines.push("Minéralisation (durcisseur pénétrant solidifiant)");
   if(fine.length)lines.push("Ponçage : grain "+fine.join(", grain "));
@@ -1603,7 +1607,7 @@ function renderDevis(){
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[],rebouchage:d.rebouchage||false,rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||(d.type_sol==="parquet"?"vitrifié":"brillant"),prix_m2:d.prix_m2||30,grains:d.grains||[],rebouchage:d.rebouchage||false,rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,nettoyage_joints:d.nettoyage_joints||false,laitance:d.laitance||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bap=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#7a5a10",borderColor:"#c9a84c44"}},"📄 Aperçu");bap.addEventListener("click",()=>ouvrirApercu(d));acts.appendChild(bap);
 
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
@@ -1736,6 +1740,8 @@ function renderFormDevis(){
       r1.appendChild(optBtn("🧽 Décapage","preparation"));
       r1.appendChild(optBtn("🔨 Rebouchage cavités","rebouchage_cavites"));
       r1.appendChild(optBtn("🔨 Rebouchage joints","rebouchage_joints"));
+      r1.appendChild(optBtn("🧹 Nettoyage des joints","nettoyage_joints"));
+      r1.appendChild(optBtn("🪣 Élimination de la laitance","laitance"));
       optWrap.appendChild(r1);
     }
     // 2. Ponçage = sélection des grains
@@ -1883,7 +1889,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Marbre",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:0,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Marbre",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:0,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false};
     set({modal:null,selected:null});
   });
   return form;
@@ -2318,7 +2324,7 @@ function renderClients(){
           etat:etatInit,
           description:leadDevis?.description||"",
           finition:sol==="parquet"?"vitrifié":"brillant",
-          grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,
+          grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,
           escalier:false,nb_marches:"",prix_marche:"",
           tva_taux:20,cerfa:false,
           _leadPrefilled:true
