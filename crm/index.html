@@ -294,7 +294,7 @@ function genNumeroDevis(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,stockForm:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -512,9 +512,10 @@ async function saveComptesToSupabase(){
 // ── AUTO-REFRESH : polling toutes les 20 secondes + retour d'onglet ──
 let _stockOpenAdjust=null;
 let _stockOpenHistorique=null;
-const CATEGORIES_STOCK=["Abrasifs","Produits chimiques","Outillage","EPI","Autre"];
+const CATEGORIES_STOCK=["Machines","Matériel","Disques","Produits","Consommables"];
+const CATEGORY_ICONS_STOCK={Machines:"🛠️",Matériel:"⚙️",Disques:"💎",Produits:"🧴",Consommables:"📦"};
 function defaultStockItem(){
-  return {id:"stk_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),nom:"",categorie:"Abrasifs",quantite:0,unite:"unités",seuil_alerte:0,notes:"",historique:[]};
+  return {id:"stk_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),nom:"",categorie:"Machines",reference:"",prix_achat:0,quantite:0,seuil_alerte:0,emplacement:"",fournisseur:"",date_achat:"",notes:"",historique:[]};
 }
 function openStockForm(item){
   set({modal:"stock_form",stockForm:item?{...item}:defaultStockItem()});
@@ -2401,63 +2402,253 @@ function renderClients(){
   return wrap2;
 }
 
+function stockStatus(item){
+  const q=item.quantite||0, seuil=item.seuil_alerte||0;
+  if(q<=0)return{label:"Rupture de stock",color:"#A32D2D",icon:"🔴"};
+  if(q<=seuil)return{label:"Stock faible",color:"#EF9F27",icon:"🟠"};
+  return{label:"En stock",color:"#3B6D11",icon:"🟢"};
+}
+function stockValeur(item){return (item.prix_achat||0)*(item.quantite||0);}
+
 function renderStock(){
-  const stock=getStock();
+  const all=getStock();
   const wrap=el("div",{});
-  const header=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.2rem",flexWrap:"wrap",gap:"0.8rem"}});
-  header.appendChild(el("div",{},[
-    el("div",{style:{fontSize:"11px",color:"#a09890",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"3px"}},"Inventaire"),
-    el("div",{style:{fontSize:"20px",color:"#1a1611",fontFamily:"'Cormorant Garamond',serif",fontWeight:"400"}},`${stock.length} article${stock.length!==1?"s":""}`),
-  ]));
-  const bAdd=el("button",{style:BP},"+ Nouvel article");
-  bAdd.addEventListener("click",()=>openStockForm(null));
-  header.appendChild(bAdd);
-  wrap.appendChild(header);
 
-  const alerte=stock.filter(s=>(s.quantite||0)<=(s.seuil_alerte||0));
-  if(alerte.length){
-    const banner=el("div",{style:{background:"rgba(163,45,45,0.08)",border:"1px solid rgba(163,45,45,0.3)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1.2rem",fontSize:"13px",color:"#A32D2D",fontWeight:"500"}});
-    banner.textContent="⚠️ "+alerte.length+" article"+(alerte.length>1?"s":"")+" à recharger : "+alerte.map(a=>a.nom).join(", ");
-    wrap.appendChild(banner);
-  }
-
-  if(!stock.length){
-    wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucun article — ajoutez le premier avec le bouton ci-dessus."));
-  }
-
-  CATEGORIES_STOCK.forEach(cat=>{
-    const items=stock.filter(s=>(s.categorie||"Autre")===cat);
-    if(!items.length)return;
-    wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"1rem"}},cat));
-    items.forEach(item=>wrap.appendChild(renderStockRow(item)));
+  const totalArticles=all.length;
+  const valeurTotale=all.reduce((s,it)=>s+stockValeur(it),0);
+  const nbFaible=all.filter(it=>stockStatus(it).label==="Stock faible").length;
+  const nbRupture=all.filter(it=>stockStatus(it).label==="Rupture de stock").length;
+  const kpiData=[
+    {l:"Articles",v:totalArticles,icon:"📦",accent:"#3B8BD4"},
+    {l:"Valeur du stock",v:valeurTotale.toFixed(2)+" €",icon:"€",accent:"#c9a84c"},
+    {l:"Stock faible",v:nbFaible,alert:nbFaible>0,icon:"🟠",accent:nbFaible>0?"#EF9F27":"#8a8278"},
+    {l:"Rupture",v:nbRupture,alert:nbRupture>0,icon:"🔴",accent:nbRupture>0?"#A32D2D":"#8a8278"},
+  ];
+  const kpis=el("div",{className:isMobile()?"mob-kpi-grid":"",style:isMobile()?{}:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"1rem",marginBottom:"2rem"}});
+  kpiData.forEach((k,i)=>{
+    if(isMobile()){
+      const c=el("div",{className:"mob-kpi"});
+      c.appendChild(el("div",{className:"mob-kpi-label"},k.l));
+      c.appendChild(el("div",{className:"mob-kpi-val"+(i===1?" gold":""),style:{color:k.alert?k.accent:""}},String(k.v)));
+      kpis.appendChild(c);
+    }else{
+      const c=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",padding:"1.2rem 1.4rem",boxShadow:"0 1px 6px rgba(0,0,0,0.06)",borderTop:`3px solid ${k.accent}`,transition:"box-shadow 0.15s"}});
+      c.addEventListener("mouseenter",()=>c.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)");
+      c.addEventListener("mouseleave",()=>c.style.boxShadow="0 1px 6px rgba(0,0,0,0.06)");
+      const rowEl=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.6rem"}});
+      rowEl.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",fontWeight:"500"}},k.l));
+      rowEl.appendChild(el("div",{style:{fontSize:"16px",width:"28px",height:"28px",borderRadius:"50%",background:k.accent+"15",display:"flex",alignItems:"center",justifyContent:"center",color:k.accent}},k.icon));
+      c.appendChild(rowEl);
+      c.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"26px",color:k.alert?k.accent:"#1a1611",fontWeight:"400",letterSpacing:"-0.01em",lineHeight:"1"}},String(k.v)));
+      kpis.appendChild(c);
+    }
   });
+  wrap.appendChild(kpis);
+
+  const FILTER_OPTIONS=["Toutes les catégories",...CATEGORIES_STOCK,"Stock faible","Rupture de stock"];
+  if(!isMobile()){
+    const bar=el("div",{style:{display:"flex",gap:"0.7rem",marginBottom:"1.4rem",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}});
+    const leftActions=el("div",{style:{display:"flex",gap:"0.7rem",alignItems:"center"}});
+    const bAdd=el("button",{style:BP},"+ Nouvel article");
+    bAdd.addEventListener("click",()=>openStockForm(null));
+    leftActions.appendChild(bAdd);
+    bar.appendChild(leftActions);
+    const rightActions=el("div",{style:{display:"flex",gap:"0.7rem",alignItems:"center"}});
+    const si=el("input",{type:"text",placeholder:"🔍  Rechercher un article, fournisseur...",style:{width:"240px",fontSize:"13px",padding:"0.55rem 0.9rem"},value:S.stockSearch});
+    si.addEventListener("input",e=>{S.stockSearch=e.target.value;render();});
+    rightActions.appendChild(si);
+    const sf=el("select",{style:{width:"190px",padding:"0.55rem 0.8rem",fontSize:"13px"}});
+    FILTER_OPTIONS.forEach(o=>{const opt=el("option",{},o);if(o===S.stockFilter)opt.selected=true;sf.appendChild(opt);});
+    sf.addEventListener("change",e=>{S.stockFilter=e.target.value;render();});
+    rightActions.appendChild(sf);
+    bar.appendChild(rightActions);
+    wrap.appendChild(bar);
+  }else{
+    const sb=el("div",{className:"mob-search"});
+    sb.appendChild(el("span",{style:{color:"#8a8278",fontSize:"16px"}},"🔍"));
+    const si=el("input",{placeholder:"Rechercher un article...",value:S.stockSearch,style:{fontSize:"16px"}});
+    si.addEventListener("input",e=>{S.stockSearch=e.target.value;render();});
+    sb.appendChild(si);
+    wrap.appendChild(sb);
+    const sf=el("select",{style:{width:"100%",fontSize:"16px",marginBottom:"1rem",padding:"0.7rem 1rem",background:"#ffffff",border:"1px solid #e8e4dc",color:"#2a2520",borderRadius:"10px"}});
+    FILTER_OPTIONS.forEach(o=>{const opt=el("option",{},o);if(o===S.stockFilter)opt.selected=true;sf.appendChild(opt);});
+    sf.addEventListener("change",e=>{S.stockFilter=e.target.value;render();});
+    wrap.appendChild(sf);
+    const bAdd=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"1rem"}},"+ Nouvel article");
+    bAdd.addEventListener("click",()=>openStockForm(null));
+    wrap.appendChild(bAdd);
+  }
+
+  const q=(S.stockSearch||"").toLowerCase();
+  let filtered=all.filter(it=>{
+    const ms=!q||(it.nom||"").toLowerCase().includes(q)||(it.categorie||"").toLowerCase().includes(q)||(it.fournisseur||"").toLowerCase().includes(q);
+    let mf=true;
+    if(S.stockFilter&&S.stockFilter!=="Toutes les catégories"){
+      if(S.stockFilter==="Stock faible")mf=stockStatus(it).label==="Stock faible";
+      else if(S.stockFilter==="Rupture de stock")mf=stockStatus(it).label==="Rupture de stock";
+      else mf=it.categorie===S.stockFilter;
+    }
+    return ms&&mf;
+  });
+
+  const sortKey=S.stockSort?.key||"nom";
+  const sortDir=S.stockSort?.dir||"asc";
+  const sortVal=(it)=>{
+    if(sortKey==="prix_achat")return it.prix_achat||0;
+    if(sortKey==="quantite")return it.quantite||0;
+    if(sortKey==="valeur")return stockValeur(it);
+    if(sortKey==="seuil_alerte")return it.seuil_alerte||0;
+    return (it.nom||"").toLowerCase();
+  };
+  filtered=[...filtered].sort((a,b)=>{
+    const va=sortVal(a),vb=sortVal(b);
+    if(va<vb)return sortDir==="asc"?-1:1;
+    if(va>vb)return sortDir==="asc"?1:-1;
+    return 0;
+  });
+
+  function toggleSort(key){
+    if(S.stockSort&&S.stockSort.key===key)S.stockSort={key,dir:S.stockSort.dir==="asc"?"desc":"asc"};
+    else S.stockSort={key,dir:"asc"};
+    render();
+  }
+
+  if(!all.length){
+    wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucun article — ajoutez le premier avec le bouton ci-dessus."));
+    return wrap;
+  }
+  if(!filtered.length){
+    wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucun article ne correspond à la recherche/au filtre."));
+  }
+
+  if(isMobile()){
+    filtered.forEach(item=>wrap.appendChild(renderStockMobileCard(item)));
+    return wrap;
+  }
+
+  const tableWrap=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"12px",overflow:"hidden",overflowX:"auto",boxShadow:"0 2px 12px rgba(0,0,0,0.07)"}});
+  const tableHead=el("div",{style:{padding:"1rem 1.4rem",borderBottom:"1px solid #f0ece4",display:"flex",alignItems:"center",justifyContent:"space-between"}});
+  tableHead.appendChild(el("div",{style:{fontSize:"13px",color:"#2a2520",fontWeight:"500"}},`${filtered.length} article${filtered.length!==1?"s":""}`+(S.stockFilter&&S.stockFilter!=="Toutes les catégories"?` · ${S.stockFilter}`:"")+(S.stockSearch?` · "${S.stockSearch}"`:"")));
+  tableWrap.appendChild(tableHead);
+  const t=el("table",{style:{width:"100%"}});
+  const trh=el("tr",{style:{borderBottom:"2px solid #f0ece4",background:"#faf9f6"}});
+  const COLS=[["Catégorie",null],["Article","nom"],["Prix unitaire","prix_achat"],["Quantité","quantite"],["Valeur du stock","valeur"],["Seuil mini","seuil_alerte"],["Statut",null],["Actions",null]];
+  COLS.forEach(([h,key])=>{
+    const th=el("th",{style:{padding:"0.75rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:"#a09890",fontWeight:"600",cursor:key?"pointer":"default",whiteSpace:"nowrap"}},
+      h+(key&&sortKey===key?(sortDir==="asc"?" ▲":" ▼"):""));
+    if(key)th.addEventListener("click",()=>toggleSort(key));
+    trh.appendChild(th);
+  });
+  t.appendChild(el("thead",{},[trh]));
+  const tbody=el("tbody",{});
+  filtered.forEach(item=>{
+    const st=stockStatus(item);
+    const tr=el("tr",{style:{borderBottom:"1px solid #f5f3ef",transition:"background 0.1s"}});
+    tr.addEventListener("mouseenter",()=>tr.style.background="#faf9f6");tr.addEventListener("mouseleave",()=>tr.style.background="");
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278",whiteSpace:"nowrap"}},(CATEGORY_ICONS_STOCK[item.categorie]||"")+" "+(item.categorie||"—")));
+    {
+      const nomTd=el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#2a2520",fontWeight:"500"}});
+      nomTd.appendChild(document.createTextNode(item.nom||"—"));
+      if(item.reference){nomTd.appendChild(el("div",{style:{fontSize:"11px",color:"#a09890",marginTop:"2px"}},"Réf. "+item.reference));}
+      tr.appendChild(nomTd);
+    }
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#1a1611"}},(item.prix_achat||0).toFixed(2)+" €"));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:st.label!=="En stock"?st.color:"#1a1611",fontWeight:"600"}},String(item.quantite||0)));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#1a1611",fontWeight:"600"}},stockValeur(item).toFixed(2)+" €"));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}},String(item.seuil_alerte||0)));
+    {
+      const stTd=el("td",{style:{padding:"0.8rem 1rem"}});
+      stTd.appendChild(el("span",{style:{background:st.color+"22",color:st.color,border:`1px solid ${st.color}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500",whiteSpace:"nowrap"}},st.icon+" "+st.label));
+      tr.appendChild(stTd);
+    }
+    {
+      const actTd=el("td",{style:{padding:"0.8rem 1rem"}});
+      const acts=el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap"}});
+      const bMinus=el("button",{style:{...BS,padding:"3px 8px",fontSize:"12px",fontWeight:"700"}},"−");
+      bMinus.addEventListener("click",()=>{_stockOpenAdjust=_stockOpenAdjust===item.id+"-"?null:item.id+"-";render();});
+      const bPlus=el("button",{style:{...BS,padding:"3px 8px",fontSize:"12px",fontWeight:"700"}},"+");
+      bPlus.addEventListener("click",()=>{_stockOpenAdjust=_stockOpenAdjust===item.id+"+"?null:item.id+"+";render();});
+      const bEdit=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏");
+      bEdit.addEventListener("click",()=>openStockForm(item));
+      const bHist=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"},title:"Historique"},"🕘");
+      bHist.addEventListener("click",()=>{_stockOpenHistorique=_stockOpenHistorique===item.id?null:item.id;render();});
+      const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
+      bDel.addEventListener("click",()=>{if(confirm("Supprimer l'article \""+item.nom+"\" ?")){saveStock(getStock().filter(s=>s.id!==item.id));render();}});
+      acts.appendChild(bMinus);acts.appendChild(bPlus);acts.appendChild(bEdit);acts.appendChild(bHist);acts.appendChild(bDel);
+      actTd.appendChild(acts);tr.appendChild(actTd);
+    }
+    tbody.appendChild(tr);
+
+    if(_stockOpenAdjust===item.id+"-"||_stockOpenAdjust===item.id+"+"){
+      const sign=_stockOpenAdjust.endsWith("+")?1:-1;
+      const etr=el("tr",{});
+      const etd=el("td",{colSpan:"8",style:{padding:"10px 1rem",background:"#faf9f6",borderBottom:"1px solid #f0ece4"}});
+      const panel=el("div",{style:{display:"flex",gap:"8px",alignItems:"center",flexWrap:"wrap"}});
+      const nInp=el("input",{type:"number",min:"0",value:"1",style:{width:"80px"}});
+      const motifInp=el("input",{type:"text",placeholder:"Motif (optionnel)",style:{flex:"1",minWidth:"180px"}});
+      const bValider=el("button",{style:{...BP,padding:"6px 14px",fontSize:"12px"}},sign>0?"+ Ajouter":"− Retirer");
+      bValider.addEventListener("click",()=>{
+        const n=parseFloat(nInp.value)||0;
+        if(n>0)addMouvementStock(item,sign*n,motifInp.value);
+        _stockOpenAdjust=null;
+      });
+      panel.appendChild(el("span",{style:{fontSize:"12px",color:"#5a5450",fontWeight:"600"}},sign>0?"Ajouter au stock :":"Retirer du stock :"));
+      panel.appendChild(nInp);panel.appendChild(motifInp);panel.appendChild(bValider);
+      etd.appendChild(panel);etr.appendChild(etd);tbody.appendChild(etr);
+    }
+
+    if(_stockOpenHistorique===item.id){
+      const htr=el("tr",{});
+      const htd=el("td",{colSpan:"8",style:{padding:"10px 1rem",background:"#faf9f6",borderBottom:"1px solid #f0ece4",fontSize:"12px",color:"#5a5450"}});
+      const hist=item.historique||[];
+      htd.appendChild(el("div",{style:{fontSize:"11px",color:"#9a9488",fontWeight:"600",marginBottom:"4px"}},"Historique des mouvements"));
+      if(!hist.length){
+        htd.appendChild(el("div",{style:{color:"#9a9488"}},"Aucun mouvement enregistré."));
+      }else{
+        hist.slice(0,20).forEach(h=>{
+          const dh=new Date(h.date).toLocaleString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+          htd.appendChild(el("div",{style:{padding:"2px 0"}},(h.delta>0?"+":"")+h.delta+" — "+dh+" — "+h.auteur+(h.motif?" — "+h.motif:"")+" (→ "+h.quantite_apres+")"));
+        });
+      }
+      htr.appendChild(htd);tbody.appendChild(htr);
+    }
+  });
+  t.appendChild(tbody);tableWrap.appendChild(t);wrap.appendChild(tableWrap);
   return wrap;
 }
 
-function renderStockRow(item){
-  const bas=(item.quantite||0)<=(item.seuil_alerte||0);
-  const card=el("div",{style:{background:"#ffffff",border:"1px solid "+(bas?"rgba(163,45,45,0.3)":"#e8e4dc"),borderRadius:"8px",padding:"0.9rem 1.1rem",marginBottom:"8px"}});
-  const top=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"8px"}});
+function renderStockMobileCard(item){
+  const st=stockStatus(item);
+  const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"14px",padding:"14px 16px",marginBottom:"8px",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}});
+  const top=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"6px",gap:"8px"}});
   top.appendChild(el("div",{},[
-    el("div",{style:{fontSize:"14px",fontWeight:"500",color:"#2a2520"}},item.nom),
-    el("div",{style:{fontSize:"11px",color:"#8a8278",marginTop:"2px"}},"Seuil d'alerte : "+(item.seuil_alerte||0)+" "+(item.unite||""))
+    el("div",{style:{fontSize:"14px",fontWeight:"500",color:"#2a2520"}},item.nom||"—"),
+    el("div",{style:{fontSize:"11px",color:"#8a8278",marginTop:"2px"}},(CATEGORY_ICONS_STOCK[item.categorie]||"")+" "+(item.categorie||"—")+(item.reference?" · Réf. "+item.reference:""))
   ]));
+  top.appendChild(el("span",{style:{background:st.color+"22",color:st.color,border:`1px solid ${st.color}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"10px",fontWeight:"500",whiteSpace:"nowrap"}},st.icon+" "+st.label));
+  card.appendChild(top);
+  const infos=el("div",{style:{display:"flex",justifyContent:"space-between",padding:"6px 0",borderTop:"1px solid #eceae4",fontSize:"12px",color:"#8a8278"}});
+  infos.appendChild(el("span",{},"Prix unitaire : "+(item.prix_achat||0).toFixed(2)+" €"));
+  infos.appendChild(el("span",{style:{fontWeight:"600",color:"#c9a84c"}},"Valeur : "+stockValeur(item).toFixed(2)+" €"));
+  card.appendChild(infos);
+  const qtyRow=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"8px",marginTop:"6px"}});
+  qtyRow.appendChild(el("span",{style:{fontSize:"11px",color:"#8a8278"}},"Seuil mini : "+(item.seuil_alerte||0)));
   const qtyBox=el("div",{style:{display:"flex",alignItems:"center",gap:"8px"}});
-  const bMinus=el("button",{type:"button",style:{...BS,padding:"4px 10px",fontSize:"14px",fontWeight:"700"}},"−");
-  const qtyLabel=el("span",{style:{fontSize:"15px",fontWeight:"600",color:bas?"#A32D2D":"#1a1611",minWidth:"70px",textAlign:"center"}},(item.quantite||0)+" "+(item.unite||""));
-  const bPlus=el("button",{type:"button",style:{...BS,padding:"4px 10px",fontSize:"14px",fontWeight:"700"}},"+");
+  const bMinus=el("button",{style:{...BS,padding:"4px 10px",fontSize:"14px",fontWeight:"700"}},"−");
   bMinus.addEventListener("click",()=>{_stockOpenAdjust=_stockOpenAdjust===item.id+"-"?null:item.id+"-";render();});
+  const qtyLabel=el("span",{style:{fontSize:"15px",fontWeight:"600",color:st.label!=="En stock"?st.color:"#1a1611",minWidth:"40px",textAlign:"center"}},String(item.quantite||0));
+  const bPlus=el("button",{style:{...BS,padding:"4px 10px",fontSize:"14px",fontWeight:"700"}},"+");
   bPlus.addEventListener("click",()=>{_stockOpenAdjust=_stockOpenAdjust===item.id+"+"?null:item.id+"+";render();});
   qtyBox.appendChild(bMinus);qtyBox.appendChild(qtyLabel);qtyBox.appendChild(bPlus);
-  top.appendChild(qtyBox);
-  card.appendChild(top);
+  qtyRow.appendChild(qtyBox);
+  card.appendChild(qtyRow);
 
   if(_stockOpenAdjust===item.id+"-"||_stockOpenAdjust===item.id+"+"){
     const sign=_stockOpenAdjust.endsWith("+")?1:-1;
     const panel=el("div",{style:{display:"flex",gap:"8px",alignItems:"center",flexWrap:"wrap",marginTop:"10px",paddingTop:"10px",borderTop:"1px dashed #e8e4dc"}});
     const nInp=el("input",{type:"number",min:"0",value:"1",style:{width:"70px"}});
     const motifInp=el("input",{type:"text",placeholder:"Motif (optionnel)",style:{flex:"1",minWidth:"140px"}});
-    const bValider=el("button",{type:"button",style:{...BP,padding:"6px 14px",fontSize:"12px"}},sign>0?"+ Ajouter":"− Retirer");
+    const bValider=el("button",{style:{...BP,padding:"6px 14px",fontSize:"12px"}},sign>0?"+ Ajouter":"− Retirer");
     bValider.addEventListener("click",()=>{
       const n=parseFloat(nInp.value)||0;
       if(n>0)addMouvementStock(item,sign*n,motifInp.value);
@@ -2485,14 +2676,19 @@ function renderStockRow(item){
     }else{
       hist.slice(0,20).forEach(h=>{
         const dh=new Date(h.date).toLocaleString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
-        histBox.appendChild(el("div",{style:{padding:"3px 0"}},
-          (h.delta>0?"+":"")+h.delta+" "+(item.unite||"")+" — "+dh+" — "+h.auteur+(h.motif?" — "+h.motif:"")+" (→ "+h.quantite_apres+")"
-        ));
+        histBox.appendChild(el("div",{style:{padding:"3px 0"}},(h.delta>0?"+":"")+h.delta+" — "+dh+" — "+h.auteur+(h.motif?" — "+h.motif:"")+" (→ "+h.quantite_apres+")"));
       });
     }
     card.appendChild(histBox);
   }
-
+  if(item.emplacement||item.fournisseur||item.date_achat||item.notes){
+    const meta=el("div",{style:{marginTop:"10px",paddingTop:"10px",borderTop:"1px dashed #e8e4dc",fontSize:"11px",color:"#8a8278",lineHeight:"1.6"}});
+    if(item.emplacement)meta.appendChild(el("div",{},"Emplacement : "+item.emplacement));
+    if(item.fournisseur)meta.appendChild(el("div",{},"Fournisseur : "+item.fournisseur));
+    if(item.date_achat)meta.appendChild(el("div",{},"Achat : "+new Date(item.date_achat+"T12:00:00").toLocaleDateString("fr-FR")));
+    if(item.notes)meta.appendChild(el("div",{style:{fontStyle:"italic",marginTop:"4px"}},item.notes));
+    card.appendChild(meta);
+  }
   return card;
 }
 
@@ -2507,22 +2703,27 @@ function renderFormStock(){
   }
   wrap.appendChild(textField("Nom de l'article","nom"));
   const catSel=el("select",{});
-  CATEGORIES_STOCK.forEach(c=>{const o=el("option",{value:c},c);if(sf.categorie===c)o.selected=true;catSel.appendChild(o);});
+  CATEGORIES_STOCK.forEach(c=>{const o=el("option",{value:c},CATEGORY_ICONS_STOCK[c]+" "+c);if(sf.categorie===c)o.selected=true;catSel.appendChild(o);});
   catSel.addEventListener("change",e=>{sf.categorie=e.target.value;});
   wrap.appendChild(grp("Catégorie",catSel));
-  wrap.appendChild(textField("Quantité actuelle","quantite","number"));
-  wrap.appendChild(textField("Unité","unite"));
-  wrap.appendChild(textField("Seuil d'alerte (recharger en dessous de)","seuil_alerte","number"));
+  wrap.appendChild(textField("Référence (facultatif)","reference"));
+  wrap.appendChild(textField("Prix d'achat unitaire (€)","prix_achat","number"));
+  wrap.appendChild(textField("Quantité en stock","quantite","number"));
+  wrap.appendChild(textField("Quantité minimale (seuil d'alerte)","seuil_alerte","number"));
+  wrap.appendChild(textField("Emplacement (facultatif)","emplacement"));
+  wrap.appendChild(textField("Fournisseur (facultatif)","fournisseur"));
+  wrap.appendChild(textField("Date d'achat (facultatif)","date_achat","date"));
   const notesArea=el("textarea",{style:{minHeight:"50px",resize:"vertical"}});
   notesArea.textContent=sf.notes||"";
   notesArea.addEventListener("input",e=>{sf.notes=e.target.value;});
-  wrap.appendChild(grp("Notes (fournisseur, référence...)",notesArea));
+  wrap.appendChild(grp("Commentaires / Notes",notesArea));
 
   const bSave=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},isEdit?"Enregistrer":"+ Ajouter l'article");
   bSave.addEventListener("click",()=>{
     if(!sf.nom||!sf.nom.trim())return;
     const stock=getStock();
-    const updated=isEdit?stock.map(s=>s.id===sf.id?{...s,...sf}:s):[...stock,sf];
+    const patch={...sf,updated_at:new Date().toISOString()};
+    const updated=isEdit?stock.map(s=>s.id===sf.id?{...s,...patch}:s):[...stock,patch];
     saveStock(updated);
     set({modal:null,stockForm:null});
   });
