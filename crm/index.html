@@ -260,7 +260,7 @@ let FICHES={
   parquet:{titre:"Rénovation de parquet",materiel:["Ponceuse à bande et ponceuse triangulaire pour les coins","Aspirateur haute performance","Rouleaux et pinceaux spéciaux pour parquet","Papier abrasif (grains 40, 60, 80 et 120)","Produit nettoyant pour bois","Mastic à bois (Sintobois) pour le rebouchage","Finition : vitrificateur polyuréthane ou cire naturelle","EPI : masque, lunettes de protection et genouillères"],etapes:[{titre:"1. Préparation",desc:"Déplacer tous les meubles de la pièce."},{titre:"2. Rebouchage",desc:"Reboucher les petits trous et fissures avec le mastic à bois (Sintobois)."},{titre:"3. Premier ponçage",desc:"Utiliser un abrasif à grain 40."},{titre:"4. Ponçage moyen",desc:"Passer aux grains 60 et 80."},{titre:"5. Ponçage fin",desc:"Terminer avec un abrasif à grain 120."},{titre:"6. Nettoyage minutieux",desc:"Aspirer et nettoyer pour éliminer toute la poussière."},{titre:"7. Finition",desc:"Appliquer une vitrification avec un vernis polyuréthane ou faire un cirage avec de la cire naturelle."}]}
 };
 
-const ROLES={directeur:{label:"Directeur",color:"#c9a84c",acces:["devis","planning","clients","employes","parametres","fiches"]},associe:{label:"Associé",color:"#3B8BD4",acces:["devis","planning","clients","fiches"]},chef_equipe:{label:"Chef d'équipe",color:"#8B3A8B",acces:["planning","fiches"]},secretaire:{label:"Secrétaire",color:"#EF9F27",acces:["devis","clients","fiches"]},employe:{label:"Employé",color:"#3B6D11",acces:["planning","fiches"]}};
+const ROLES={directeur:{label:"Directeur",color:"#c9a84c",acces:["devis","planning","clients","stock","employes","parametres","fiches"]},associe:{label:"Associé",color:"#3B8BD4",acces:["devis","planning","clients","stock","fiches"]},chef_equipe:{label:"Chef d'équipe",color:"#8B3A8B",acces:["planning","fiches"]},secretaire:{label:"Secrétaire",color:"#EF9F27",acces:["devis","clients","stock","fiches"]},employe:{label:"Employé",color:"#3B6D11",acces:["planning","fiches"]}};
 const COEFF={bon:1,moyen:1.2,mauvais:1.5};
 const STATUTS=["Nouveau","Contacté","Devis envoyé","Gagné","Perdu"];
 const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagné:"#3B6D11",Perdu:"#A32D2D"};
@@ -294,7 +294,7 @@ function genNumeroDevis(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,stockForm:null,search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",prix_m2:30,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -429,6 +429,48 @@ async function saveTarifsToSupabase(){
   }catch(e){console.error("saveTarifsToSupabase:",e);saveTarifs();}
 }
 
+// ── STOCK ──────────────────────────────────────
+function getStock(){
+  try{return JSON.parse(localStorage.getItem("msn_stock")||"[]");}catch{return[];}
+}
+function saveStock(stock){
+  localStorage.setItem("msn_stock",JSON.stringify(stock));
+  saveStockToSupabase();
+}
+async function loadStockFromSupabase(){
+  try{
+    const rows=await api("parametres?cle=eq.stock");
+    if(rows&&Array.isArray(rows)&&rows.length&&rows[0].valeur){
+      localStorage.setItem("msn_stock",JSON.stringify(rows[0].valeur));
+      render();
+    }
+  }catch{}
+}
+async function saveStockToSupabase(){
+  try{
+    const stock=getStock();
+    const authToken=await getAppAuthToken()||SUPA_KEY;
+    await fetch(`${SUPA_URL}/rest/v1/parametres`,{
+      method:"POST",
+      headers:{apikey:SUPA_KEY,Authorization:`Bearer ${authToken}`,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates"},
+      body:JSON.stringify({cle:"stock",valeur:stock,updated_at:new Date().toISOString()})
+    });
+  }catch(e){console.error("saveStockToSupabase:",e);}
+}
+function addMouvementStock(item,delta,motif){
+  const stock=getStock();
+  const auteur=S.session?.nom||S.session?.email||"—";
+  const now=new Date().toISOString();
+  const updated=stock.map(s=>{
+    if(s.id!==item.id)return s;
+    const quantite=Math.max(0,(s.quantite||0)+delta);
+    const historique=[{date:now,delta,quantite_apres:quantite,auteur,motif:motif||""},...(s.historique||[])];
+    return {...s,quantite,historique};
+  });
+  saveStock(updated);
+  render();
+}
+
 // ── COMPTES SUPABASE SYNC ──────────────────────────────────────
 async function loadComptesFromSupabase(){
   try{
@@ -468,6 +510,15 @@ async function saveComptesToSupabase(){
 }
 
 // ── AUTO-REFRESH : polling toutes les 20 secondes + retour d'onglet ──
+let _stockOpenAdjust=null;
+let _stockOpenHistorique=null;
+const CATEGORIES_STOCK=["Abrasifs","Produits chimiques","Outillage","EPI","Autre"];
+function defaultStockItem(){
+  return {id:"stk_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),nom:"",categorie:"Abrasifs",quantite:0,unite:"unités",seuil_alerte:0,notes:"",historique:[]};
+}
+function openStockForm(item){
+  set({modal:"stock_form",stockForm:item?{...item}:defaultStockItem()});
+}
 let _pollTimer=null;
 let _pollCount=0;
 function startPolling(){
@@ -504,6 +555,7 @@ document.addEventListener("visibilitychange",()=>{
     loadDevisFromSupabase().then(devis=>{if(devis.length){S.devis=devis;render();}});
     loadTarifsFromSupabase();
     loadComptesFromSupabase();
+    loadStockFromSupabase();
   }
 });
 
@@ -1147,6 +1199,7 @@ function renderLogin(){
       clearLoginBlock();
       set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true,loginLoading:false,loginPin:"",loginError:""});
       loadTarifsFromSupabase();
+      loadStockFromSupabase();
       startPolling();
       loadDevisFromSupabase().then(devis=>{
         set({devis:devis.length?devis:DEMO_DEVIS,loading:false});
@@ -1236,7 +1289,7 @@ function renderSetup(){
               setTimeout(()=>{
                 loginPin(compte.email,pin1);
                 set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true});
-              loadTarifsFromSupabase();loadComptesFromSupabase();startPolling();
+              loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();startPolling();
               loadDevisFromSupabase().then(devis=>{set({devis:devis.length?devis:DEMO_DEVIS,loading:false});});
               },1000);
             }catch(e){errDiv.textContent="Erreur: "+e.message;}
@@ -1312,6 +1365,7 @@ function renderCRM(){
     ...(hasAccess("devis")?[["📄","devis","Devis"]]:[]),
     ...(hasAccess("planning")?[["📅","planning","Planning"]]:[]),
     ...(hasAccess("clients")?[["👥","clients","Clients"]]:[]),
+    ...(hasAccess("stock")?[["📦","stock","Stock"]]:[]),
     ...(hasAccess("employes")?[["👤","employes","Équipe"]]:[]),
     ...(hasAccess("fiches")?[["🔧","fiches","Fiches tech."]]:[]),
     ...(hasAccess("parametres")?[["⚙️","parametres","Paramètres"]]:[]),
@@ -1369,7 +1423,7 @@ function renderCRM(){
   sf.appendChild(bo);sb.appendChild(sf);if(!isMobile())app.appendChild(sb);
 
   // ── MAIN AREA ──────────────────────────────────────────
-  const titles={devis:"Devis",planning:"Planning",clients:"Clients",employes:"Équipe",fiches:"Fiches techniques",parametres:"Paramètres"};
+  const titles={devis:"Devis",planning:"Planning",clients:"Clients",stock:"Stock",employes:"Équipe",fiches:"Fiches techniques",parametres:"Paramètres"};
   const main=el("div",{className:isMobile()?"":"crm-main",style:isMobile()?{flex:"1",minHeight:"100vh",overflowX:"hidden"}:{}});
 
   // Desktop top bar
@@ -1420,6 +1474,7 @@ function renderCRM(){
   if(S.onglet==="devis")body.appendChild(renderDevis());
   else if(S.onglet==="planning")body.appendChild(renderPlanning());
   else if(S.onglet==="clients")body.appendChild(renderClients());
+  else if(S.onglet==="stock")body.appendChild(renderStock());
   else if(S.onglet==="employes")body.appendChild(renderEmployes());
   else if(S.onglet==="fiches")body.appendChild(renderFiches());
   else if(S.onglet==="parametres")body.appendChild(renderParametres());
@@ -1626,7 +1681,7 @@ function renderModal(){
     ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
     const sheet=el("div",{className:"mob-sheet"});
     sheet.appendChild(el("div",{className:"mob-sheet-handle"}));
-    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",employe_new:"Nouveau compte",planifier:"Planifier l'intervention"};
+    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte",planifier:"Planifier l'intervention"};
     const hdr=el("div",{className:"mob-sheet-header"});
     hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
     const bx=el("button",{style:{background:"rgba(0,0,0,0.06)",border:"none",color:"#9a9488",fontSize:"22px",lineHeight:"1",padding:"4px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
@@ -1637,6 +1692,7 @@ function renderModal(){
     else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
     else if(S.modal==="mission"&&S.selected)body.appendChild(renderFicheMission(S.selected));
     else if(S.modal==="rapport"&&S.rapportForm)body.appendChild(renderFormRapport());
+    else if(S.modal==="stock_form"&&S.stockForm)body.appendChild(renderFormStock());
     else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
     else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
     sheet.appendChild(body);ov.appendChild(sheet);return ov;
@@ -1646,7 +1702,7 @@ function renderModal(){
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
   const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px",marginBottom:"1.5rem"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
-  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
+  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
   const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
@@ -1654,6 +1710,7 @@ function renderModal(){
   else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
   else if(S.modal==="mission"&&S.selected)body.appendChild(renderFicheMission(S.selected));
   else if(S.modal==="rapport"&&S.rapportForm)body.appendChild(renderFormRapport());
+  else if(S.modal==="stock_form"&&S.stockForm)body.appendChild(renderFormStock());
   else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
   else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
   box.appendChild(body);ov.appendChild(box);return ov;
@@ -2344,6 +2401,138 @@ function renderClients(){
   return wrap2;
 }
 
+function renderStock(){
+  const stock=getStock();
+  const wrap=el("div",{});
+  const header=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.2rem",flexWrap:"wrap",gap:"0.8rem"}});
+  header.appendChild(el("div",{},[
+    el("div",{style:{fontSize:"11px",color:"#a09890",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"3px"}},"Inventaire"),
+    el("div",{style:{fontSize:"20px",color:"#1a1611",fontFamily:"'Cormorant Garamond',serif",fontWeight:"400"}},`${stock.length} article${stock.length!==1?"s":""}`),
+  ]));
+  const bAdd=el("button",{style:BP},"+ Nouvel article");
+  bAdd.addEventListener("click",()=>openStockForm(null));
+  header.appendChild(bAdd);
+  wrap.appendChild(header);
+
+  const alerte=stock.filter(s=>(s.quantite||0)<=(s.seuil_alerte||0));
+  if(alerte.length){
+    const banner=el("div",{style:{background:"rgba(163,45,45,0.08)",border:"1px solid rgba(163,45,45,0.3)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1.2rem",fontSize:"13px",color:"#A32D2D",fontWeight:"500"}});
+    banner.textContent="⚠️ "+alerte.length+" article"+(alerte.length>1?"s":"")+" à recharger : "+alerte.map(a=>a.nom).join(", ");
+    wrap.appendChild(banner);
+  }
+
+  if(!stock.length){
+    wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucun article — ajoutez le premier avec le bouton ci-dessus."));
+  }
+
+  CATEGORIES_STOCK.forEach(cat=>{
+    const items=stock.filter(s=>(s.categorie||"Autre")===cat);
+    if(!items.length)return;
+    wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"1rem"}},cat));
+    items.forEach(item=>wrap.appendChild(renderStockRow(item)));
+  });
+  return wrap;
+}
+
+function renderStockRow(item){
+  const bas=(item.quantite||0)<=(item.seuil_alerte||0);
+  const card=el("div",{style:{background:"#ffffff",border:"1px solid "+(bas?"rgba(163,45,45,0.3)":"#e8e4dc"),borderRadius:"8px",padding:"0.9rem 1.1rem",marginBottom:"8px"}});
+  const top=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"8px"}});
+  top.appendChild(el("div",{},[
+    el("div",{style:{fontSize:"14px",fontWeight:"500",color:"#2a2520"}},item.nom),
+    el("div",{style:{fontSize:"11px",color:"#8a8278",marginTop:"2px"}},"Seuil d'alerte : "+(item.seuil_alerte||0)+" "+(item.unite||""))
+  ]));
+  const qtyBox=el("div",{style:{display:"flex",alignItems:"center",gap:"8px"}});
+  const bMinus=el("button",{type:"button",style:{...BS,padding:"4px 10px",fontSize:"14px",fontWeight:"700"}},"−");
+  const qtyLabel=el("span",{style:{fontSize:"15px",fontWeight:"600",color:bas?"#A32D2D":"#1a1611",minWidth:"70px",textAlign:"center"}},(item.quantite||0)+" "+(item.unite||""));
+  const bPlus=el("button",{type:"button",style:{...BS,padding:"4px 10px",fontSize:"14px",fontWeight:"700"}},"+");
+  bMinus.addEventListener("click",()=>{_stockOpenAdjust=_stockOpenAdjust===item.id+"-"?null:item.id+"-";render();});
+  bPlus.addEventListener("click",()=>{_stockOpenAdjust=_stockOpenAdjust===item.id+"+"?null:item.id+"+";render();});
+  qtyBox.appendChild(bMinus);qtyBox.appendChild(qtyLabel);qtyBox.appendChild(bPlus);
+  top.appendChild(qtyBox);
+  card.appendChild(top);
+
+  if(_stockOpenAdjust===item.id+"-"||_stockOpenAdjust===item.id+"+"){
+    const sign=_stockOpenAdjust.endsWith("+")?1:-1;
+    const panel=el("div",{style:{display:"flex",gap:"8px",alignItems:"center",flexWrap:"wrap",marginTop:"10px",paddingTop:"10px",borderTop:"1px dashed #e8e4dc"}});
+    const nInp=el("input",{type:"number",min:"0",value:"1",style:{width:"70px"}});
+    const motifInp=el("input",{type:"text",placeholder:"Motif (optionnel)",style:{flex:"1",minWidth:"140px"}});
+    const bValider=el("button",{type:"button",style:{...BP,padding:"6px 14px",fontSize:"12px"}},sign>0?"+ Ajouter":"− Retirer");
+    bValider.addEventListener("click",()=>{
+      const n=parseFloat(nInp.value)||0;
+      if(n>0)addMouvementStock(item,sign*n,motifInp.value);
+      _stockOpenAdjust=null;
+    });
+    panel.appendChild(nInp);panel.appendChild(motifInp);panel.appendChild(bValider);
+    card.appendChild(panel);
+  }
+
+  const actions=el("div",{style:{display:"flex",gap:"8px",marginTop:"10px",flexWrap:"wrap"}});
+  const bEdit=el("button",{style:{...BS,fontSize:"11px",padding:"4px 10px"}},"Modifier");
+  bEdit.addEventListener("click",()=>openStockForm(item));
+  const bHist=el("button",{style:{...BS,fontSize:"11px",padding:"4px 10px"}},(_stockOpenHistorique===item.id?"▲ ":"▼ ")+"Historique ("+(item.historique?.length||0)+")");
+  bHist.addEventListener("click",()=>{_stockOpenHistorique=_stockOpenHistorique===item.id?null:item.id;render();});
+  const bDel=el("button",{style:{...BS,fontSize:"11px",padding:"4px 10px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
+  bDel.addEventListener("click",()=>{if(confirm("Supprimer l'article \""+item.nom+"\" ?")){saveStock(getStock().filter(s=>s.id!==item.id));render();}});
+  actions.appendChild(bEdit);actions.appendChild(bHist);actions.appendChild(bDel);
+  card.appendChild(actions);
+
+  if(_stockOpenHistorique===item.id){
+    const hist=item.historique||[];
+    const histBox=el("div",{style:{marginTop:"10px",paddingTop:"10px",borderTop:"1px dashed #e8e4dc",fontSize:"12px",color:"#5a5450"}});
+    if(!hist.length){
+      histBox.appendChild(el("div",{style:{color:"#9a9488"}},"Aucun mouvement enregistré."));
+    }else{
+      hist.slice(0,20).forEach(h=>{
+        const dh=new Date(h.date).toLocaleString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+        histBox.appendChild(el("div",{style:{padding:"3px 0"}},
+          (h.delta>0?"+":"")+h.delta+" "+(item.unite||"")+" — "+dh+" — "+h.auteur+(h.motif?" — "+h.motif:"")+" (→ "+h.quantite_apres+")"
+        ));
+      });
+    }
+    card.appendChild(histBox);
+  }
+
+  return card;
+}
+
+function renderFormStock(){
+  const sf=S.stockForm;
+  const isEdit=getStock().some(s=>s.id===sf.id);
+  const wrap=el("div",{});
+  function textField(label,key,type){
+    const i=el("input",{type:type||"text",value:sf[key]??""});
+    i.addEventListener("input",e=>{sf[key]=type==="number"?(parseFloat(e.target.value)||0):e.target.value;});
+    return grp(label,i);
+  }
+  wrap.appendChild(textField("Nom de l'article","nom"));
+  const catSel=el("select",{});
+  CATEGORIES_STOCK.forEach(c=>{const o=el("option",{value:c},c);if(sf.categorie===c)o.selected=true;catSel.appendChild(o);});
+  catSel.addEventListener("change",e=>{sf.categorie=e.target.value;});
+  wrap.appendChild(grp("Catégorie",catSel));
+  wrap.appendChild(textField("Quantité actuelle","quantite","number"));
+  wrap.appendChild(textField("Unité","unite"));
+  wrap.appendChild(textField("Seuil d'alerte (recharger en dessous de)","seuil_alerte","number"));
+  const notesArea=el("textarea",{style:{minHeight:"50px",resize:"vertical"}});
+  notesArea.textContent=sf.notes||"";
+  notesArea.addEventListener("input",e=>{sf.notes=e.target.value;});
+  wrap.appendChild(grp("Notes (fournisseur, référence...)",notesArea));
+
+  const bSave=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},isEdit?"Enregistrer":"+ Ajouter l'article");
+  bSave.addEventListener("click",()=>{
+    if(!sf.nom||!sf.nom.trim())return;
+    const stock=getStock();
+    const updated=isEdit?stock.map(s=>s.id===sf.id?{...s,...sf}:s):[...stock,sf];
+    saveStock(updated);
+    set({modal:null,stockForm:null});
+  });
+  wrap.appendChild(bSave);
+  const bc=el("button",{className:"mob-btn-outline"},"Annuler");
+  bc.addEventListener("click",()=>set({modal:null,stockForm:null}));
+  wrap.appendChild(bc);
+  return wrap;
+}
+
 function renderEmployes(){
   const wrap=el("div",{});
   
@@ -2481,7 +2670,7 @@ function renderEmployes(){
     top.appendChild(el("div",{style:{width:"8px",height:"8px",borderRadius:"50%",background:r.color}}));
     top.appendChild(el("div",{style:{color:"#2a2520",fontWeight:"500",fontSize:"13px"}},r.label));
     card.appendChild(top);
-    r.acces.forEach(a=>card.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278",padding:"1px 0"}},"✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a])));
+    r.acces.forEach(a=>card.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278",padding:"1px 0"}},"✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",stock:"Stock",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a])));
     rolesGrid.appendChild(card);
   });
   legend.appendChild(rolesGrid);
@@ -2516,7 +2705,7 @@ function renderFormEmploye(){
     accDiv.innerHTML="";
     ROLES[roleVal||"employe"].acces.forEach(a=>{
       const d=document.createElement("div");
-      d.textContent="✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a];
+      d.textContent="✓ "+{devis:"Devis",planning:"Planning",clients:"Clients",stock:"Stock",employes:"Gestion équipe",parametres:"Paramètres",fiches:"Fiches techniques"}[a];
       accDiv.appendChild(d);
     });
   }
@@ -2763,7 +2952,7 @@ function render(){
   const session=getSession();
   if(session){
     S={...S,page:"crm",session,role:session.role,devis:[],loading:true};
-    loadTarifsFromSupabase();loadComptesFromSupabase();startPolling();
+    loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();startPolling();
     loadDevisFromSupabase().then(devis=>{S.devis=devis.length?devis:DEMO_DEVIS;S.loading=false;render();});
   }else{
     // Vérifier si le directeur n'a pas encore de PIN
