@@ -709,16 +709,20 @@ const SIGNATURE_B64="iVBORw0KGgoAAAANSUhEUgAAAeAAAABRCAYAAAAKNXXxAABSPElEQVR42u3
 function buildDescription(dv){
   const lines=[];
   const g=dv.grains&&dv.grains.length?[...dv.grains].sort((a,b)=>a-b):[];
-  const coarse=g.filter(x=>x<=100);
-  const fine=g.filter(x=>x>=200);
+  if(dv.nettoyage_joints)lines.push("Nettoyage des joints");
   if(dv.preparation)lines.push("Décapage / préparation du support");
   if(dv.rebouchage_cavites)lines.push("Rebouchage des cavités");
   if(dv.rebouchage_joints)lines.push("Rebouchage des joints");
-  if(dv.nettoyage_joints)lines.push("Nettoyage des joints");
   if(dv.laitance)lines.push("Élimination de la laitance");
-  if(coarse.length)lines.push("Ponçage : grain "+coarse.join(", grain "));
-  if(dv.mineralisation)lines.push("Minéralisation (durcisseur pénétrant solidifiant)");
-  if(fine.length)lines.push("Ponçage : grain "+fine.join(", grain "));
+  if(dv.type_sol==="parquet"){
+    if(g.length)lines.push("Ponçage : grain "+g.join(", grain "));
+  }else{
+    const coarse=g.filter(x=>x<=100);
+    const fine=g.filter(x=>x>=200);
+    if(coarse.length)lines.push("Ponçage : grain "+coarse.join(", grain "));
+    if(dv.mineralisation)lines.push("Minéralisation (durcisseur pénétrant solidifiant)");
+    if(fine.length)lines.push("Ponçage : grain "+fine.join(", grain "));
+  }
   if(dv.cristallisation)lines.push("Cristallisation");
   if(dv.hydrofuge)lines.push("Traitement hydrofuge");
   if(dv.oleofuge)lines.push("Traitement oléofuge");
