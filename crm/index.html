@@ -713,12 +713,16 @@ function buildDescription(dv){
   const g=dv.grains&&dv.grains.length?[...dv.grains].sort((a,b)=>a-b):[];
   if(dv.type_sol==="parquet"){
     const coarse=g.filter(x=>x<120);
-    const fine=g.filter(x=>x>=120);
+    const g120=g.includes(120);
+    const g150=g.includes(150);
+    const restFine=g.filter(x=>x>150);
     if(coarse.length)lines.push("Ponçage : grain "+coarse.join(", grain "));
     if(dv.nettoyage_joints)lines.push("Nettoyage des joints");
     if(dv.rebouchage_cavites)lines.push("Rebouchage des cavités");
     if(dv.rebouchage_joints)lines.push("Rebouchage des joints");
-    if(fine.length)lines.push("Ponçage : grain "+fine.join(", grain "));
+    if(g120)lines.push("Ponçage : grain 120");
+    if(g150)lines.push("Égrenage : grain 150");
+    if(restFine.length)lines.push("Ponçage : grain "+restFine.join(", grain "));
     if(dv.fond_dur)lines.push("Application fond dur / primaire");
   }else{
     if(dv.nettoyage_joints)lines.push("Nettoyage des joints");
@@ -1864,7 +1868,8 @@ function renderFormDevis(){
           gBtns.appendChild(mBtn);
         }
         const active=(S.form.grains||[]).includes(g);
-        const btn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},`${g}`);
+        const label=(f.type_sol==="parquet"&&g===150)?"Égrenage 150":`${g}`;
+        const btn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},label);
         btn.addEventListener("click",()=>{
           const arr=S.form.grains||[];
           S.form.grains=arr.includes(g)?arr.filter(x=>x!==g):[...arr,g].sort((a,b)=>a-b);
