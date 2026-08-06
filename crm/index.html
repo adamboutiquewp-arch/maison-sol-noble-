@@ -1795,13 +1795,13 @@ function renderFormDevis(){
       return b;
     }
     // 1. Décapage & Rebouchage
-    if(f.type_sol!=="parquet"){
+    {
       const r1=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"10px"}});
-      r1.appendChild(optBtn("🧽 Décapage","preparation"));
+      if(f.type_sol!=="parquet")r1.appendChild(optBtn("🧽 Décapage","preparation"));
       r1.appendChild(optBtn("🔨 Rebouchage cavités","rebouchage_cavites"));
       r1.appendChild(optBtn("🔨 Rebouchage joints","rebouchage_joints"));
       r1.appendChild(optBtn("🧹 Nettoyage des joints","nettoyage_joints"));
-      r1.appendChild(optBtn("🪣 Élimination de la laitance","laitance"));
+      if(f.type_sol!=="parquet")r1.appendChild(optBtn("🪣 Élimination de la laitance","laitance"));
       optWrap.appendChild(r1);
     }
     // 2. Ponçage = sélection des grains
