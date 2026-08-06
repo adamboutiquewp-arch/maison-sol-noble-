@@ -294,7 +294,7 @@ function genNumeroDevis(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",prix_m2:30,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",fond_dur:false,prix_m2:30,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -317,6 +317,7 @@ function mergeDevisLocal(remote){
     grains:lm[d.numero]?.grains||[],
     finition:lm[d.numero]?.finition||d.finition||"brillant",
     traitement:lm[d.numero]?.traitement||d.traitement||"vitrifié",
+    fond_dur:lm[d.numero]?.fond_dur||false,
     rebouchage:lm[d.numero]?.rebouchage||false,
     rebouchage_cavites:lm[d.numero]?.rebouchage_cavites||false,
     rebouchage_joints:lm[d.numero]?.rebouchage_joints||false,
@@ -356,7 +357,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,traitement,rebouchage,rebouchage_cavites,rebouchage_joints,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -710,14 +711,21 @@ const SIGNATURE_B64="iVBORw0KGgoAAAANSUhEUgAAAeAAAABRCAYAAAAKNXXxAABSPElEQVR42u3
 function buildDescription(dv){
   const lines=[];
   const g=dv.grains&&dv.grains.length?[...dv.grains].sort((a,b)=>a-b):[];
-  if(dv.nettoyage_joints)lines.push("Nettoyage des joints");
-  if(dv.preparation)lines.push("Décapage / préparation du support");
-  if(dv.rebouchage_cavites)lines.push("Rebouchage des cavités");
-  if(dv.rebouchage_joints)lines.push("Rebouchage des joints");
-  if(dv.laitance)lines.push("Élimination de la laitance");
   if(dv.type_sol==="parquet"){
-    if(g.length)lines.push("Ponçage : grain "+g.join(", grain "));
+    const coarse=g.filter(x=>x<120);
+    const fine=g.filter(x=>x>=120);
+    if(coarse.length)lines.push("Ponçage : grain "+coarse.join(", grain "));
+    if(dv.nettoyage_joints)lines.push("Nettoyage des joints");
+    if(dv.rebouchage_cavites)lines.push("Rebouchage des cavités");
+    if(dv.rebouchage_joints)lines.push("Rebouchage des joints");
+    if(fine.length)lines.push("Ponçage : grain "+fine.join(", grain "));
+    if(dv.fond_dur)lines.push("Application fond dur / primaire");
   }else{
+    if(dv.nettoyage_joints)lines.push("Nettoyage des joints");
+    if(dv.preparation)lines.push("Décapage / préparation du support");
+    if(dv.rebouchage_cavites)lines.push("Rebouchage des cavités");
+    if(dv.rebouchage_joints)lines.push("Rebouchage des joints");
+    if(dv.laitance)lines.push("Élimination de la laitance");
     const coarse=g.filter(x=>x<=100);
     const fine=g.filter(x=>x>=200);
     if(coarse.length)lines.push("Ponçage : grain "+coarse.join(", grain "));
@@ -762,7 +770,7 @@ function ouvrirApercu(dv){
   const prixStr=dv.prix_m2?dv.prix_m2+" €/m²":"—";
   const dureeStr=dv.duree_jours?dv.duree_jours+" jour"+(dv.duree_jours>1?"s":""):"";
   const dureeBlock=dureeStr?"<div style=\"font-size:9px;color:#7a5a10;margin-top:2px;font-weight:500;\">Durée d'intervention estimée : "+dureeStr+"</div>":"";
-  const traitementBlock=dv.type_sol==="parquet"?"<div style=\"font-size:9px;color:#7a5a10;margin-top:2px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
+  const traitementBlock=dv.type_sol==="parquet"?"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
   const html="<!DOCTYPE html>"
     +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
     +"<title>Devis "+num+" — "+(dv.client_nom||"")+"</title>"
@@ -794,7 +802,7 @@ function ouvrirApercu(dv){
     +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">PRIX/M²</th>"
     +"<th style=\"padding:8px 10px;text-align:right;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">TOTAL HT</th>"
     +"</tr></thead><tbody><tr>"
-    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:8px;\">"+(dv.travaux||"—")+"</div>"+descHTML+"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Finition : "+finLabel+"</div>"+traitementBlock+dureeBlock+notesBlock+"</td>"
+    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:8px;\">"+(dv.travaux||"—")+"</div>"+descHTML+traitementBlock+"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Finition : "+finLabel+"</div>"+dureeBlock+notesBlock+"</td>"
     +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+solLabel+"</td>"
     +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+surfaceStr+"</td>"
     +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+prixStr+"</td>"
@@ -1672,7 +1680,7 @@ function renderDevis(){
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||"brillant",traitement:d.traitement||"vitrifié",prix_m2:d.prix_m2||30,duree_jours:d.duree_jours||1,grains:d.grains||[],rebouchage:d.rebouchage||false,rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,nettoyage_joints:d.nettoyage_joints||false,laitance:d.laitance||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||"brillant",traitement:d.traitement||"vitrifié",fond_dur:d.fond_dur||false,prix_m2:d.prix_m2||30,duree_jours:d.duree_jours||1,grains:d.grains||[],rebouchage:d.rebouchage||false,rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,nettoyage_joints:d.nettoyage_joints||false,laitance:d.laitance||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bap=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#7a5a10",borderColor:"#c9a84c44"}},"📄 Aperçu");bap.addEventListener("click",()=>ouvrirApercu(d));acts.appendChild(bap);
 
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
@@ -1869,6 +1877,12 @@ function renderFormDevis(){
       pWrap.appendChild(prev);
       optWrap.appendChild(pWrap);
     }
+    // 2.5 Fond dur / primaire (parquet uniquement, après le ponçage)
+    if(f.type_sol==="parquet"){
+      const r25=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"10px"}});
+      r25.appendChild(optBtn("🪵 Fond dur / Primaire","fond_dur"));
+      optWrap.appendChild(r25);
+    }
     // 3. Cristallisation, Hydrofuge, Oléofuge
     {
       const r3=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
@@ -1973,7 +1987,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Marbre",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",prix_m2:0,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Marbre",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",fond_dur:false,prix_m2:0,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false};
     set({modal:null,selected:null});
   });
   return form;
@@ -2409,6 +2423,7 @@ function renderClients(){
           description:leadDevis?.description||"",
           finition:"brillant",
           traitement:"vitrifié",
+          fond_dur:false,
           duree_jours:1,
           grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,
           escalier:false,nb_marches:"",prix_marche:"",
