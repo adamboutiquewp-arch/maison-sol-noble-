@@ -294,6 +294,20 @@ function genNumeroDevis(){
   return prefix+String(next).padStart(4,"0");
 }
 
+// ── NUMÉROTATION SÉQUENTIELLE FACTURES : FAC-YYYY-NNNN (partagée acompte + solde) ──
+function genNumeroFacture(){
+  const year=new Date().getFullYear();
+  const prefix=`FAC-${year}-`;
+  const nums=[];
+  S.devis.forEach(d=>{
+    [d.facture_acompte_numero,d.facture_solde_numero].forEach(n=>{
+      if(n&&n.startsWith(prefix))nums.push(parseInt(n.slice(prefix.length))||0);
+    });
+  });
+  const next=(nums.length?Math.max(...nums):0)+1;
+  return prefix+String(next).padStart(4,"0");
+}
+
 let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",fond_dur:false,prix_m2:30,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
@@ -337,7 +351,12 @@ function mergeDevisLocal(remote){
     tva_taux:lm[d.numero]?.tva_taux||20,
     cerfa:lm[d.numero]?.cerfa||false,
     bon_pour_accord:lm[d.numero]?.bon_pour_accord||false,
-    acompte_recu:lm[d.numero]?.acompte_recu||false
+    acompte_recu:lm[d.numero]?.acompte_recu||false,
+    facture_acompte_numero:lm[d.numero]?.facture_acompte_numero||null,
+    facture_acompte_date:lm[d.numero]?.facture_acompte_date||null,
+    facture_solde_numero:lm[d.numero]?.facture_solde_numero||null,
+    facture_solde_date:lm[d.numero]?.facture_solde_date||null,
+    rapport_data:lm[d.numero]?.rapport_data||null
   }));
   // Devis créés localement mais pas encore sauvegardés en base (_pendingSync:true uniquement)
   // Les items sans flag ou avec flag=false sont considérés comme supprimés côté serveur → ignorés
@@ -358,7 +377,7 @@ async function loadDevisFromSupabase(){
 
 // Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
 function toSupabase(obj){
-  const {grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,...rest}=obj;
   return rest;
 }
 
@@ -843,6 +862,107 @@ function ouvrirApercu(dv){
   if(w){w.document.write(html);w.document.close();}
 }
 
+// ── FACTURES (acompte / solde fin de chantier) générées depuis un devis ──
+function genererEtOuvrirFacture(dv,type){
+  const isAcompte=type==="acompte";
+  const numField=isAcompte?"facture_acompte_numero":"facture_solde_numero";
+  const dateField=isAcompte?"facture_acompte_date":"facture_solde_date";
+  if(!dv[numField]){
+    const patch={[numField]:genNumeroFacture(),[dateField]:new Date().toISOString()};
+    S.devis=S.devis.map(x=>x.numero===dv.numero?{...x,...patch}:x);
+    if(S.selected&&S.selected.numero===dv.numero)S.selected={...S.selected,...patch};
+    updateDevisSupabase(dv.numero,patch);
+    dv={...dv,...patch};
+    render();
+  }
+  ouvrirFacture(dv,type);
+}
+
+function ouvrirFacture(dv,type){
+  const isAcompte=type==="acompte";
+  const facNum=(isAcompte?dv.facture_acompte_numero:dv.facture_solde_numero)||"—";
+  const facDate=new Date((isAcompte?dv.facture_acompte_date:dv.facture_solde_date)||Date.now()).toLocaleDateString("fr-FR");
+  const devisNum=dv.numero||"—";
+  const devisDate=new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR");
+  const tvaPct=dv.tva_taux||20;
+  const htTotal=dv.montant_ht||0;
+  const tvaTotal=+(htTotal*(tvaPct/100)).toFixed(2);
+  const ttcTotal=+(htTotal+tvaTotal).toFixed(2);
+  function fTel(t){return String(t).replace(/ /g," ");}
+  function fMail(e){return String(e).replace("@","&#64;").replace(/\./g,"&#46;");}
+  function fSite(s){return String(s).replace(/\./g,"&#46;");}
+  const logoHTML=LOGO_B64
+    ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin-bottom:8px;\">"
+    :"<div style=\"font-size:18px;font-weight:700;color:#111111;\">"+INFO.nom+"</div>";
+  const telBlock=dv.client_tel?"<div>"+fTel(dv.client_tel)+"</div>":"";
+  const mailBlock=dv.client_email?"<div>"+fMail(dv.client_email)+"</div>":"";
+  const villeBlock=dv.ville?"<div>"+dv.ville+"</div>":"";
+
+  let titre,ligneLabel,ligneHT,ligneTVA,ligneTTC,totalsRows,noteBlock;
+  if(isAcompte){
+    titre="FACTURE D&rsquo;ACOMPTE";
+    ligneLabel="Acompte de 30 % à la commande — "+(dv.travaux||"Travaux")+"<div style=\"font-size:9px;color:#7a7268;margin-top:4px;\">Réf. devis n&deg; "+devisNum+" du "+devisDate+"</div>";
+    ligneHT=+(htTotal*0.3).toFixed(2);
+    ligneTVA=+(ligneHT*(tvaPct/100)).toFixed(2);
+    ligneTTC=+(ligneHT+ligneTVA).toFixed(2);
+    const soldeRestant=+(ttcTotal-ligneTTC).toFixed(2);
+    totalsRows="<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">Montant HT</td><td style=\"padding:7px 10px;font-size:10.5px;font-weight:600;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+ligneHT.toFixed(2)+" €</td></tr>"
+      +"<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">TVA "+tvaPct+"%</td><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+ligneTVA.toFixed(2)+" €</td></tr>"
+      +"<tr><td style=\"padding:9px 10px;font-size:11px;font-weight:700;color:#fff;background:#111111;\">NET À PAYER TTC</td><td style=\"padding:9px 10px;font-size:14px;font-weight:700;color:#c9a84c;background:#111111;text-align:right;\">"+ligneTTC.toFixed(2)+" €</td></tr>";
+    noteBlock="<div style=\"font-size:9px;color:#333333;margin-top:10px;\">Solde restant dû en fin de chantier : <strong style=\"color:#111111;\">"+soldeRestant.toFixed(2)+" € TTC</strong> (facture de solde à émettre à la réception des travaux).</div>";
+  }else{
+    titre="FACTURE DE SOLDE — FIN DE CHANTIER";
+    ligneLabel="Solde des travaux — "+(dv.travaux||"Travaux")+"<div style=\"font-size:9px;color:#7a7268;margin-top:4px;\">Réf. devis n&deg; "+devisNum+" du "+devisDate+"</div>";
+    const acompteTTC=dv.facture_acompte_numero?+(htTotal*0.3*(1+tvaPct/100)).toFixed(2):0;
+    ligneTTC=+(ttcTotal-acompteTTC).toFixed(2);
+    let rows="<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">Total travaux HT</td><td style=\"padding:7px 10px;font-size:10.5px;font-weight:600;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+htTotal.toFixed(2)+" €</td></tr>"
+      +"<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">TVA "+tvaPct+"%</td><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+tvaTotal.toFixed(2)+" €</td></tr>"
+      +"<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">Total travaux TTC</td><td style=\"padding:7px 10px;font-size:10.5px;font-weight:600;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+ttcTotal.toFixed(2)+" €</td></tr>";
+    if(acompteTTC>0){
+      rows+="<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#a32d2d;border-bottom:1px solid #e0ddd5;\">Déduire : acompte facturé (n&deg; "+dv.facture_acompte_numero+")</td><td style=\"padding:7px 10px;font-size:10.5px;font-weight:600;color:#a32d2d;text-align:right;border-bottom:1px solid #e0ddd5;\">&minus;"+acompteTTC.toFixed(2)+" €</td></tr>";
+    }
+    rows+="<tr><td style=\"padding:9px 10px;font-size:11px;font-weight:700;color:#fff;background:#111111;\">NET À PAYER TTC</td><td style=\"padding:9px 10px;font-size:14px;font-weight:700;color:#c9a84c;background:#111111;text-align:right;\">"+ligneTTC.toFixed(2)+" €</td></tr>";
+    totalsRows=rows;
+    noteBlock="";
+  }
+
+  const html="<!DOCTYPE html>"
+    +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+    +"<title>Facture "+facNum+" — "+(dv.client_nom||"")+"</title>"
+    +"<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap\" rel=\"stylesheet\">"
+    +"<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}table{border-collapse:collapse;width:100%;}.topbar{max-width:794px;margin:20px auto 0;display:flex;gap:10px;justify-content:flex-end;padding:0 4px;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}.topbar{display:none;}}@media screen and (max-width:640px){body{background:#fff!important;font-size:13px;}.topbar{padding:12px 14px;flex-wrap:wrap;gap:8px;max-width:100%;margin:0;justify-content:stretch;}.topbar a,.topbar button{font-size:13px!important;padding:11px 16px!important;flex:1;min-width:130px;text-align:center;justify-content:center;border-radius:8px!important;}.page{padding:18px 14px!important;margin:0!important;box-shadow:none!important;max-width:100%!important;}.header-flex{flex-direction:column!important;gap:16px!important;}.header-flex>div:last-child{text-align:left!important;}.parties-table td{display:block!important;width:100%!important;border-left:1px solid #e8e4dc!important;border-top:none!important;}.parties-table tr{display:block!important;}}</style>"
+    +"</head><body>"
+    +"<div class=\"topbar\">"
+    +"<a href=\"mailto:"+(dv.client_email||"")+"?subject="+encodeURIComponent(titre.replace(/&rsquo;/g,"'")+" N° "+facNum+" — Maison Sol Noble")+"&body="+encodeURIComponent("Bonjour "+(dv.client_nom||"")+",\n\nVeuillez trouver ci-joint votre facture N° "+facNum+" d'un montant de "+ligneTTC.toFixed(2)+" € TTC.\n\nNous restons à votre disposition pour toute question.\n\nCordialement,\nMaison Sol Noble\n"+INFO.tel+" — "+INFO.email)+"\" style=\"display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#111111;color:#ffffff;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;text-decoration:none;border-radius:6px;\">&#9993; Envoyer par email</a>"
+    +"<button onclick=\"window.print()\" style=\"display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#ffffff;color:#111111;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;border:1px solid #cccccc;border-radius:6px;cursor:pointer;\">&#128438; Imprimer / Enregistrer en PDF</button>"
+    +"</div>"
+    +"<div class=\"page\">"
+    +"<div class=\"header-flex\" style=\"display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;\">"
+    +"<div>"+logoHTML+"<div style=\"font-size:9.5px;color:#444444;line-height:1.85;margin-top:6px;\"><div>"+INFO.adresse+"</div><div>"+INFO.cp+" "+INFO.ville+"</div><div>"+fTel(INFO.tel)+"</div><div>"+fMail(INFO.email)+"</div><div>"+fSite(INFO.site)+"</div></div></div>"
+    +"<div style=\"text-align:right;\"><div style=\"font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#111111;letter-spacing:3px;\">"+titre+"</div><div style=\"font-size:10px;color:#444444;margin-top:8px;\">N&deg; <strong>"+facNum+"</strong></div><div style=\"font-size:10px;color:#444444;margin-top:2px;\">Date : "+facDate+"</div></div>"
+    +"</div>"
+    +"<div style=\"height:2px;background:#c9a84c;margin-bottom:20px;\"></div>"
+    +"<table class=\"parties-table\" style=\"margin-bottom:20px;\"><tr>"
+    +"<td style=\"width:50%;padding:12px 14px;background:#faf9f6;border:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:7px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;\">PRESTATAIRE</div><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:4px;\">"+INFO.nom+"</div><div style=\"font-size:10px;color:#333333;line-height:1.7;\"><div>"+INFO.forme+"</div><div>SIRET : "+fTel(INFO.siret)+"</div><div>N&deg; TVA : "+INFO.tva+"</div><div>Capital social : "+INFO.capital+"</div></div></td>"
+    +"<td style=\"width:50%;padding:12px 14px;background:#faf9f6;border:1px solid #e8e4dc;border-left:none;vertical-align:top;\"><div style=\"font-size:7px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;\">CLIENT</div><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:4px;\">"+(dv.client_nom||"—")+"</div><div style=\"font-size:10px;color:#333333;line-height:1.7;\">"+telBlock+mailBlock+villeBlock+"</div></td>"
+    +"</tr></table>"
+    +"<div style=\"overflow-x:auto;\"><table style=\"margin-bottom:20px;border:1px solid #e8e4dc;\"><thead><tr>"
+    +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;\">DÉSIGNATION</th>"
+    +"<th style=\"padding:8px 10px;text-align:right;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">MONTANT HT</th>"
+    +"</tr></thead><tbody><tr>"
+    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:11.5px;color:#111111;vertical-align:top;\">"+ligneLabel+"</td>"
+    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;font-weight:700;color:#111111;text-align:right;vertical-align:top;white-space:nowrap;\">"+(isAcompte?ligneHT.toFixed(2):htTotal.toFixed(2))+" €</td>"
+    +"</tr></tbody></table></div>"
+    +"<div style=\"display:flex;justify-content:flex-end;margin-bottom:10px;\"><table style=\"width:280px;border:1px solid #e0ddd5;\">"+totalsRows+"</table></div>"
+    +(noteBlock?"<div style=\"display:flex;justify-content:flex-end;margin-bottom:18px;\"><div style=\"width:280px;\">"+noteBlock+"</div></div>":"<div style=\"height:8px;\"></div>")
+    +"<div style=\"margin-bottom:18px;\"><div style=\"font-size:9px;color:#333333;\">IBAN : <strong style=\"color:#111111;\">"+INFO.iban+"</strong></div></div>"
+    +"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;\">Facture payable à réception. Conformément à l&rsquo;article L441-10 du Code de commerce, tout retard de paiement entraîne l&rsquo;exigibilité de pénalités de retard au taux de 3 fois le taux d&rsquo;intérêt légal, ainsi qu&rsquo;une indemnité forfaitaire de 40 &euro; pour frais de recouvrement.</div>"
+    +"<div style=\"margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;font-size:8px;color:#333333;text-align:center;line-height:1.9;\">"+INFO.nom+" — "+INFO.forme+" — Capital "+INFO.capital+"<br>SIRET "+fTel(INFO.siret)+" — N&deg; TVA "+INFO.tva+"<br>"+INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+fTel(INFO.tel)+" — "+fMail(INFO.email)+" — "+fSite(INFO.site)+"</div>"
+    +"</div></body></html>";
+  const w=window.open("","_blank");
+  if(w){w.document.write(html);w.document.close();}
+}
+
 function defaultRapportForm(d){
   return {
     _devis:d,
@@ -866,7 +986,9 @@ function defaultRapportForm(d){
   };
 }
 function openRapport(d){
-  set({modal:"rapport",rapportForm:defaultRapportForm(d)});
+  const saved=d.rapport_data;
+  const rf=saved?{...defaultRapportForm(d),...saved,_devis:d}:defaultRapportForm(d);
+  set({modal:"rapport",rapportForm:rf});
 }
 function readImagesAsDataURL(files){
   return Promise.all(Array.from(files).map(file=>new Promise((resolve,reject)=>{
@@ -1012,6 +1134,11 @@ function renderFormRapport(){
 
   const bGen=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},"📷 Générer le certificat");
   bGen.addEventListener("click",()=>{
+    const {_devis,...toSave}=rf;
+    const patch={rapport_data:toSave};
+    S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+    if(S.selected&&S.selected.numero===d.numero)S.selected={...S.selected,...patch};
+    updateDevisSupabase(d.numero,patch);
     ouvrirRapport(rf);
     set({modal:null,selected:null,rapportForm:null});
   });
@@ -2170,7 +2297,13 @@ function renderDetailDevis(d){
   const bap=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#7a5a10",borderColor:"#c9a84c"}},"📄 Aperçu du devis");
   bap.addEventListener("click",()=>ouvrirApercu(d));
   wrap.appendChild(bap);
-  const brap=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#3B6D11",borderColor:"#3B6D1144"}},"📷 Certificat d'intervention");
+  const bFacAcompte=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#8a6a20",borderColor:"#c9a84c88"}},d.facture_acompte_numero?"🧾 Facture d'acompte ✓ ("+d.facture_acompte_numero+")":"🧾 Facture d'acompte");
+  bFacAcompte.addEventListener("click",()=>genererEtOuvrirFacture(d,"acompte"));
+  wrap.appendChild(bFacAcompte);
+  const bFacSolde=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#8a6a20",borderColor:"#c9a84c88"}},d.facture_solde_numero?"🧾 Facture fin de chantier ✓ ("+d.facture_solde_numero+")":"🧾 Facture fin de chantier");
+  bFacSolde.addEventListener("click",()=>genererEtOuvrirFacture(d,"solde"));
+  wrap.appendChild(bFacSolde);
+  const brap=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",color:"#3B6D11",borderColor:"#3B6D1144"}},d.rapport_data?"📷 Certificat d'intervention ✓ (modifier)":"📷 Certificat d'intervention");
   brap.addEventListener("click",()=>openRapport(d));
   wrap.appendChild(brap);
   const bc=el("button",{className:"mob-btn-outline"},"Fermer");
