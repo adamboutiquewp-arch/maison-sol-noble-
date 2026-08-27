@@ -1151,12 +1151,12 @@ function renderFormRapport(){
   wrap.appendChild(signatureField());
 
   const bGen=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},"📷 Générer le certificat");
-  bGen.addEventListener("click",()=>{
+  bGen.addEventListener("click",async()=>{
     const {_devis,...toSave}=rf;
-    const patch={rapport_data:toSave};
+    const patch={rapport_data:toSave,updated_at:new Date().toISOString()};
     S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
     if(S.selected&&S.selected.numero===d.numero)S.selected={...S.selected,...patch};
-    updateDevisSupabase(d.numero,patch);
+    await updateDevisSupabase(d.numero,patch);
     ouvrirRapport(rf);
     set({modal:null,selected:null,rapportForm:null});
   });
