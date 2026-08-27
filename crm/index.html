@@ -964,8 +964,16 @@ function ouvrirFacture(dv,type){
 }
 
 function defaultRapportForm(d){
+  let dateFinDefaut="";
+  if(d.date_intervention&&(d.duree_jours||1)>1){
+    const fin=new Date(d.date_intervention+"T12:00:00");
+    fin.setDate(fin.getDate()+(d.duree_jours-1));
+    dateFinDefaut=fin.toISOString().split("T")[0];
+  }
   return {
     _devis:d,
+    date_debut:d.date_intervention||"",
+    date_fin:dateFinDefaut,
     adresse:d.ville||"",
     materiau:(TARIFS[d.type_sol]&&TARIFS[d.type_sol].label)||"",
     defauts:{rayures:false,taches:false,perte_brillance:false,joints:false,fissures:false},
@@ -1087,6 +1095,16 @@ function renderFormRapport(){
   wrap.appendChild(textField("Adresse du chantier","adresse","12 rue des Fleurs, Toulouse"));
   wrap.appendChild(textField("Type de matériau","materiau","Marbre"));
 
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.3rem"}},"Dates d'intervention"));
+  const dateRow=el("div",{style:{display:"flex",gap:"10px",flexWrap:"wrap",marginBottom:"1rem"}});
+  const dateDebutInp=el("input",{type:"date",style:{fontSize:"16px",flex:"1",minWidth:"140px"},value:rf.date_debut||""});
+  dateDebutInp.addEventListener("input",e=>{rf.date_debut=e.target.value;});
+  dateRow.appendChild(grp("Date de début",dateDebutInp,0));
+  const dateFinInp=el("input",{type:"date",style:{fontSize:"16px",flex:"1",minWidth:"140px"},value:rf.date_fin||""});
+  dateFinInp.addEventListener("input",e=>{rf.date_fin=e.target.value;});
+  dateRow.appendChild(grp("Date de fin (si plusieurs jours)",dateFinInp,0));
+  wrap.appendChild(dateRow);
+
   wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.3rem"}},"État avant intervention"));
   const defRow=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"0.8rem"}});
   [["rayures","Rayures"],["taches","Taches"],["perte_brillance","Perte de brillance"],["joints","Joints encrassés"],["fissures","Fissures"]].forEach(([key,label])=>{
@@ -1169,6 +1187,11 @@ function ouvrirRapport(rf){
   if(rf.nettoyage_profondeur)travaux.push("Nettoyage en profondeur");
   travaux.push(...buildDescription(d));
   const interTxt=formatIntervention(d)||"";
+  function fDateFR(str){return new Date(str+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});}
+  let dateTxt="";
+  if(rf.date_debut&&rf.date_fin&&rf.date_fin!==rf.date_debut)dateTxt="du "+fDateFR(rf.date_debut)+" au "+fDateFR(rf.date_fin);
+  else if(rf.date_debut)dateTxt="le "+fDateFR(rf.date_debut);
+  else if(interTxt)dateTxt=interTxt.replace("📅 Intervention : ","");
   const logoHTML=LOGO_B64
     ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin:0 auto 12px;\">"
     :"<div style=\"font-size:22px;font-weight:700;color:#111111;text-align:center;\">"+INFO.nom+"</div>";
@@ -1192,7 +1215,7 @@ function ouvrirRapport(rf){
     +"<div style=\"font-size:13px;color:#333333;line-height:2;\">"
     +"<div><strong>Client :</strong> "+(d.client_nom||"—")+"</div>"
     +"<div><strong>Adresse du chantier :</strong> "+(rf.adresse||"—")+"</div>"
-    +(interTxt?"<div><strong>Date d'intervention :</strong> "+interTxt.replace("📅 Intervention : ","")+"</div>":"")
+    +(dateTxt?"<div><strong>Date d'intervention :</strong> "+dateTxt+"</div>":"")
     +"<div><strong>Matériau :</strong> "+(rf.materiau||"—")+"</div>"
     +"</div></div>"
     // État avant
@@ -2286,7 +2309,24 @@ function renderDetailDevis(d){
     const di=el("div",{style:{background:"rgba(59,109,17,0.07)",border:"1px solid rgba(59,109,17,0.22)",borderRadius:"8px",padding:"8px 14px",marginBottom:"0.8rem",fontSize:"13px",color:"#3B6D11",fontWeight:"500"}});
     di.textContent=formatIntervention(d);
     wrap.appendChild(di);
-    const bReplan=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",fontSize:"12px"}},"Modifier la date");
+    const dureeRow=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"0.6rem"}});
+    dureeRow.appendChild(el("span",{style:{fontSize:"12px",color:"#3B6D11",fontWeight:"600",whiteSpace:"nowrap"}},"Durée réelle (jours)"));
+    const dureeInp=el("input",{type:"number",min:"1",value:String(d.duree_jours||1),style:{width:"64px",padding:"6px 8px",border:"1px solid #dddad2",borderRadius:"6px",fontSize:"14px"}});
+    dureeRow.appendChild(dureeInp);
+    const bDuree=el("button",{className:"mob-btn-outline",style:{fontSize:"12px",padding:"6px 12px",marginBottom:"0"}},"Mettre à jour");
+    bDuree.addEventListener("click",()=>{
+      const nv=parseInt(dureeInp.value)||1;
+      const patch={duree_jours:nv,updated_at:new Date().toISOString()};
+      S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
+      if(S.selected&&S.selected.numero===d.numero)S.selected={...S.selected,...patch};
+      updateDevisSupabase(d.numero,patch);
+      render();
+    });
+    dureeRow.appendChild(bDuree);
+    wrap.appendChild(dureeRow);
+    const noteDuree=el("div",{style:{fontSize:"11px",color:"#9a9488",marginBottom:"0.6rem"}},"Le client a demandé un ajout de travaux et vous êtes resté plus longtemps ? Ajustez la durée ici — les jours supplémentaires sont automatiquement ajoutés au planning et à la fiche de mission.");
+    wrap.appendChild(noteDuree);
+    const bReplan=el("button",{className:"mob-btn-outline",style:{marginBottom:"0.5rem",fontSize:"12px"}},"Modifier la date de début");
     bReplan.addEventListener("click",()=>set({modal:null,selected:null,onglet:"planning",planifierDevis:d}));
     wrap.appendChild(bReplan);
   }else if(d.statut==="Gagné"){
