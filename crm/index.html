@@ -465,6 +465,20 @@ async function updateDevisSupabase(numero,patch){
   if(current)saveDevisExtraToSupabase(numero,extractDevisExtra(current));
 }
 
+// Pousse vers Supabase, en une fois, tous les devis déjà présents sur CET appareil
+// (utile après une mise à jour : les devis créés avant n'avaient jamais envoyé
+// planning/finitions/certificat/factures à Supabase — un clic les rattrape tous).
+async function forcerSyncDevisLocal(){
+  let local=[];
+  try{local=JSON.parse(localStorage.getItem("msn_devis")||"[]");}catch{}
+  for(const d of local){
+    if(d._pendingSync)continue;
+    await api(`devis?numero=eq.${encodeURIComponent(d.numero)}`,{method:"PATCH",body:JSON.stringify(toSupabase(d))});
+    await saveDevisExtraToSupabase(d.numero,extractDevisExtra(d));
+  }
+  return local.length;
+}
+
 async function deleteDevisSupabase(numero){
   await api(`devis?numero=eq.${encodeURIComponent(numero)}`,{method:"DELETE"});
   await api(`parametres?cle=eq.${encodeURIComponent(devisExtraKey(numero))}`,{method:"DELETE"});
@@ -1834,6 +1848,16 @@ function renderDevis(){
     const bar=el("div",{style:{display:"flex",gap:"0.7rem",marginBottom:"1.4rem",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}});
     const leftActions=el("div",{style:{display:"flex",gap:"0.7rem",alignItems:"center"}});
     const bn=el("button",{style:BP},"+ Nouveau devis");bn.addEventListener("click",()=>set({modal:"nouveau"}));leftActions.appendChild(bn);
+    const bForceSync=el("button",{style:{...BS,fontSize:"12px"}},"☁ Forcer la synchronisation");
+    bForceSync.addEventListener("click",async()=>{
+      if(!confirm("Renvoyer tous les devis de CET appareil vers Supabase ?\n\nÀ utiliser une seule fois pour rattraper des devis créés avant la mise à jour de synchronisation. Attention : si un autre appareil a modifié un devis plus récemment que celui-ci, sa modification sera écrasée."))return;
+      bForceSync.textContent="Envoi…";bForceSync.disabled=true;
+      const n=await forcerSyncDevisLocal();
+      bForceSync.textContent="✓ "+n+" devis envoyés !";bForceSync.style.color="#3B6D11";bForceSync.style.borderColor="#3B6D1144";
+      loadDevisFromSupabase().then(devis=>{S.devis=devis;render();});
+      setTimeout(()=>{bForceSync.textContent="☁ Forcer la synchronisation";bForceSync.style.color="";bForceSync.style.borderColor="";bForceSync.disabled=false;},3000);
+    });
+    leftActions.appendChild(bForceSync);
     if(dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length>0){
       const bl=el("button",{style:{...BP,background:"#E24B4A",boxShadow:"0 2px 8px rgba(226,75,74,0.3)"}},`🔔  Leads (${dvs.filter(d=>isLead(d)&&d.statut==="Nouveau").length})`);
       bl.addEventListener("click",()=>set({filterStatut:"Nouveau",search:""}));leftActions.appendChild(bl);
@@ -1868,6 +1892,16 @@ function renderDevis(){
     const bzm=el("button",{style:{width:"100%",fontSize:"14px",fontWeight:"600",border:"1px solid "+(S.sortBy==="zone"?"#c9a84c":"#dddad2"),background:S.sortBy==="zone"?"rgba(201,168,76,0.12)":"#fff",color:S.sortBy==="zone"?"#8a6a20":"#5a5450",borderRadius:"10px",padding:"0.65rem 1rem",marginBottom:"1rem",cursor:"pointer"}},(S.sortBy==="zone"?"📍 Trié par zone (appuyer pour désactiver)":"📍 Grouper par zone géographique"));
     bzm.addEventListener("click",()=>{S.sortBy=S.sortBy==="zone"?"date":"zone";render();});
     wrap.appendChild(bzm);
+    const bForceSyncM=el("button",{style:{width:"100%",fontSize:"13px",fontWeight:"600",border:"1px solid #dddad2",background:"#fff",color:"#5a5450",borderRadius:"10px",padding:"0.6rem 1rem",marginBottom:"1rem",cursor:"pointer"}},"☁ Forcer la synchronisation des devis");
+    bForceSyncM.addEventListener("click",async()=>{
+      if(!confirm("Renvoyer tous les devis de CET appareil vers Supabase ?\n\nÀ utiliser une seule fois pour rattraper des devis créés avant la mise à jour de synchronisation. Attention : si un autre appareil a modifié un devis plus récemment que celui-ci, sa modification sera écrasée."))return;
+      bForceSyncM.textContent="Envoi…";bForceSyncM.disabled=true;
+      const n=await forcerSyncDevisLocal();
+      bForceSyncM.textContent="✓ "+n+" devis envoyés !";bForceSyncM.style.color="#3B6D11";
+      loadDevisFromSupabase().then(devis=>{S.devis=devis;render();});
+      setTimeout(()=>{bForceSyncM.textContent="☁ Forcer la synchronisation des devis";bForceSyncM.style.color="";bForceSyncM.disabled=false;},3000);
+    });
+    wrap.appendChild(bForceSyncM);
   }
   const q=S.search.toLowerCase();
   const filtered=dvs.filter(d=>{const ms=!q||d.client_nom?.toLowerCase().includes(q)||d.ville?.toLowerCase().includes(q)||d.numero?.includes(q);const mf=S.filterStatut==="Tous"||d.statut===S.filterStatut;return ms&&mf;});
@@ -3184,12 +3218,15 @@ function renderFormRemboursement(){
   wrap.appendChild(jBox);
 
   wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Attestation"));
-  const attBox=el("label",{style:{display:"flex",gap:"8px",alignItems:"flex-start",fontSize:"12px",color:"#5a5450",lineHeight:"1.5",marginBottom:"1rem",cursor:"pointer"}});
-  const attCb=el("input",{type:"checkbox",style:{marginTop:"3px",width:"auto"}});
+  const attBox=el("div",{style:{display:"flex",gap:"10px",alignItems:"flex-start",fontSize:"12px",color:rf.attestation?"#3B6D11":"#5a5450",lineHeight:"1.5",marginBottom:"1rem",padding:"12px 14px",background:rf.attestation?"rgba(59,109,17,0.07)":"#faf9f6",border:"1px solid "+(rf.attestation?"rgba(59,109,17,0.3)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer"}});
+  const attCb=el("input",{type:"checkbox",style:{width:"20px",height:"20px",accentColor:"#3B6D11",cursor:"pointer",flexShrink:"0",marginTop:"1px"}});
   attCb.checked=!!rf.attestation;
-  attCb.addEventListener("change",e=>{rf.attestation=e.target.checked;});
+  function toggleAttestation(checked){rf.attestation=checked;render();}
+  attCb.addEventListener("click",e=>e.stopPropagation());
+  attCb.addEventListener("change",e=>{toggleAttestation(e.target.checked);});
+  attBox.addEventListener("click",e=>{if(e.target!==attCb)toggleAttestation(!rf.attestation);});
   attBox.appendChild(attCb);
-  attBox.appendChild(el("span",{},"Je certifie avoir personnellement avancé les dépenses indiquées ci-dessus pour le compte de Maison Sol Noble, dans le cadre de l'activité professionnelle et dans l'intérêt de la société. Je certifie que les dépenses présentées sont réelles et correspondent aux justificatifs annexés."));
+  attBox.appendChild(el("span",{},(rf.attestation?"✓ ":"")+"Je certifie avoir personnellement avancé les dépenses indiquées ci-dessus pour le compte de Maison Sol Noble, dans le cadre de l'activité professionnelle et dans l'intérêt de la société. Je certifie que les dépenses présentées sont réelles et correspondent aux justificatifs annexés."));
   wrap.appendChild(attBox);
 
   const sigBox=el("div",{style:{marginBottom:"1rem"}});
