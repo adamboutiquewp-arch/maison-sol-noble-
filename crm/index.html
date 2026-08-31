@@ -260,7 +260,7 @@ let FICHES={
   parquet:{titre:"Rénovation de parquet",materiel:["Ponceuse à bande et ponceuse triangulaire pour les coins","Aspirateur haute performance","Rouleaux et pinceaux spéciaux pour parquet","Papier abrasif (grains 40, 60, 80 et 120)","Produit nettoyant pour bois","Mastic à bois (Sintobois) pour le rebouchage","Finition : vitrificateur polyuréthane ou cire naturelle","EPI : masque, lunettes de protection et genouillères"],etapes:[{titre:"1. Préparation",desc:"Déplacer tous les meubles de la pièce."},{titre:"2. Rebouchage",desc:"Reboucher les petits trous et fissures avec le mastic à bois (Sintobois)."},{titre:"3. Premier ponçage",desc:"Utiliser un abrasif à grain 40."},{titre:"4. Ponçage moyen",desc:"Passer aux grains 60 et 80."},{titre:"5. Ponçage fin",desc:"Terminer avec un abrasif à grain 120."},{titre:"6. Nettoyage minutieux",desc:"Aspirer et nettoyer pour éliminer toute la poussière."},{titre:"7. Finition",desc:"Appliquer une vitrification avec un vernis polyuréthane ou faire un cirage avec de la cire naturelle."}]}
 };
 
-const ROLES={directeur:{label:"Directeur",color:"#c9a84c",acces:["devis","planning","clients","stock","employes","parametres","fiches"]},associe:{label:"Associé",color:"#3B8BD4",acces:["devis","planning","clients","stock","fiches"]},chef_equipe:{label:"Chef d'équipe",color:"#8B3A8B",acces:["planning","fiches"]},secretaire:{label:"Secrétaire",color:"#EF9F27",acces:["devis","clients","stock","fiches"]},employe:{label:"Employé",color:"#3B6D11",acces:["planning","fiches"]}};
+const ROLES={directeur:{label:"Directeur",color:"#c9a84c",acces:["devis","planning","clients","stock","employes","parametres","fiches","remboursements"]},associe:{label:"Associé",color:"#3B8BD4",acces:["devis","planning","clients","stock","fiches","remboursements"]},chef_equipe:{label:"Chef d'équipe",color:"#8B3A8B",acces:["planning","fiches","remboursements"]},secretaire:{label:"Secrétaire",color:"#EF9F27",acces:["devis","clients","stock","fiches","remboursements"]},employe:{label:"Employé",color:"#3B6D11",acces:["planning","fiches","remboursements"]}};
 const COEFF={bon:1,moyen:1.2,mauvais:1.5};
 const STATUTS=["Nouveau","Contacté","Devis envoyé","Gagné","Perdu"];
 const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagné:"#3B6D11",Perdu:"#A32D2D"};
@@ -308,7 +308,7 @@ function genNumeroFacture(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",fond_dur:false,prix_m2:30,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",fond_dur:false,prix_m2:30,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -493,6 +493,78 @@ function addMouvementStock(item,delta,motif){
   render();
 }
 
+// ── REMBOURSEMENTS DE FRAIS ──────────────────────────────────────
+const TYPES_FRAIS=["Essence","Péage","Nourriture","Hôtel","Autre"];
+function getRemboursements(){
+  try{return JSON.parse(localStorage.getItem("msn_remboursements")||"[]");}catch{return[];}
+}
+function saveRemboursements(list){
+  localStorage.setItem("msn_remboursements",JSON.stringify(list));
+  saveRemboursementsToSupabase(list);
+}
+async function loadRemboursementsFromSupabase(){
+  try{
+    const rows=await api("parametres?cle=eq.remboursements");
+    if(rows&&Array.isArray(rows)&&rows.length&&rows[0].valeur){
+      localStorage.setItem("msn_remboursements",JSON.stringify(rows[0].valeur));
+      render();
+    }
+  }catch{}
+}
+async function saveRemboursementsToSupabase(list){
+  try{
+    const authToken=await getAppAuthToken()||SUPA_KEY;
+    await fetch(`${SUPA_URL}/rest/v1/parametres`,{
+      method:"POST",
+      headers:{apikey:SUPA_KEY,Authorization:`Bearer ${authToken}`,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates"},
+      body:JSON.stringify({cle:"remboursements",valeur:list,updated_at:new Date().toISOString()})
+    });
+  }catch(e){console.error("saveRemboursementsToSupabase:",e);}
+}
+function numeroRemboursement(){
+  const list=getRemboursements();
+  const year=new Date().getFullYear();
+  const prefix=`REMB-${year}-`;
+  const nums=list.map(r=>r.numero&&r.numero.startsWith(prefix)?(parseInt(r.numero.slice(prefix.length))||0):0);
+  const next=(nums.length?Math.max(...nums):0)+1;
+  return prefix+String(next).padStart(4,"0");
+}
+function defaultLigneFrais(){return {date:"",type:"Essence",type_autre:"",objet:"",montant:""};}
+function defaultRemboursementForm(existing){
+  if(existing)return JSON.parse(JSON.stringify(existing));
+  return {
+    numero:null,
+    nom_prenom:S.session?.nom||"",
+    fonction:(ROLES[S.role]&&ROLES[S.role].label)||"",
+    periode_debut:"",
+    periode_fin:"",
+    date_demande:new Date().toISOString().split("T")[0],
+    iban:"",
+    lignes:[defaultLigneFrais()],
+    justificatifs:[],
+    attestation:false,
+    signature_data:null,
+    statut:"En attente",
+    demandeur_email:S.session?.email||"",
+    validateur_nom:"",
+    date_validation:"",
+    created_at:new Date().toISOString()
+  };
+}
+function openRemboursementForm(existing){
+  set({modal:"remboursement_form",remboursementForm:defaultRemboursementForm(existing)});
+}
+function canValiderRemboursement(){return ["directeur","associe","secretaire"].includes(S.role);}
+function totalRemboursement(rf){return (rf.lignes||[]).reduce((s,l)=>s+(parseFloat(l.montant)||0),0);}
+function readFilesAsDataURL(files){
+  return Promise.all(Array.from(files).map(file=>new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve({name:file.name,type:file.type,data:reader.result});
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  })));
+}
+
 // ── COMPTES SUPABASE SYNC ──────────────────────────────────────
 async function loadComptesFromSupabase(){
   try{
@@ -579,6 +651,7 @@ document.addEventListener("visibilitychange",()=>{
     loadTarifsFromSupabase();
     loadComptesFromSupabase();
     loadStockFromSupabase();
+    loadRemboursementsFromSupabase();
   }
 });
 
@@ -1375,6 +1448,7 @@ function renderLogin(){
       set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true,loginLoading:false,loginPin:"",loginError:""});
       loadTarifsFromSupabase();
       loadStockFromSupabase();
+      loadRemboursementsFromSupabase();
       startPolling();
       loadDevisFromSupabase().then(devis=>{
         set({devis:devis.length?devis:DEMO_DEVIS,loading:false});
@@ -1464,7 +1538,7 @@ function renderSetup(){
               setTimeout(()=>{
                 loginPin(compte.email,pin1);
                 set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true});
-              loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();startPolling();
+              loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();loadRemboursementsFromSupabase();startPolling();
               loadDevisFromSupabase().then(devis=>{set({devis:devis.length?devis:DEMO_DEVIS,loading:false});});
               },1000);
             }catch(e){errDiv.textContent="Erreur: "+e.message;}
@@ -1540,6 +1614,7 @@ function renderCRM(){
     ...(hasAccess("devis")?[["📄","devis","Devis"]]:[]),
     ...(hasAccess("planning")?[["📅","planning","Planning"]]:[]),
     ...(hasAccess("clients")?[["👥","clients","Clients"]]:[]),
+    ...(hasAccess("remboursements")?[["💶","remboursements","Remboursements"]]:[]),
     ...(hasAccess("stock")?[["📦","stock","Stock"]]:[]),
     ...(hasAccess("employes")?[["👤","employes","Équipe"]]:[]),
     ...(hasAccess("fiches")?[["🔧","fiches","Fiches tech."]]:[]),
@@ -1598,7 +1673,7 @@ function renderCRM(){
   sf.appendChild(bo);sb.appendChild(sf);if(!isMobile())app.appendChild(sb);
 
   // ── MAIN AREA ──────────────────────────────────────────
-  const titles={devis:"Devis",planning:"Planning",clients:"Clients",stock:"Stock",employes:"Équipe",fiches:"Fiches techniques",parametres:"Paramètres"};
+  const titles={devis:"Devis",planning:"Planning",clients:"Clients",remboursements:"Remboursements",stock:"Stock",employes:"Équipe",fiches:"Fiches techniques",parametres:"Paramètres"};
   const main=el("div",{className:isMobile()?"":"crm-main",style:isMobile()?{flex:"1",minHeight:"100vh",overflowX:"hidden"}:{}});
 
   // Desktop top bar
@@ -1649,6 +1724,7 @@ function renderCRM(){
   if(S.onglet==="devis")body.appendChild(renderDevis());
   else if(S.onglet==="planning")body.appendChild(renderPlanning());
   else if(S.onglet==="clients")body.appendChild(renderClients());
+  else if(S.onglet==="remboursements")body.appendChild(renderRemboursements());
   else if(S.onglet==="stock")body.appendChild(renderStock());
   else if(S.onglet==="employes")body.appendChild(renderEmployes());
   else if(S.onglet==="fiches")body.appendChild(renderFiches());
@@ -1856,11 +1932,11 @@ function renderModal(){
     ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
     const sheet=el("div",{className:"mob-sheet"});
     sheet.appendChild(el("div",{className:"mob-sheet-handle"}));
-    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte",planifier:"Planifier l'intervention"};
+    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte",planifier:"Planifier l'intervention",remboursement_form:S.remboursementForm?.numero?`Remboursement ${S.remboursementForm.numero}`:"Nouvelle demande de remboursement"};
     const hdr=el("div",{className:"mob-sheet-header"});
     hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
     const bx=el("button",{style:{background:"rgba(0,0,0,0.06)",border:"none",color:"#9a9488",fontSize:"22px",lineHeight:"1",padding:"4px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
-    bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null}));hdr.appendChild(bx);
+    bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null,remboursementForm:null}));hdr.appendChild(bx);
     sheet.appendChild(hdr);
     const body=el("div",{className:"mob-sheet-body"});
     if(S.modal==="nouveau"||S.modal==="modifier")body.appendChild(renderFormDevis());
@@ -1870,6 +1946,7 @@ function renderModal(){
     else if(S.modal==="stock_form"&&S.stockForm)body.appendChild(renderFormStock());
     else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
     else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
+    else if(S.modal==="remboursement_form"&&S.remboursementForm)body.appendChild(renderFormRemboursement());
     sheet.appendChild(body);ov.appendChild(sheet);return ov;
   }
   // ── MODAL DESKTOP ──
@@ -1877,9 +1954,9 @@ function renderModal(){
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
   const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px",marginBottom:"1.5rem"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
-  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention"};
+  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention",remboursement_form:S.remboursementForm?.numero?`Remboursement ${S.remboursementForm.numero}`:"Nouvelle demande de remboursement"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
-  const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null}));hdr.appendChild(bx);box.appendChild(hdr);
+  const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null,remboursementForm:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
   if(S.modal==="nouveau"||S.modal==="modifier")body.appendChild(renderFormDevis());
   else if(S.modal==="detail"&&S.selected)body.appendChild(renderDetailDevis(S.selected));
@@ -1888,6 +1965,7 @@ function renderModal(){
   else if(S.modal==="stock_form"&&S.stockForm)body.appendChild(renderFormStock());
   else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
   else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
+  else if(S.modal==="remboursement_form"&&S.remboursementForm)body.appendChild(renderFormRemboursement());
   box.appendChild(body);ov.appendChild(box);return ov;
 }
 
@@ -2959,6 +3037,378 @@ function renderFormStock(){
   return wrap;
 }
 
+function renderFormRemboursement(){
+  const rf=S.remboursementForm;
+  const isEdit=!!rf.numero;
+  const wrap=el("div",{});
+  const info=el("div",{style:{background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.3)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1.2rem",fontSize:"13px",color:"#8a6a20",fontWeight:"500"}});
+  info.textContent="💶 Fiche de remboursement de frais professionnels — Maison Sol Noble";
+  wrap.appendChild(info);
+
+  function textField(label,key,type,placeholder){
+    const i=el("input",{type:type||"text",placeholder:placeholder||"",value:rf[key]||""});
+    i.addEventListener("input",e=>{rf[key]=e.target.value;});
+    return grp(label,i);
+  }
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Personne à rembourser"));
+  wrap.appendChild(textField("Nom et prénom","nom_prenom","text","Jean Dupont"));
+  wrap.appendChild(textField("Fonction / qualité","fonction","text","Chef d'équipe"));
+  const periodeRow=el("div",{style:{display:"flex",gap:"10px",flexWrap:"wrap"}});
+  const pDebut=el("input",{type:"date",style:{flex:"1",minWidth:"140px"},value:rf.periode_debut||""});
+  pDebut.addEventListener("input",e=>{rf.periode_debut=e.target.value;});
+  periodeRow.appendChild(grp("Période du",pDebut,0));
+  const pFin=el("input",{type:"date",style:{flex:"1",minWidth:"140px"},value:rf.periode_fin||""});
+  pFin.addEventListener("input",e=>{rf.periode_fin=e.target.value;});
+  periodeRow.appendChild(grp("Période au",pFin,0));
+  wrap.appendChild(periodeRow);
+  wrap.appendChild(el("div",{style:{height:"1rem"}}));
+  wrap.appendChild(textField("Date de la demande","date_demande","date"));
+  wrap.appendChild(textField("IBAN / moyen de remboursement","iban","text","FR76 ...."));
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px",marginTop:"0.5rem"}},"Détail des frais (5 lignes maximum)"));
+  const lignesBox=el("div",{});
+  rf.lignes.forEach((ligne,idx)=>{
+    const card=el("div",{style:{border:"1px solid #e8e4dc",borderRadius:"8px",padding:"12px",marginBottom:"10px",background:"#faf9f6"}});
+    const rowTop=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}});
+    rowTop.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278",fontWeight:"600"}},"Ligne "+(idx+1)));
+    if(rf.lignes.length>1){
+      const bRm=el("button",{type:"button",style:{background:"none",border:"none",color:"#A32D2D",fontSize:"12px",cursor:"pointer"}},"✕ Retirer");
+      bRm.addEventListener("click",()=>{rf.lignes=rf.lignes.filter((_,i)=>i!==idx);render();});
+      rowTop.appendChild(bRm);
+    }
+    card.appendChild(rowTop);
+    const r1=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"8px"}});
+    const dInp=el("input",{type:"date",style:{flex:"1",minWidth:"130px"},value:ligne.date||""});
+    dInp.addEventListener("input",e=>{ligne.date=e.target.value;});
+    r1.appendChild(grp("Date",dInp,0));
+    const tSel=el("select",{style:{flex:"1",minWidth:"130px"}});
+    TYPES_FRAIS.forEach(t=>{const o=el("option",{value:t},t);if(ligne.type===t)o.selected=true;tSel.appendChild(o);});
+    tSel.addEventListener("change",e=>{ligne.type=e.target.value;render();});
+    r1.appendChild(grp("Type de frais",tSel,0));
+    card.appendChild(r1);
+    if(ligne.type==="Autre"){
+      const autreInp=el("input",{type:"text",placeholder:"Préciser le type de frais",value:ligne.type_autre||""});
+      autreInp.addEventListener("input",e=>{ligne.type_autre=e.target.value;});
+      card.appendChild(grp("Préciser",autreInp));
+    }
+    const objInp=el("input",{type:"text",placeholder:"Objet / chantier / précision",value:ligne.objet||""});
+    objInp.addEventListener("input",e=>{ligne.objet=e.target.value;});
+    card.appendChild(grp("Objet / chantier / précision",objInp));
+    const mInp=el("input",{type:"number",step:"0.01",min:"0",placeholder:"0.00",value:ligne.montant||""});
+    mInp.addEventListener("input",e=>{ligne.montant=e.target.value;render();});
+    card.appendChild(grp("Montant (€)",mInp,0));
+    lignesBox.appendChild(card);
+  });
+  wrap.appendChild(lignesBox);
+  if(rf.lignes.length<5){
+    const bAdd=el("button",{type:"button",style:{...BS,fontSize:"12px",marginBottom:"1rem"}},"+ Ajouter une ligne");
+    bAdd.addEventListener("click",()=>{rf.lignes=[...rf.lignes,defaultLigneFrais()];render();});
+    wrap.appendChild(bAdd);
+  }
+  wrap.appendChild(el("div",{style:{textAlign:"right",fontSize:"15px",fontWeight:"700",color:"#1a1611",marginBottom:"1.2rem"}},"Total à rembourser : "+totalRemboursement(rf).toFixed(2)+" €"));
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Justificatifs (factures, tickets, reçus, photos)"));
+  const jBox=el("div",{style:{marginBottom:"1.2rem"}});
+  const fInput=el("input",{type:"file",accept:"image/*,.pdf,application/pdf",multiple:true,style:{display:"block",marginBottom:"8px",fontSize:"12px"}});
+  fInput.addEventListener("change",async e=>{
+    const files=await readFilesAsDataURL(e.target.files);
+    rf.justificatifs=[...rf.justificatifs,...files];
+    render();
+  });
+  jBox.appendChild(fInput);
+  if(rf.justificatifs.length){
+    const grid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))",gap:"8px"}});
+    rf.justificatifs.forEach((f,idx)=>{
+      const thumb=el("div",{style:{position:"relative"}});
+      if(f.type&&f.type.startsWith("image/")){
+        thumb.appendChild(el("img",{src:f.data,style:{width:"100%",height:"70px",objectFit:"cover",borderRadius:"6px",border:"1px solid #e8e4dc",display:"block"}}));
+      }else{
+        thumb.appendChild(el("div",{style:{width:"100%",height:"70px",borderRadius:"6px",border:"1px solid #e8e4dc",background:"#fff",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:"20px"}},[
+          el("div",{},"📄"),
+          el("div",{style:{fontSize:"8px",color:"#8a8278",padding:"0 4px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"80px"}},f.name||"fichier")
+        ]));
+      }
+      const rm=el("button",{type:"button",style:{position:"absolute",top:"2px",right:"2px",background:"rgba(0,0,0,0.6)",color:"#fff",border:"none",borderRadius:"50%",width:"20px",height:"20px",fontSize:"12px",cursor:"pointer",lineHeight:"1"}},"×");
+      rm.addEventListener("click",()=>{rf.justificatifs=rf.justificatifs.filter((_,i)=>i!==idx);render();});
+      thumb.appendChild(rm);
+      grid.appendChild(thumb);
+    });
+    jBox.appendChild(grid);
+  }
+  wrap.appendChild(jBox);
+
+  wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Attestation"));
+  const attBox=el("label",{style:{display:"flex",gap:"8px",alignItems:"flex-start",fontSize:"12px",color:"#5a5450",lineHeight:"1.5",marginBottom:"1rem",cursor:"pointer"}});
+  const attCb=el("input",{type:"checkbox",style:{marginTop:"3px",width:"auto"}});
+  attCb.checked=!!rf.attestation;
+  attCb.addEventListener("change",e=>{rf.attestation=e.target.checked;});
+  attBox.appendChild(attCb);
+  attBox.appendChild(el("span",{},"Je certifie avoir personnellement avancé les dépenses indiquées ci-dessus pour le compte de Maison Sol Noble, dans le cadre de l'activité professionnelle et dans l'intérêt de la société. Je certifie que les dépenses présentées sont réelles et correspondent aux justificatifs annexés."));
+  wrap.appendChild(attBox);
+
+  const sigBox=el("div",{style:{marginBottom:"1rem"}});
+  sigBox.appendChild(lbl("Signature du demandeur"));
+  const canvas=el("canvas",{width:"320",height:"120",style:{border:"1px solid #dddad2",borderRadius:"8px",background:"#fff",touchAction:"none",cursor:"crosshair",display:"block",maxWidth:"100%"}});
+  const ctx=canvas.getContext("2d");
+  ctx.strokeStyle="#1a1611";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";
+  if(rf.signature_data){
+    const img=new Image();
+    img.onload=()=>ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    img.src=rf.signature_data;
+  }
+  let drawing=false,last=null;
+  function pos(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*(canvas.width/r.width),y:(e.clientY-r.top)*(canvas.height/r.height)};}
+  canvas.addEventListener("pointerdown",e=>{drawing=true;last=pos(e);canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener("pointermove",e=>{if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;});
+  function endStroke(){if(!drawing)return;drawing=false;rf.signature_data=canvas.toDataURL("image/png");}
+  canvas.addEventListener("pointerup",endStroke);
+  canvas.addEventListener("pointerleave",endStroke);
+  sigBox.appendChild(canvas);
+  const bClear=el("button",{type:"button",style:{...BS,marginTop:"6px",fontSize:"12px"}},"Effacer la signature");
+  bClear.addEventListener("click",()=>{ctx.clearRect(0,0,canvas.width,canvas.height);rf.signature_data=null;});
+  sigBox.appendChild(bClear);
+  wrap.appendChild(sigBox);
+
+  const errBox=el("div",{style:{color:"#A32D2D",fontSize:"12px",marginBottom:"0.8rem",display:"none"}});
+  wrap.appendChild(errBox);
+
+  const bGen=el("button",{className:"mob-btn-full",style:{background:"#c9a84c",color:"#fff",marginBottom:"0.5rem"}},isEdit?"🧾 Mettre à jour et régénérer la fiche":"🧾 Générer la fiche de remboursement");
+  bGen.addEventListener("click",async()=>{
+    const total=totalRemboursement(rf);
+    if(!rf.nom_prenom||!rf.nom_prenom.trim()){errBox.textContent="Le nom et prénom sont obligatoires.";errBox.style.display="block";return;}
+    if(!total||total<=0){errBox.textContent="Ajoutez au moins une ligne de frais avec un montant.";errBox.style.display="block";return;}
+    if(!rf.attestation){errBox.textContent="L'attestation doit être cochée pour générer la fiche.";errBox.style.display="block";return;}
+    errBox.style.display="none";
+    const list=getRemboursements();
+    const payload={...rf,numero:rf.numero||numeroRemboursement(),total,updated_at:new Date().toISOString()};
+    const updated=isEdit?list.map(r=>r.numero===payload.numero?payload:r):[payload,...list];
+    saveRemboursements(updated);
+    ouvrirFicheRemboursement(payload);
+    set({modal:null,remboursementForm:null});
+  });
+  wrap.appendChild(bGen);
+  const bc=el("button",{className:"mob-btn-outline"},"Annuler");
+  bc.addEventListener("click",()=>set({modal:null,remboursementForm:null}));
+  wrap.appendChild(bc);
+  wrap.appendChild(el("div",{style:{height:"8px"}}));
+  return wrap;
+}
+
+function ouvrirFicheRemboursement(rf){
+  function fTel(t){return String(t).replace(/ /g," ");}
+  function fMail(e){return String(e).replace("@","&#64;").replace(/\./g,"&#46;");}
+  function fSite(s){return String(s).replace(/\./g,"&#46;");}
+  function fDateFR(str){return str?new Date(str+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"—";}
+  const logoHTML=LOGO_B64
+    ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:90px;display:block;margin:0 auto 12px;\">"
+    :"<div style=\"font-size:22px;font-weight:700;color:#111111;text-align:center;\">"+INFO.nom+"</div>";
+  const total=rf.total||totalRemboursement(rf);
+  const lignesRows=(rf.lignes||[]).map((l,i)=>{
+    const typeTxt=l.type==="Autre"?("Autre — "+(l.type_autre||"")):l.type;
+    return "<tr>"
+      +"<td style=\"padding:8px 10px;border-top:1px solid #e8e4dc;font-size:11px;color:#111111;text-align:center;\">"+(i+1)+"</td>"
+      +"<td style=\"padding:8px 10px;border-top:1px solid #e8e4dc;font-size:11px;color:#111111;white-space:nowrap;\">"+(l.date?fDateFR(l.date):"—")+"</td>"
+      +"<td style=\"padding:8px 10px;border-top:1px solid #e8e4dc;font-size:11px;color:#111111;\">"+typeTxt+"</td>"
+      +"<td style=\"padding:8px 10px;border-top:1px solid #e8e4dc;font-size:11px;color:#111111;\">"+(l.objet||"—")+"</td>"
+      +"<td style=\"padding:8px 10px;border-top:1px solid #e8e4dc;font-size:11px;color:#111111;text-align:right;font-weight:600;white-space:nowrap;\">"+(parseFloat(l.montant)||0).toFixed(2)+" €</td>"
+      +"</tr>";
+  }).join("");
+  const justifImgs=(rf.justificatifs||[]).filter(f=>f.type&&f.type.startsWith("image/"));
+  const justifAutres=(rf.justificatifs||[]).filter(f=>!f.type||!f.type.startsWith("image/"));
+  const justifHTML=(justifImgs.length||justifAutres.length)
+    ?"<div class=\"section\"><h3>Justificatifs joints</h3>"
+      +(justifImgs.length?"<div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;\">"+justifImgs.map(f=>"<img src=\""+f.data+"\" style=\"width:100%;height:140px;object-fit:cover;border-radius:6px;border:1px solid #e8e4dc;\">").join("")+"</div>":"")
+      +(justifAutres.length?"<div>"+justifAutres.map(f=>"<a href=\""+f.data+"\" target=\"_blank\" style=\"display:inline-block;margin:2px 8px 2px 0;font-size:11px;color:#8a6a20;text-decoration:none;border:1px solid #e8e4dc;border-radius:6px;padding:4px 10px;\">📄 "+(f.name||"Document")+"</a>").join("")+"</div>":"")
+      +"</div>"
+    :"<div class=\"section\"><h3>Justificatifs joints</h3><div style=\"font-size:11px;color:#A32D2D;\">Aucun justificatif joint à cette fiche.</div></div>";
+  const signatureImgHTML=rf.signature_data
+    ?"<img src=\""+rf.signature_data+"\" alt=\"Signature\" style=\"height:50px;margin-top:6px;display:block;\">"
+    :"<div style=\"height:50px;\"></div>";
+  const statutColors={"En attente":"#EF9F27",Validé:"#3B8BD4",Remboursé:"#3B6D11",Refusé:"#A32D2D"};
+  const statutColor=statutColors[rf.statut]||"#8a8278";
+  const html="<!DOCTYPE html>"
+    +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+    +"<title>Fiche de remboursement "+(rf.numero||"")+" — "+(rf.nom_prenom||"")+"</title>"
+    +"<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap\" rel=\"stylesheet\">"
+    +"<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}.section{margin-bottom:22px;}.section h3{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:#111111;border-bottom:2px solid #c9a84c;padding-bottom:6px;margin-bottom:10px;}table{width:100%;border-collapse:collapse;}.topbar{max-width:794px;margin:20px auto 0;display:flex;gap:10px;justify-content:flex-end;padding:0 4px;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}.topbar{display:none;}.section{page-break-inside:avoid;}}@media screen and (max-width:640px){.page{padding:20px 16px!important;}.topbar{padding:12px 14px;}}</style>"
+    +"</head><body>"
+    +"<div class=\"topbar\"><button onclick=\"window.print()\" style=\"display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#ffffff;color:#111111;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;border:1px solid #cccccc;border-radius:6px;cursor:pointer;\">&#128438; Imprimer / Enregistrer en PDF</button></div>"
+    +"<div class=\"page\">"
+    +"<div style=\"text-align:center;padding-bottom:20px;margin-bottom:24px;border-bottom:2px solid #c9a84c;\">"
+    +logoHTML
+    +"<div style=\"font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:2px;color:#111111;margin-bottom:4px;\">FICHE DE REMBOURSEMENT DE FRAIS</div>"
+    +"<div style=\"font-size:10px;letter-spacing:2px;color:#8a6a20;text-transform:uppercase;\">N° "+(rf.numero||"—")+"</div>"
+    +"</div>"
+    +"<div class=\"section\"><h3>1. Personne à rembourser</h3>"
+    +"<table><tbody>"
+    +"<tr><td style=\"padding:6px 0;font-size:11px;color:#666;width:220px;\">Nom et prénom</td><td style=\"padding:6px 0;font-size:12px;font-weight:600;\">"+(rf.nom_prenom||"—")+"</td></tr>"
+    +"<tr><td style=\"padding:6px 0;font-size:11px;color:#666;\">Fonction / qualité</td><td style=\"padding:6px 0;font-size:12px;\">"+(rf.fonction||"—")+"</td></tr>"
+    +"<tr><td style=\"padding:6px 0;font-size:11px;color:#666;\">Période concernée</td><td style=\"padding:6px 0;font-size:12px;\">"+(rf.periode_debut?"Du "+fDateFR(rf.periode_debut)+(rf.periode_fin?" au "+fDateFR(rf.periode_fin):""):"—")+"</td></tr>"
+    +"<tr><td style=\"padding:6px 0;font-size:11px;color:#666;\">Date de la demande</td><td style=\"padding:6px 0;font-size:12px;\">"+fDateFR(rf.date_demande)+"</td></tr>"
+    +"<tr><td style=\"padding:6px 0;font-size:11px;color:#666;\">IBAN / moyen de remboursement</td><td style=\"padding:6px 0;font-size:12px;\">"+(rf.iban||"—")+"</td></tr>"
+    +"</tbody></table></div>"
+    +"<div class=\"section\"><h3>2. Détail des frais</h3>"
+    +"<table><thead><tr>"
+    +"<th style=\"padding:8px 10px;text-align:center;font-size:9px;font-weight:700;color:#fff;background:#111111;\">N°</th>"
+    +"<th style=\"padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:#fff;background:#111111;\">DATE</th>"
+    +"<th style=\"padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:#fff;background:#111111;\">TYPE DE FRAIS</th>"
+    +"<th style=\"padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:#fff;background:#111111;\">OBJET / PRÉCISION</th>"
+    +"<th style=\"padding:8px 10px;text-align:right;font-size:9px;font-weight:700;color:#fff;background:#111111;\">MONTANT</th>"
+    +"</tr></thead><tbody>"
+    +lignesRows
+    +"<tr><td colspan=\"4\" style=\"padding:10px;border-top:2px solid #111111;font-size:12px;font-weight:700;text-align:right;\">TOTAL À REMBOURSER</td><td style=\"padding:10px;border-top:2px solid #111111;font-size:13px;font-weight:700;text-align:right;white-space:nowrap;\">"+total.toFixed(2)+" €</td></tr>"
+    +"</tbody></table></div>"
+    +justifHTML
+    +"<div class=\"section\"><h3>3. Attestation</h3>"
+    +"<div style=\"font-size:11px;color:#333333;line-height:1.7;margin-bottom:14px;\">Je soussigné(e) "+(rf.nom_prenom||"—")+", certifie avoir personnellement avancé les dépenses indiquées ci-dessus pour le compte de MAISON SOL NOBLE, dans le cadre de l'activité professionnelle et dans l'intérêt de la société. Je certifie que les dépenses présentées sont réelles et correspondent aux justificatifs annexés."+(rf.attestation?"":" <strong style=\"color:#A32D2D;\">(Non cochée)</strong>")+"</div>"
+    +"<div style=\"min-width:220px;\"><div style=\"font-size:9px;font-weight:700;text-transform:uppercase;color:#222222;margin-bottom:4px;\">Signature du demandeur</div><div style=\"font-size:10px;\">"+(rf.nom_prenom||"—")+" — "+fDateFR(rf.date_demande)+"</div>"+signatureImgHTML+"<div style=\"border-bottom:1px solid #aaaaaa;margin-top:4px;width:200px;\"></div></div>"
+    +"</div>"
+    +"<div class=\"section\"><h3>4. Traitement comptable</h3>"
+    +"<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:8px;\"><span style=\"font-size:11px;color:#666;\">Statut :</span><span style=\"background:"+statutColor+"22;color:"+statutColor+";border:1px solid "+statutColor+"44;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;\">"+(rf.statut||"En attente")+"</span></div>"
+    +(rf.validateur_nom?"<div style=\"font-size:11px;color:#333333;\">Validé par "+rf.validateur_nom+(rf.date_validation?" le "+fDateFR(rf.date_validation):"")+"</div>":"")
+    +"</div>"
+    +"<div style=\"margin-top:24px;padding-top:12px;border-top:1px solid #e8e4dc;font-size:8px;color:#333333;text-align:center;line-height:1.9;\">"+INFO.nom+" — "+INFO.forme+" — Capital "+INFO.capital+"<br>SIRET "+fTel(INFO.siret)+" — N&deg; TVA "+INFO.tva+"<br>"+INFO.adresse+", "+INFO.cp+" "+INFO.ville+" — Tél. "+fTel(INFO.tel)+" — "+fMail(INFO.email)+" — "+fSite(INFO.site)+"</div>"
+    +"</div></body></html>";
+  const w=window.open("","_blank");
+  if(w){w.document.write(html);w.document.close();}
+}
+
+function renderRemboursements(){
+  const wrap=el("div",{});
+  const list=getRemboursements();
+  const totalDemandes=list.length;
+  const enAttente=list.filter(r=>(r.statut||"En attente")==="En attente").length;
+  const totalMontant=list.reduce((s,r)=>s+(r.total||totalRemboursement(r)),0);
+  const totalRembourse=list.filter(r=>r.statut==="Remboursé").reduce((s,r)=>s+(r.total||totalRemboursement(r)),0);
+  const kpiData=[
+    {l:"Demandes",v:totalDemandes,icon:"💶",accent:"#3B8BD4"},
+    {l:"En attente",v:enAttente,alert:enAttente>0,icon:"⏳",accent:enAttente>0?"#EF9F27":"#8a8278"},
+    {l:"Montant total",v:totalMontant.toFixed(2)+" €",icon:"€",accent:"#c9a84c"},
+    {l:"Remboursé",v:totalRembourse.toFixed(2)+" €",icon:"✓",accent:"#3B6D11"},
+  ];
+  const kpis=el("div",{className:isMobile()?"mob-kpi-grid":"",style:isMobile()?{}:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"1rem",marginBottom:"2rem"}});
+  kpiData.forEach((k,i)=>{
+    if(isMobile()){
+      const c=el("div",{className:"mob-kpi"});
+      c.appendChild(el("div",{className:"mob-kpi-label"},k.l));
+      c.appendChild(el("div",{className:"mob-kpi-val"+(i===2?" gold":""),style:{color:k.alert?k.accent:""}},String(k.v)));
+      kpis.appendChild(c);
+    }else{
+      const c=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"10px",padding:"1.2rem 1.4rem",boxShadow:"0 1px 6px rgba(0,0,0,0.06)",borderTop:`3px solid ${k.accent}`}});
+      const rowEl=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.6rem"}});
+      rowEl.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#8a8278",fontWeight:"500"}},k.l));
+      rowEl.appendChild(el("div",{style:{fontSize:"16px",width:"28px",height:"28px",borderRadius:"50%",background:k.accent+"15",display:"flex",alignItems:"center",justifyContent:"center",color:k.accent}},k.icon));
+      c.appendChild(rowEl);
+      c.appendChild(el("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"24px",color:k.alert?k.accent:"#1a1611",fontWeight:"400"}},String(k.v)));
+      kpis.appendChild(c);
+    }
+  });
+  wrap.appendChild(kpis);
+
+  if(isMobile()){
+    const bAdd=el("button",{className:"mob-btn-full",style:{background:"#c9a84c",color:"#fff",marginBottom:"1rem"}},"+ Nouvelle demande");
+    bAdd.addEventListener("click",()=>openRemboursementForm(null));
+    wrap.appendChild(bAdd);
+  }else{
+    const bar=el("div",{style:{display:"flex",justifyContent:"flex-end",marginBottom:"1.4rem"}});
+    const bAdd=el("button",{style:BP},"+ Nouvelle demande de remboursement");
+    bAdd.addEventListener("click",()=>openRemboursementForm(null));
+    bar.appendChild(bAdd);
+    wrap.appendChild(bar);
+  }
+
+  if(!list.length){
+    wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucune demande de remboursement — utilisez le bouton ci-dessus pour créer la première."));
+    return wrap;
+  }
+
+  const sorted=[...list].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  const canValider=canValiderRemboursement();
+
+  function statutBadge(r){
+    const colors={"En attente":"#EF9F27",Validé:"#3B8BD4",Remboursé:"#3B6D11",Refusé:"#A32D2D"};
+    const c=colors[r.statut]||"#8a8278";
+    return el("span",{style:{background:c+"22",color:c,border:`1px solid ${c}44`,padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500",whiteSpace:"nowrap"}},r.statut||"En attente");
+  }
+  function statutSelect(r){
+    const sel=el("select",{style:{fontSize:"11px",padding:"3px 6px",borderRadius:"6px"}});
+    ["En attente","Validé","Remboursé","Refusé"].forEach(s=>{const o=el("option",{value:s},s);if((r.statut||"En attente")===s)o.selected=true;sel.appendChild(o);});
+    sel.addEventListener("change",e=>{
+      const upd=getRemboursements().map(x=>x.numero===r.numero?{...x,statut:e.target.value,validateur_nom:S.session?.nom||"",date_validation:new Date().toISOString().split("T")[0]}:x);
+      saveRemboursements(upd);render();
+    });
+    return sel;
+  }
+  function canDelete(r){return canValider||(r.demandeur_email&&r.demandeur_email===S.session?.email&&(r.statut||"En attente")==="En attente");}
+
+  if(isMobile()){
+    sorted.forEach(r=>{
+      const card=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"14px",padding:"14px 16px",marginBottom:"10px",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}});
+      const row1=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"6px"}});
+      const infoCol=el("div",{});
+      infoCol.appendChild(el("div",{style:{fontWeight:"600",fontSize:"14px",color:"#2a2520"}},r.nom_prenom||"—"));
+      infoCol.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278"}},(r.numero||"—")+" · "+(r.date_demande?new Date(r.date_demande).toLocaleDateString("fr-FR"):"—")));
+      row1.appendChild(infoCol);
+      row1.appendChild(el("div",{style:{fontWeight:"700",fontSize:"15px",color:"#1a1611"}},(r.total||totalRemboursement(r)).toFixed(2)+" €"));
+      card.appendChild(row1);
+      const row2=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}});
+      row2.appendChild(canValider?statutSelect(r):statutBadge(r));
+      card.appendChild(row2);
+      const acts=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
+      const bView=el("button",{style:{...BS,flex:"1",fontSize:"12px"}},"👁 Voir / Imprimer");
+      bView.addEventListener("click",()=>ouvrirFicheRemboursement(r));
+      const bEdit=el("button",{style:{...BS,flex:"1",fontSize:"12px"}},"✏ Modifier");
+      bEdit.addEventListener("click",()=>openRemboursementForm(r));
+      acts.appendChild(bView);acts.appendChild(bEdit);
+      if(canDelete(r)){
+        const bDel=el("button",{style:{...BS,fontSize:"12px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
+        bDel.addEventListener("click",()=>{if(confirm("Supprimer la fiche "+(r.numero||"")+" ?")){saveRemboursements(getRemboursements().filter(x=>x.numero!==r.numero));render();}});
+        acts.appendChild(bDel);
+      }
+      card.appendChild(acts);
+      wrap.appendChild(card);
+    });
+    return wrap;
+  }
+
+  const tableWrap=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"12px",overflow:"hidden",overflowX:"auto",boxShadow:"0 2px 12px rgba(0,0,0,0.07)"}});
+  const t=el("table",{style:{width:"100%"}});
+  const trh=el("tr",{style:{borderBottom:"2px solid #f0ece4",background:"#faf9f6"}});
+  ["N°","Demandeur","Période","Total","Statut","Actions"].forEach(h=>{
+    trh.appendChild(el("th",{style:{padding:"0.75rem 1rem",textAlign:"left",fontSize:"10px",letterSpacing:"0.12em",textTransform:"uppercase",color:"#a09890",fontWeight:"600",whiteSpace:"nowrap"}},h));
+  });
+  t.appendChild(el("thead",{},[trh]));
+  const tbody=el("tbody",{});
+  sorted.forEach(r=>{
+    const tr=el("tr",{style:{borderBottom:"1px solid #f5f3ef"}});
+    tr.addEventListener("mouseenter",()=>tr.style.background="#faf9f6");tr.addEventListener("mouseleave",()=>tr.style.background="");
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278",whiteSpace:"nowrap"}},r.numero||"—"));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#2a2520",fontWeight:"500"}},r.nom_prenom||"—"));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278",whiteSpace:"nowrap"}},r.periode_debut?(new Date(r.periode_debut).toLocaleDateString("fr-FR")+(r.periode_fin?" → "+new Date(r.periode_fin).toLocaleDateString("fr-FR"):"")):"—"));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#1a1611",fontWeight:"600",whiteSpace:"nowrap"}},(r.total||totalRemboursement(r)).toFixed(2)+" €"));
+    const stTd=el("td",{style:{padding:"0.8rem 1rem"}});
+    stTd.appendChild(canValider?statutSelect(r):statutBadge(r));
+    tr.appendChild(stTd);
+    const actTd=el("td",{style:{padding:"0.8rem 1rem"}});
+    const acts=el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap"}});
+    const bView=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"},title:"Voir / imprimer"},"👁");
+    bView.addEventListener("click",()=>ouvrirFicheRemboursement(r));
+    const bEdit=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏");
+    bEdit.addEventListener("click",()=>openRemboursementForm(r));
+    acts.appendChild(bView);acts.appendChild(bEdit);
+    if(canDelete(r)){
+      const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
+      bDel.addEventListener("click",()=>{if(confirm("Supprimer la fiche "+(r.numero||"")+" ?")){saveRemboursements(getRemboursements().filter(x=>x.numero!==r.numero));render();}});
+      acts.appendChild(bDel);
+    }
+    actTd.appendChild(acts);tr.appendChild(actTd);
+    tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);tableWrap.appendChild(t);wrap.appendChild(tableWrap);
+  return wrap;
+}
+
 function renderEmployes(){
   const wrap=el("div",{});
   
@@ -3378,7 +3828,7 @@ function render(){
   const session=getSession();
   if(session){
     S={...S,page:"crm",session,role:session.role,devis:[],loading:true};
-    loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();startPolling();
+    loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();loadRemboursementsFromSupabase();startPolling();
     loadDevisFromSupabase().then(devis=>{S.devis=devis.length?devis:DEMO_DEVIS;S.loading=false;render();});
   }else{
     // Vérifier si le directeur n'a pas encore de PIN
