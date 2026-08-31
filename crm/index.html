@@ -320,44 +320,83 @@ async function api(path,opts={},token=null){
   }catch{return null;}
 }
 
-function mergeDevisLocal(remote){
-  // Préserve les champs locaux absents de Supabase + garde les devis local-only (save Supabase raté)
+// Champs sans colonne dédiée sur la table "devis" — synchronisés séparément
+// via la table "parametres" (une ligne par devis, cle="devis_extra_<numero>"),
+// exactement comme le stock/les tarifs/les comptes. Aucune modification de
+// schéma Supabase requise.
+const DEVIS_EXTRA_FIELDS=["grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","escalier","nb_marches","prix_marche","date_intervention","duree_jours","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
+function devisExtraKey(numero){return "devis_extra_"+numero;}
+function extractDevisExtra(obj){
+  const extra={};
+  DEVIS_EXTRA_FIELDS.forEach(k=>{if(obj[k]!==undefined)extra[k]=obj[k];});
+  return extra;
+}
+async function saveDevisExtraToSupabase(numero,extra){
+  try{
+    const authToken=await getAppAuthToken()||SUPA_KEY;
+    await fetch(`${SUPA_URL}/rest/v1/parametres`,{
+      method:"POST",
+      headers:{apikey:SUPA_KEY,Authorization:`Bearer ${authToken}`,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates"},
+      body:JSON.stringify({cle:devisExtraKey(numero),valeur:extra,updated_at:new Date().toISOString()})
+    });
+  }catch(e){console.error("saveDevisExtraToSupabase:",e);}
+}
+async function loadAllDevisExtraFromSupabase(){
+  try{
+    const rows=await api("parametres?cle=like.devis_extra_*&select=cle,valeur");
+    const map={};
+    if(rows&&Array.isArray(rows)){
+      rows.forEach(r=>{map[r.cle.slice("devis_extra_".length)]=r.valeur||{};});
+    }
+    return map;
+  }catch{return {};}
+}
+
+function mergeDevisLocal(remote,extraMap={}){
+  // Complète chaque devis avec ses champs étendus : en priorité depuis Supabase
+  // (extraMap, partagé entre tous les appareils), sinon depuis le cache local
+  // (devis pas encore resynchronisé).
   let local=[];
   try{local=JSON.parse(localStorage.getItem("msn_devis")||"[]");}catch{}
   const lm=Object.fromEntries(local.map(d=>[d.numero,d]));
   const remoteNums=new Set(remote.map(d=>d.numero));
-  const merged=remote.map(d=>({
-    ...d,
-    grains:lm[d.numero]?.grains||[],
-    finition:lm[d.numero]?.finition||d.finition||"brillant",
-    traitement:lm[d.numero]?.traitement||d.traitement||"vitrifié",
-    fond_dur:lm[d.numero]?.fond_dur||false,
-    rebouchage:lm[d.numero]?.rebouchage||false,
-    rebouchage_cavites:lm[d.numero]?.rebouchage_cavites||false,
-    rebouchage_joints:lm[d.numero]?.rebouchage_joints||false,
-    rebouchage_fissures:lm[d.numero]?.rebouchage_fissures||false,
-    nettoyage_joints:lm[d.numero]?.nettoyage_joints||false,
-    laitance:lm[d.numero]?.laitance||false,
-    preparation:lm[d.numero]?.preparation||false,
-    cristallisation:lm[d.numero]?.cristallisation||false,
-    mineralisation:lm[d.numero]?.mineralisation||false,
-    hydrofuge:lm[d.numero]?.hydrofuge||false,
-    oleofuge:lm[d.numero]?.oleofuge||false,
-    escalier:lm[d.numero]?.escalier||false,
-    nb_marches:lm[d.numero]?.nb_marches||"",
-    prix_marche:lm[d.numero]?.prix_marche||"",
-    date_intervention:lm[d.numero]?.date_intervention||null,
-    duree_jours:lm[d.numero]?.duree_jours||1,
-    tva_taux:lm[d.numero]?.tva_taux||20,
-    cerfa:lm[d.numero]?.cerfa||false,
-    bon_pour_accord:lm[d.numero]?.bon_pour_accord||false,
-    acompte_recu:lm[d.numero]?.acompte_recu||false,
-    facture_acompte_numero:lm[d.numero]?.facture_acompte_numero||null,
-    facture_acompte_date:lm[d.numero]?.facture_acompte_date||null,
-    facture_solde_numero:lm[d.numero]?.facture_solde_numero||null,
-    facture_solde_date:lm[d.numero]?.facture_solde_date||null,
-    rapport_data:lm[d.numero]?.rapport_data||null
-  }));
+  const merged=remote.map(d=>{
+    const ex=extraMap[d.numero];
+    const lo=lm[d.numero];
+    const pick=(k,def)=>(ex&&ex[k]!==undefined)?ex[k]:((lo&&lo[k]!==undefined)?lo[k]:def);
+    return {
+      ...d,
+      grains:pick("grains",[]),
+      finition:pick("finition","brillant"),
+      traitement:pick("traitement","vitrifié"),
+      fond_dur:pick("fond_dur",false),
+      rebouchage:pick("rebouchage",false),
+      rebouchage_cavites:pick("rebouchage_cavites",false),
+      rebouchage_joints:pick("rebouchage_joints",false),
+      rebouchage_fissures:pick("rebouchage_fissures",false),
+      nettoyage_joints:pick("nettoyage_joints",false),
+      laitance:pick("laitance",false),
+      preparation:pick("preparation",false),
+      cristallisation:pick("cristallisation",false),
+      mineralisation:pick("mineralisation",false),
+      hydrofuge:pick("hydrofuge",false),
+      oleofuge:pick("oleofuge",false),
+      escalier:pick("escalier",false),
+      nb_marches:pick("nb_marches",""),
+      prix_marche:pick("prix_marche",""),
+      date_intervention:pick("date_intervention",null),
+      duree_jours:pick("duree_jours",1),
+      tva_taux:pick("tva_taux",20),
+      cerfa:pick("cerfa",false),
+      bon_pour_accord:pick("bon_pour_accord",false),
+      acompte_recu:pick("acompte_recu",false),
+      facture_acompte_numero:pick("facture_acompte_numero",null),
+      facture_acompte_date:pick("facture_acompte_date",null),
+      facture_solde_numero:pick("facture_solde_numero",null),
+      facture_solde_date:pick("facture_solde_date",null),
+      rapport_data:pick("rapport_data",null)
+    };
+  });
   // Devis créés localement mais pas encore sauvegardés en base (_pendingSync:true uniquement)
   // Les items sans flag ou avec flag=false sont considérés comme supprimés côté serveur → ignorés
   const localOnly=local.filter(d=>!remoteNums.has(d.numero)&&d._pendingSync===true);
@@ -368,16 +407,18 @@ async function loadDevisFromSupabase(){
   retryPendingDevis();
   const remote=await api("devis?order=created_at.desc&limit=500");
   if(remote&&Array.isArray(remote)&&remote.length){
-    const merged=mergeDevisLocal(remote);
+    const extraMap=await loadAllDevisExtraFromSupabase();
+    const merged=mergeDevisLocal(remote,extraMap);
     localStorage.setItem("msn_devis",JSON.stringify(merged));
     return merged;
   }
   try{return JSON.parse(localStorage.getItem("msn_devis")||"[]");}catch{return [];}
 }
 
-// Champs locaux uniquement — ne pas envoyer à Supabase (colonnes inexistantes)
+// Champs sans colonne sur "devis" (voir DEVIS_EXTRA_FIELDS, synchronisés via "parametres")
+// + champs d'état d'interface jamais persistés
 function toSupabase(obj){
-  const {grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,...rest}=obj;
+  const {grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
   return rest;
 }
 
@@ -391,6 +432,7 @@ async function saveDevisToSupabase(payload){
   const saved=Array.isArray(r)&&r.length>0;
   const entry=saved?{...payload,_pendingSync:false}:{...payload,_pendingSync:true};
   localStorage.setItem("msn_devis",JSON.stringify([entry,...localAfter.filter(d=>d.numero!==payload.numero)]));
+  if(saved)saveDevisExtraToSupabase(payload.numero,extractDevisExtra(payload));
   return r;
 }
 
@@ -419,10 +461,13 @@ async function updateDevisSupabase(numero,patch){
   const local=JSON.parse(localStorage.getItem("msn_devis")||"[]");
   const updated=local.map(d=>d.numero===numero?{...d,...patch}:d);
   localStorage.setItem("msn_devis",JSON.stringify(updated));
+  const current=updated.find(d=>d.numero===numero);
+  if(current)saveDevisExtraToSupabase(numero,extractDevisExtra(current));
 }
 
 async function deleteDevisSupabase(numero){
   await api(`devis?numero=eq.${encodeURIComponent(numero)}`,{method:"DELETE"});
+  await api(`parametres?cle=eq.${encodeURIComponent(devisExtraKey(numero))}`,{method:"DELETE"});
   const local=JSON.parse(localStorage.getItem("msn_devis")||"[]");
   localStorage.setItem("msn_devis",JSON.stringify(local.filter(d=>d.numero!==numero)));
   S.devis=S.devis.filter(d=>d.numero!==numero);
