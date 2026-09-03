@@ -267,6 +267,28 @@ const SCOL={Nouveau:"#3B8BD4",Contacté:"#EF9F27","Devis envoyé":"#8B3A8B",Gagn
 // Leads depuis site vitrine : statut "Nouveau" + source "site_vitrine"
 function isLead(d){return d.source==="site_vitrine";}
 
+// ── DEVIS MULTI-PRESTATIONS : un devis peut regrouper plusieurs sols ──
+// (ex : parquet dans une pièce + marbre dans une autre, sur le même document).
+function defaultLigneDevis(){
+  return {type_sol:"marbre",travaux:"Marbre",etat:"moyen",surface:"",prix_m2:30,finition:"brillant",traitement:"vitrifié",fond_dur:false,duree_jours:1,grains:[],rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:""};
+}
+function ligneMontantHt(l){
+  const escalierCout=l.escalier?Math.round((parseFloat(l.nb_marches)||0)*(parseFloat(l.prix_marche)||0)):0;
+  return (l.surface?Math.round((parseFloat(l.prix_m2)||0)*parseFloat(l.surface)):0)+escalierCout;
+}
+// Normalise un devis (nouveau format `lignes:[]` ou ancien format à plat, créé avant
+// cette fonctionnalité) en tableau de lignes, pour que tout le code d'affichage
+// (PDF, tableau de bord, fiches) fonctionne quel que soit le format d'origine.
+function devisLignes(d){
+  if(d.lignes&&d.lignes.length)return d.lignes;
+  return [{type_sol:d.type_sol||"marbre",travaux:d.travaux||"",etat:d.etat||"moyen",surface:d.surface||"",prix_m2:d.prix_m2||0,finition:d.finition||"brillant",traitement:d.traitement||"vitrifié",fond_dur:d.fond_dur||false,duree_jours:d.duree_jours||1,grains:d.grains||[],rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,rebouchage_fissures:d.rebouchage_fissures||false,nettoyage_joints:d.nettoyage_joints||false,laitance:d.laitance||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||""}];
+}
+function devisSolLabel(d){
+  const lignes=devisLignes(d);
+  const labels=[...new Set(lignes.map(l=>(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol))];
+  return labels.join(" + ");
+}
+
 // ── ZONES D'INTERVENTION ──
 const ZONES_DEF=[
   {key:"paris",    label:"Paris & Île-de-France",color:"#2c5fa8",icon:"🗼",mots:["paris","neuilly","versailles","saint-germain","levallois","saint-cloud","courbevoie","boulogne","rueil","sèvres","vincennes","issy","clamart","meudon","nanterre","puteaux","asnieres","colombes","chatou","maisons-laffitte","le pecq"]},
@@ -308,7 +330,7 @@ function genNumeroFacture(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Polissage simple",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",fond_dur:false,prix_m2:30,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,lignes:[defaultLigneDevis()]}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -324,7 +346,7 @@ async function api(path,opts={},token=null){
 // via la table "parametres" (une ligne par devis, cle="devis_extra_<numero>"),
 // exactement comme le stock/les tarifs/les comptes. Aucune modification de
 // schéma Supabase requise.
-const DEVIS_EXTRA_FIELDS=["grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","escalier","nb_marches","prix_marche","date_intervention","duree_jours","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
+const DEVIS_EXTRA_FIELDS=["lignes","grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","escalier","nb_marches","prix_marche","date_intervention","duree_jours","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
 function devisExtraKey(numero){return "devis_extra_"+numero;}
 function extractDevisExtra(obj){
   const extra={};
@@ -366,6 +388,7 @@ function mergeDevisLocal(remote,extraMap={}){
     const pick=(k,def)=>(ex&&ex[k]!==undefined)?ex[k]:((lo&&lo[k]!==undefined)?lo[k]:def);
     return {
       ...d,
+      lignes:pick("lignes",null),
       grains:pick("grains",[]),
       finition:pick("finition","brillant"),
       traitement:pick("traitement","vitrifié"),
@@ -418,7 +441,7 @@ async function loadDevisFromSupabase(){
 // Champs sans colonne sur "devis" (voir DEVIS_EXTRA_FIELDS, synchronisés via "parametres")
 // + champs d'état d'interface jamais persistés
 function toSupabase(obj){
-  const {grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
+  const {lignes,grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
   return rest;
 }
 
@@ -906,14 +929,30 @@ function ouvrirApercu(dv){
   const solde=(ttc*0.7).toFixed(2);
   const num=dv.numero||"—";
   const dateDoc=new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR");
-  const descLines=buildDescription(dv);
-  const solLabel=(TARIFS[dv.type_sol]&&TARIFS[dv.type_sol].label)||dv.type_sol||"—";
-  const finLabel=dv.finition?(dv.finition==="mat"?"Mat":dv.finition==="satiné"?"Satiné":dv.finition==="ciré"?"Ciré":"Brillant"):"—";
-  const traitementLabel=dv.traitement==="ciré"?"Ciré":"Vitrifié";
   function fTel(t){return String(t).replace(/ /g," ");}
   function fMail(e){return String(e).replace("@","&#64;").replace(/\./g,"&#46;");}
   function fSite(s){return String(s).replace(/\./g,"&#46;");}
-  const descHTML=descLines.length?descLines.map(function(l){return "<div style=\"padding:2px 0 2px 14px;text-indent:-14px;font-size:10.5px;color:#333333;line-height:1.7;\">&bull; "+l+"</div>";}).join(""):"";
+  // Une ligne du tableau des travaux par prestation (parquet, marbre, ...)
+  const workRowsHTML=devisLignes(dv).map(function(l){
+    const descLines=buildDescription(l);
+    const descHTML=descLines.length?descLines.map(function(ln){return "<div style=\"padding:2px 0 2px 14px;text-indent:-14px;font-size:10.5px;color:#333333;line-height:1.7;\">&bull; "+ln+"</div>";}).join(""):"";
+    const solLabel=(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol||"—";
+    const finLabel=l.finition?(l.finition==="mat"?"Mat":l.finition==="satiné"?"Satiné":l.finition==="ciré"?"Ciré":"Brillant"):"—";
+    const traitementLabel=l.traitement==="ciré"?"Ciré":"Vitrifié";
+    const surfaceStr=l.surface?l.surface+" m²":"—";
+    const prixStr=l.prix_m2?l.prix_m2+" €/m²":"—";
+    const dureeStr=l.duree_jours?l.duree_jours+" jour"+(l.duree_jours>1?"s":""):"";
+    const dureeBlock=dureeStr?"<div style=\"font-size:9px;color:#7a5a10;margin-top:2px;font-weight:500;\">Durée d'intervention estimée : "+dureeStr+"</div>":"";
+    const traitementBlock=l.type_sol==="parquet"?"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
+    const ligneHt=ligneMontantHt(l);
+    return "<tr>"
+      +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:8px;\">"+(l.travaux||"—")+"</div>"+descHTML+traitementBlock+"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Finition : "+finLabel+"</div>"+dureeBlock+"</td>"
+      +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+solLabel+"</td>"
+      +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+surfaceStr+"</td>"
+      +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+prixStr+"</td>"
+      +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;font-weight:700;color:#111111;text-align:right;vertical-align:top;white-space:nowrap;\">"+ligneHt.toFixed(2)+" €</td>"
+      +"</tr>";
+  }).join("");
   const logoHTML=LOGO_B64
     ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin-bottom:8px;\">"
     :"<div style=\"font-size:18px;font-weight:700;color:#111111;\">"+INFO.nom+"</div>";
@@ -924,11 +963,6 @@ function ouvrirApercu(dv){
   const telBlock=dv.client_tel?"<div>"+fTel(dv.client_tel)+"</div>":"";
   const mailBlock=dv.client_email?"<div>"+fMail(dv.client_email)+"</div>":"";
   const villeBlock=dv.ville?"<div>"+dv.ville+"</div>":"";
-  const surfaceStr=dv.surface?dv.surface+" m²":"—";
-  const prixStr=dv.prix_m2?dv.prix_m2+" €/m²":"—";
-  const dureeStr=dv.duree_jours?dv.duree_jours+" jour"+(dv.duree_jours>1?"s":""):"";
-  const dureeBlock=dureeStr?"<div style=\"font-size:9px;color:#7a5a10;margin-top:2px;font-weight:500;\">Durée d'intervention estimée : "+dureeStr+"</div>":"";
-  const traitementBlock=dv.type_sol==="parquet"?"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
   const html="<!DOCTYPE html>"
     +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
     +"<title>Devis "+num+" — "+(dv.client_nom||"")+"</title>"
@@ -959,13 +993,10 @@ function ouvrirApercu(dv){
     +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">SURFACE</th>"
     +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">PRIX/M²</th>"
     +"<th style=\"padding:8px 10px;text-align:right;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">TOTAL HT</th>"
-    +"</tr></thead><tbody><tr>"
-    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:8px;\">"+(dv.travaux||"—")+"</div>"+descHTML+traitementBlock+"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Finition : "+finLabel+"</div>"+dureeBlock+notesBlock+"</td>"
-    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+solLabel+"</td>"
-    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+surfaceStr+"</td>"
-    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+prixStr+"</td>"
-    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;font-weight:700;color:#111111;text-align:right;vertical-align:top;white-space:nowrap;\">"+ht.toFixed(2)+" €</td>"
-    +"</tr></tbody></table></div>"
+    +"</tr></thead><tbody>"
+    +workRowsHTML
+    +"</tbody></table></div>"
+    +(notesBlock?"<div style=\"margin-bottom:20px;\">"+notesBlock+"</div>":"")
     // Totals
     +"<div style=\"display:flex;justify-content:flex-end;margin-bottom:22px;\"><table style=\"width:260px;border:1px solid #e0ddd5;\">"
     +"<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">Montant HT</td><td style=\"padding:7px 10px;font-size:10.5px;font-weight:600;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+ht.toFixed(2)+" €</td></tr>"
@@ -1107,7 +1138,7 @@ function defaultRapportForm(d){
     date_debut:d.date_intervention||"",
     date_fin:dateFinDefaut,
     adresse:d.ville||"",
-    materiau:(TARIFS[d.type_sol]&&TARIFS[d.type_sol].label)||"",
+    materiau:devisSolLabel(d)||"",
     defauts:{rayures:false,taches:false,perte_brillance:false,joints:false,fissures:false},
     niveau_usure:"moyen",
     photos_avant:[],
@@ -1939,9 +1970,9 @@ function renderDevis(){
       top.appendChild(numWrap);
       card.appendChild(top);
       const mid=el("div",{className:"mob-devis-mid"});
-      mid.appendChild(el("span",{className:"mob-devis-tag"},TARIFS[d.type_sol]?.label||d.type_sol));
+      mid.appendChild(el("span",{className:"mob-devis-tag"},devisSolLabel(d)));
       if(d.ville){const zi=getZoneInfo(d.ville);mid.appendChild(el("span",{className:"mob-devis-tag",style:{color:zi.color,borderColor:zi.color+"66",background:zi.color+"11"}},zi.icon+" "+d.ville));}
-      if(d.surface)mid.appendChild(el("span",{className:"mob-devis-tag"},d.surface+" m²"));
+      {const totS=devisLignes(d).reduce((s,l)=>s+(parseFloat(l.surface)||0),0);if(totS)mid.appendChild(el("span",{className:"mob-devis-tag"},totS+" m²"));}
       card.appendChild(mid);
       const bot=el("div",{className:"mob-devis-bot"});
       bot.appendChild(badge(d.statut));
@@ -1986,13 +2017,13 @@ function renderDevis(){
     tr.appendChild(numCell);
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#2a2520",fontWeight:"500"}},d.client_nom));
     {const zi=getZoneInfo(d.ville);const vtd=el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}});vtd.appendChild(el("span",{style:{display:"inline-flex",alignItems:"center",gap:"4px"}},[el("span",{style:{color:zi.color,fontSize:"11px"}},zi.icon),document.createTextNode(d.ville||"—")]));tr.appendChild(vtd);}
-    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}},TARIFS[d.type_sol]?.label||d.type_sol));
+    tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"12px",color:"#8a8278"}},devisSolLabel(d)));
     tr.appendChild(el("td",{style:{padding:"0.8rem 1rem",fontSize:"13px",color:"#1a1611",fontWeight:"600"}},((d.montant_ht||0).toFixed(0))+" €"));
     const tds=el("td",{style:{padding:"0.8rem 1rem"}});tds.appendChild(badge(d.statut));tr.appendChild(tds);
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",type_sol:d.type_sol||"marbre",travaux:d.travaux||"",surface:d.surface||"",etat:d.etat||"moyen",description:d.description||"",finition:d.finition||"brillant",traitement:d.traitement||"vitrifié",fond_dur:d.fond_dur||false,prix_m2:d.prix_m2||30,duree_jours:d.duree_jours||1,grains:d.grains||[],rebouchage:d.rebouchage||false,rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,rebouchage_fissures:d.rebouchage_fissures||false,nettoyage_joints:d.nettoyage_joints||false,laitance:d.laitance||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false};set({modal:"modifier",selected:d});});acts.appendChild(bm);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",description:d.description||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false,lignes:devisLignes(d).map(l=>({...defaultLigneDevis(),...l}))};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bap=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#7a5a10",borderColor:"#c9a84c44"}},"📄 Aperçu");bap.addEventListener("click",()=>ouvrirApercu(d));acts.appendChild(bap);
 
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
@@ -2054,19 +2085,20 @@ function renderFormDevis(){
     const lead=S.devis.find(d=>d.client_nom===S.form.client_nom&&isLead(d));
     if(lead){
       const sol=lead.type_sol||"marbre";
-      S.form.type_sol=sol;
-      S.form.travaux=TARIFS[sol]?.label||S.form.travaux;
-      S.form.prix_m2=Math.round((TARIFS[sol]?.prix[0]||30)*COEFF[S.form.etat]);
-      S.form.finition="brillant";
-      S.form.traitement="vitrifié";
-      if(lead.surface&&lead.surface!=="0")S.form.surface=lead.surface;
+      const l0=S.form.lignes[0];
+      l0.type_sol=sol;
+      l0.travaux=TARIFS[sol]?.label||l0.travaux;
+      l0.prix_m2=Math.round((TARIFS[sol]?.prix[0]||30)*COEFF[l0.etat]);
+      l0.finition="brillant";
+      l0.traitement="vitrifié";
+      if(lead.surface&&lead.surface!=="0")l0.surface=lead.surface;
       if(lead.description&&!S.form.description)S.form.description=lead.description;
       S.form._leadPrefilled=true;
     }
   }
   const f=S.form;
-  const escalierCout=f.escalier?Math.round((parseFloat(f.nb_marches)||0)*(parseFloat(f.prix_marche)||0)):0;
-  const ht=(f.surface?Math.round(f.prix_m2*parseFloat(f.surface)):0)+escalierCout;
+  const lignesHt=f.lignes.map(ligneMontantHt);
+  const ht=lignesHt.reduce((s,v)=>s+v,0);
   const form=el("form",{});
   function row(...items){
     if(isMobile()){
@@ -2075,161 +2107,192 @@ function renderFormDevis(){
     }
     const g=el("div",{style:{display:"grid",gridTemplateColumns:`repeat(${items.length},1fr)`,gap:"1rem",marginBottom:"1rem"}});items.forEach(i=>g.appendChild(i));return g;
   }
-  function inp(name,placeholder,type="text"){
-    const i=el("input",{type,placeholder,value:f[name]||"",style:{fontSize:"16px"}});
-    i.dataset.formKey="inp-"+name;
-    i.addEventListener("input",e=>{S.form[name]=e.target.value;});
-    i.addEventListener("change",e=>{S.form[name]=e.target.value;render();});
-    return i;
-  }
-  function sel(name,options){
-    const s=el("select",{style:{fontSize:"16px"}});
-    options.forEach(([v,l])=>{const o=el("option",{value:v},l);if(f[name]===v)o.selected=true;s.appendChild(o);});
-    s.addEventListener("change",e=>{
-      S.form[name]=e.target.value;
-      if(name==="type_sol"){
-        S.form.travaux=TARIFS[e.target.value].label;
-        S.form.prix_m2=Math.round((TARIFS[e.target.value].prix[0]||0)*COEFF[S.form.etat]);
-        S.form.finition="brillant";
-        S.form.traitement="vitrifié";
-        S.form.grains=[];
-      }
-      if(name==="etat"){
-        const trav=TARIFS[S.form.type_sol];
-        if(trav)S.form.prix_m2=Math.round((trav.prix[0]||0)*COEFF[e.target.value]);
-      }
-      render();
-    });
-    return s;
-  }
-  form.appendChild(row(grp("Nom client *",inp("client_nom","Jean Dupont"),0),grp("Téléphone",inp("client_tel","06 12 34 56 78"),0)));
-  form.appendChild(row(grp("Email",inp("client_email","client@email.com"),0),grp("Ville",inp("ville","Paris"),0)));
-  form.appendChild(el("div",{style:{height:"1px",background:"#e8e4dc",margin:"0.5rem 0 1rem"}}));
-  form.appendChild(row(grp("Type de sol *",sel("type_sol",Object.entries(TARIFS).map(([k,v])=>[k,v.label])),0),grp("État du sol",sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]]),0)));
-  form.appendChild(row(grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
-  function radioGroup(name,options){
-    const wrap=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
-    options.forEach(([v,l])=>{
-      const active=f[name]===v;
-      const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},l);
-      b.addEventListener("click",()=>{S.form[name]=v;render();});
-      wrap.appendChild(b);
-    });
-    return wrap;
-  }
-  if(f.type_sol==="parquet"){
-    form.appendChild(row(grp("Traitement",radioGroup("traitement",[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]),0),grp("Finition",radioGroup("finition",[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"]]),0)));
-    form.appendChild(row(grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
-  }else{
-    const finOpts=[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"],["ciré","Ciré"]];
-    form.appendChild(row(grp("Finition",sel("finition",finOpts),0),grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
-  }
-  // ── PRESTATIONS COMPLÉMENTAIRES (ordre de travail) ──
-  {
-    const optWrap=el("div",{style:{marginBottom:"1rem"}});
-    optWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"10px"}},"Prestations complémentaires"));
-    // Met à jour le style d'un bouton toggle sans render()
-    function applyToggleStyle(btn,active){
-      btn.style.border="1px solid "+(active?"#c9a84c":"#dddad2");
-      btn.style.background=active?"rgba(201,168,76,0.12)":"#fff";
-      btn.style.color=active?"#8a6a20":"#706a62";
+  // Champs liés à l'objet client/devis global (obj=S.form)
+  function fieldHelpers(obj,keyPrefix){
+    function inp(name,placeholder,type="text"){
+      const i=el("input",{type,placeholder,value:obj[name]||"",style:{fontSize:"16px"}});
+      i.dataset.formKey=keyPrefix+name;
+      i.addEventListener("input",e=>{obj[name]=e.target.value;});
+      i.addEventListener("change",e=>{obj[name]=e.target.value;render();});
+      return i;
     }
-    function optBtn(label,key){
-      const active=!!S.form[key];
-      const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},label);
-      b.addEventListener("click",()=>{S.form[key]=!S.form[key];applyToggleStyle(b,S.form[key]);});
-      return b;
-    }
-    // 1. Décapage & Rebouchage
-    {
-      const r1=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"10px"}});
-      if(f.type_sol!=="parquet")r1.appendChild(optBtn("🧽 Décapage","preparation"));
-      r1.appendChild(optBtn("🔨 Rebouchage cavités","rebouchage_cavites"));
-      r1.appendChild(optBtn("🔨 Rebouchage joints","rebouchage_joints"));
-      r1.appendChild(optBtn("🔨 Rebouchage des fissures","rebouchage_fissures"));
-      r1.appendChild(optBtn("🧹 Nettoyage des joints","nettoyage_joints"));
-      if(f.type_sol!=="parquet")r1.appendChild(optBtn("🪣 Élimination de la laitance","laitance"));
-      optWrap.appendChild(r1);
-    }
-    // 2. Ponçage = sélection des grains
-    {
-      const GRAINS_LIST=f.type_sol==="parquet"?[16,24,30,36,40,50,60,80,100,120,150,180,220]:[50,100,200,400,800,1500,3000,5000];
-      const pWrap=el("div",{style:{marginBottom:"10px"}});
-      pWrap.appendChild(el("div",{style:{fontSize:"11px",color:"#706a62",fontWeight:"600",marginBottom:"6px"}},"✨ Ponçage — grains"));
-      const gBtns=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"6px"}});
-      // Preview créé en avance pour être mis à jour sans render()
-      const prev=el("div",{style:{marginTop:"7px",fontSize:"11px",color:"#8a6a20",background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"5px 10px",display:(S.form.grains||[]).length>0?"block":"none"}});
-      prev.textContent=(S.form.grains||[]).length>0?"Ponçage grain "+S.form.grains.join(" → "):"";
-      function refreshGrainPreview(){
-        const g=S.form.grains||[];
-        prev.style.display=g.length>0?"block":"none";
-        prev.textContent=g.length>0?"Ponçage grain "+g.join(" → "):"";
-      }
-      GRAINS_LIST.forEach(g=>{
-        if(g===200&&f.type_sol!=="parquet"){
-          const mActive=S.form.mineralisation||false;
-          const mBtn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px dashed "+(mActive?"#7a5a9a":"#c4b0d8"),background:mActive?"rgba(122,90,154,0.1)":"#faf8fc",color:mActive?"#5a3a7a":"#9a86aa",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},"🪨 Minéralisation");
-          mBtn.addEventListener("click",()=>{
-            S.form.mineralisation=!S.form.mineralisation;
-            const a=S.form.mineralisation;
-            mBtn.style.border="1px dashed "+(a?"#7a5a9a":"#c4b0d8");
-            mBtn.style.background=a?"rgba(122,90,154,0.1)":"#faf8fc";
-            mBtn.style.color=a?"#5a3a7a":"#9a86aa";
-          });
-          gBtns.appendChild(mBtn);
-        }
-        const active=(S.form.grains||[]).includes(g);
-        const label=(f.type_sol==="parquet"&&g===150)?"Égrenage 150":`${g}`;
-        const btn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},label);
-        btn.addEventListener("click",()=>{
-          const arr=S.form.grains||[];
-          S.form.grains=arr.includes(g)?arr.filter(x=>x!==g):[...arr,g].sort((a,b)=>a-b);
-          applyToggleStyle(btn,S.form.grains.includes(g));
-          refreshGrainPreview();
-        });
-        gBtns.appendChild(btn);
+    function sel(name,options,onSelect){
+      const s=el("select",{style:{fontSize:"16px"}});
+      options.forEach(([v,l])=>{const o=el("option",{value:v},l);if(obj[name]===v)o.selected=true;s.appendChild(o);});
+      s.addEventListener("change",e=>{
+        obj[name]=e.target.value;
+        if(onSelect)onSelect(e.target.value);
+        render();
       });
-      pWrap.appendChild(gBtns);
-      pWrap.appendChild(prev);
-      optWrap.appendChild(pWrap);
+      return s;
     }
-    // 2.5 Fond dur / primaire (parquet uniquement, après le ponçage)
-    if(f.type_sol==="parquet"){
-      const r25=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"10px"}});
-      r25.appendChild(optBtn("🪵 Fond dur / Primaire","fond_dur"));
-      optWrap.appendChild(r25);
+    function radioGroup(name,options){
+      const wrap=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+      options.forEach(([v,l])=>{
+        const active=obj[name]===v;
+        const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},l);
+        b.addEventListener("click",()=>{obj[name]=v;render();});
+        wrap.appendChild(b);
+      });
+      return wrap;
     }
-    // 3. Cristallisation, Hydrofuge, Oléofuge
-    {
-      const r3=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
-      if(f.type_sol!=="parquet")r3.appendChild(optBtn("💎 Cristallisation","cristallisation"));
-      r3.appendChild(optBtn("💧 Traitement hydrofuge","hydrofuge"));
-      r3.appendChild(optBtn("🛢 Traitement oléofuge","oleofuge"));
-      optWrap.appendChild(r3);
-    }
-    // 4. Escalier (marche contre marche)
-    {
-      const escWrap=el("div",{style:{marginTop:"10px"}});
-      const escRow=el("div",{style:{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",background:f.escalier?"rgba(139,58,139,0.06)":"#faf9f6",border:"1px solid "+(f.escalier?"rgba(139,58,139,0.35)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer",transition:"all 0.15s"}});
-      const escCheck=el("input",{type:"checkbox",style:{width:"18px",height:"18px",accentColor:"#8B3A8B",cursor:"pointer",flexShrink:"0"}});
-      escCheck.checked=!!f.escalier;
-      escCheck.addEventListener("change",e=>{S.form.escalier=e.target.checked;render();});
-      const escTxt=el("div",{});
-      escTxt.appendChild(el("div",{style:{fontSize:"13px",fontWeight:"600",color:f.escalier?"#6a2a6a":"#1a1611"}},"🪜 Escalier (marche contre marche)"));
-      escTxt.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278",marginTop:"2px"}},"Facturé à la marche, en plus du prix au m²"));
-      escRow.appendChild(escCheck);escRow.appendChild(escTxt);
-      escRow.addEventListener("click",e=>{if(e.target!==escCheck)escCheck.click();});
-      escWrap.appendChild(escRow);
-      if(f.escalier){
-        const escFields=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"1fr":"1fr 1fr",gap:"0.8rem",marginTop:"0.8rem"}});
-        escFields.appendChild(grp("Nombre de marches",inp("nb_marches","12","number"),0));
-        escFields.appendChild(grp("Prix par marche (€)",inp("prix_marche","35","number"),0));
-        escWrap.appendChild(escFields);
-      }
-      optWrap.appendChild(escWrap);
-    }
-    form.appendChild(optWrap);
+    return {inp,sel,radioGroup};
   }
+  const top=fieldHelpers(f,"inp-");
+  form.appendChild(row(grp("Nom client *",top.inp("client_nom","Jean Dupont"),0),grp("Téléphone",top.inp("client_tel","06 12 34 56 78"),0)));
+  form.appendChild(row(grp("Email",top.inp("client_email","client@email.com"),0),grp("Ville",top.inp("ville","Paris"),0)));
+  form.appendChild(el("div",{style:{height:"1px",background:"#e8e4dc",margin:"0.5rem 0 1rem"}}));
+
+  // ── PRESTATIONS : une carte par type de sol (parquet, marbre, ...) sur le même devis ──
+  function renderLigneCard(l,idx){
+    const {inp,sel,radioGroup}=fieldHelpers(l,"inp-lignes."+idx+".");
+    const card=el("div",{style:{border:"1px solid #e8e4dc",borderRadius:"10px",padding:"14px",marginBottom:"14px",background:"#faf9f6"}});
+    const head=el("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}});
+    head.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"700"}},"Prestation "+(idx+1)));
+    if(f.lignes.length>1){
+      const bDel=el("button",{type:"button",style:{background:"none",border:"none",color:"#A32D2D",fontSize:"12px",cursor:"pointer",fontWeight:"600"}},"🗑 Retirer");
+      bDel.addEventListener("click",()=>{f.lignes=f.lignes.filter((_,i)=>i!==idx);render();});
+      head.appendChild(bDel);
+    }
+    card.appendChild(head);
+    card.appendChild(row(grp("Type de sol *",sel("type_sol",Object.entries(TARIFS).map(([k,v])=>[k,v.label]),v=>{
+      l.travaux=TARIFS[v].label;
+      l.prix_m2=Math.round((TARIFS[v].prix[0]||0)*COEFF[l.etat]);
+      l.finition="brillant";
+      l.traitement="vitrifié";
+      l.grains=[];
+    }),0),grp("État du sol",sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]],v=>{
+      const trav=TARIFS[l.type_sol];
+      if(trav)l.prix_m2=Math.round((trav.prix[0]||0)*COEFF[v]);
+    }),0)));
+    card.appendChild(row(grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
+    if(l.type_sol==="parquet"){
+      card.appendChild(row(grp("Traitement",radioGroup("traitement",[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]),0),grp("Finition",radioGroup("finition",[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"]]),0)));
+      card.appendChild(row(grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
+    }else{
+      const finOpts=[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"],["ciré","Ciré"]];
+      card.appendChild(row(grp("Finition",sel("finition",finOpts),0),grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
+    }
+    // ── PRESTATIONS COMPLÉMENTAIRES (ordre de travail) ──
+    {
+      const optWrap=el("div",{style:{marginBottom:"0.5rem"}});
+      optWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"10px"}},"Prestations complémentaires"));
+      // Met à jour le style d'un bouton toggle sans render()
+      function applyToggleStyle(btn,active){
+        btn.style.border="1px solid "+(active?"#c9a84c":"#dddad2");
+        btn.style.background=active?"rgba(201,168,76,0.12)":"#fff";
+        btn.style.color=active?"#8a6a20":"#706a62";
+      }
+      function optBtn(label,key){
+        const active=!!l[key];
+        const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},label);
+        b.addEventListener("click",()=>{l[key]=!l[key];applyToggleStyle(b,l[key]);});
+        return b;
+      }
+      // 1. Décapage & Rebouchage
+      {
+        const r1=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"10px"}});
+        if(l.type_sol!=="parquet")r1.appendChild(optBtn("🧽 Décapage","preparation"));
+        r1.appendChild(optBtn("🔨 Rebouchage cavités","rebouchage_cavites"));
+        r1.appendChild(optBtn("🔨 Rebouchage joints","rebouchage_joints"));
+        r1.appendChild(optBtn("🔨 Rebouchage des fissures","rebouchage_fissures"));
+        r1.appendChild(optBtn("🧹 Nettoyage des joints","nettoyage_joints"));
+        if(l.type_sol!=="parquet")r1.appendChild(optBtn("🪣 Élimination de la laitance","laitance"));
+        optWrap.appendChild(r1);
+      }
+      // 2. Ponçage = sélection des grains
+      {
+        const GRAINS_LIST=l.type_sol==="parquet"?[16,24,30,36,40,50,60,80,100,120,150,180,220]:[50,100,200,400,800,1500,3000,5000];
+        const pWrap=el("div",{style:{marginBottom:"10px"}});
+        pWrap.appendChild(el("div",{style:{fontSize:"11px",color:"#706a62",fontWeight:"600",marginBottom:"6px"}},"✨ Ponçage — grains"));
+        const gBtns=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"6px"}});
+        // Preview créé en avance pour être mis à jour sans render()
+        const prev=el("div",{style:{marginTop:"7px",fontSize:"11px",color:"#8a6a20",background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"5px 10px",display:(l.grains||[]).length>0?"block":"none"}});
+        prev.textContent=(l.grains||[]).length>0?"Ponçage grain "+l.grains.join(" → "):"";
+        function refreshGrainPreview(){
+          const g=l.grains||[];
+          prev.style.display=g.length>0?"block":"none";
+          prev.textContent=g.length>0?"Ponçage grain "+g.join(" → "):"";
+        }
+        GRAINS_LIST.forEach(g=>{
+          if(g===200&&l.type_sol!=="parquet"){
+            const mActive=l.mineralisation||false;
+            const mBtn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px dashed "+(mActive?"#7a5a9a":"#c4b0d8"),background:mActive?"rgba(122,90,154,0.1)":"#faf8fc",color:mActive?"#5a3a7a":"#9a86aa",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},"🪨 Minéralisation");
+            mBtn.addEventListener("click",()=>{
+              l.mineralisation=!l.mineralisation;
+              const a=l.mineralisation;
+              mBtn.style.border="1px dashed "+(a?"#7a5a9a":"#c4b0d8");
+              mBtn.style.background=a?"rgba(122,90,154,0.1)":"#faf8fc";
+              mBtn.style.color=a?"#5a3a7a":"#9a86aa";
+            });
+            gBtns.appendChild(mBtn);
+          }
+          const active=(l.grains||[]).includes(g);
+          const label=(l.type_sol==="parquet"&&g===150)?"Égrenage 150":`${g}`;
+          const btn=el("button",{type:"button",style:{padding:"5px 11px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},label);
+          btn.addEventListener("click",()=>{
+            const arr=l.grains||[];
+            l.grains=arr.includes(g)?arr.filter(x=>x!==g):[...arr,g].sort((a,b)=>a-b);
+            applyToggleStyle(btn,l.grains.includes(g));
+            refreshGrainPreview();
+          });
+          gBtns.appendChild(btn);
+        });
+        pWrap.appendChild(gBtns);
+        pWrap.appendChild(prev);
+        optWrap.appendChild(pWrap);
+      }
+      // 2.5 Fond dur / primaire (parquet uniquement, après le ponçage)
+      if(l.type_sol==="parquet"){
+        const r25=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"10px"}});
+        r25.appendChild(optBtn("🪵 Fond dur / Primaire","fond_dur"));
+        optWrap.appendChild(r25);
+      }
+      // 3. Cristallisation, Hydrofuge, Oléofuge
+      {
+        const r3=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+        if(l.type_sol!=="parquet")r3.appendChild(optBtn("💎 Cristallisation","cristallisation"));
+        r3.appendChild(optBtn("💧 Traitement hydrofuge","hydrofuge"));
+        r3.appendChild(optBtn("🛢 Traitement oléofuge","oleofuge"));
+        optWrap.appendChild(r3);
+      }
+      // 4. Escalier (marche contre marche)
+      {
+        const escWrap=el("div",{style:{marginTop:"10px"}});
+        const escRow=el("div",{style:{display:"flex",alignItems:"center",gap:"12px",padding:"12px 14px",background:l.escalier?"rgba(139,58,139,0.06)":"#fff",border:"1px solid "+(l.escalier?"rgba(139,58,139,0.35)":"#e8e4dc"),borderRadius:"8px",cursor:"pointer",transition:"all 0.15s"}});
+        const escCheck=el("input",{type:"checkbox",style:{width:"18px",height:"18px",accentColor:"#8B3A8B",cursor:"pointer",flexShrink:"0"}});
+        escCheck.checked=!!l.escalier;
+        escCheck.addEventListener("change",e=>{l.escalier=e.target.checked;render();});
+        const escTxt=el("div",{});
+        escTxt.appendChild(el("div",{style:{fontSize:"13px",fontWeight:"600",color:l.escalier?"#6a2a6a":"#1a1611"}},"🪜 Escalier (marche contre marche)"));
+        escTxt.appendChild(el("div",{style:{fontSize:"11px",color:"#8a8278",marginTop:"2px"}},"Facturé à la marche, en plus du prix au m²"));
+        escRow.appendChild(escCheck);escRow.appendChild(escTxt);
+        escRow.addEventListener("click",e=>{if(e.target!==escCheck)escCheck.click();});
+        escWrap.appendChild(escRow);
+        if(l.escalier){
+          const escFields=el("div",{style:{display:"grid",gridTemplateColumns:isMobile()?"1fr":"1fr 1fr",gap:"0.8rem",marginTop:"0.8rem"}});
+          escFields.appendChild(grp("Nombre de marches",inp("nb_marches","12","number"),0));
+          escFields.appendChild(grp("Prix par marche (€)",inp("prix_marche","35","number"),0));
+          escWrap.appendChild(escFields);
+        }
+        optWrap.appendChild(escWrap);
+      }
+      card.appendChild(optWrap);
+    }
+    const sousTotal=ligneMontantHt(l);
+    if(sousTotal>0){
+      card.appendChild(el("div",{style:{textAlign:"right",fontSize:"12px",color:"#7a5a10",fontWeight:"600",marginTop:"6px"}},"Sous-total : "+sousTotal.toFixed(2)+" €"));
+    }
+    return card;
+  }
+  const lignesWrap=el("div",{});
+  lignesWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"10px"}},"Prestations du devis"));
+  f.lignes.forEach((l,idx)=>lignesWrap.appendChild(renderLigneCard(l,idx)));
+  const bAddLigne=el("button",{type:"button",style:{...BS,width:"100%",marginBottom:"1rem"}},"+ Ajouter une prestation (ex : parquet + marbre)");
+  bAddLigne.addEventListener("click",()=>{f.lignes=[...f.lignes,defaultLigneDevis()];render();});
+  lignesWrap.appendChild(bAddLigne);
+  form.appendChild(lignesWrap);
+
   const ta=el("textarea",{placeholder:"Précisions sur le chantier...",style:{minHeight:"70px",resize:"vertical"}});ta.dataset.formKey="inp-description";ta.textContent=f.description||"";ta.addEventListener("input",e=>S.form.description=e.target.value);
   form.appendChild(grp("Notes",ta));
   // ── TVA & CERFA ──
@@ -2255,12 +2318,14 @@ function renderFormDevis(){
     }
     form.appendChild(tvaWrap);
   }
-  if(f.surface>0||escalierCout>0){
+  if(ht>0){
     const fTva=f.tva_taux||20;
     const rc=el("div",{style:{background:"#f0eeea",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"1rem",marginBottom:"1.2rem"}});
-    if(f.surface>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},`${f.surface} m² × ${f.prix_m2} €/m²`)]));
-    if(escalierCout>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},`🪜 ${f.nb_marches} marche(s) × ${f.prix_marche} €/marche`),el("span",{style:{color:"#8a8278",fontSize:"13px"}},escalierCout.toFixed(2)+" €")]));
-    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#1a1611",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
+    f.lignes.forEach((l,idx)=>{
+      const st=lignesHt[idx];
+      if(st>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},(TARIFS[l.type_sol]?.label||l.type_sol)+" — "+l.surface+" m² × "+l.prix_m2+" €/m²"),el("span",{style:{color:"#8a8278",fontSize:"13px"}},st.toFixed(2)+" €")]));
+    });
+    rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px",marginTop:"6px",paddingTop:"6px",borderTop:"1px dashed #dddad2"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#1a1611",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},`TTC (TVA ${fTva}%)`),el("span",{style:{color:"#c9a84c",fontSize:"17px",fontWeight:"700"}},(ht*(1+fTva/100)).toFixed(2)+" €")]));
     form.appendChild(rc);
   }
@@ -2282,9 +2347,14 @@ function renderFormDevis(){
   }
   form.addEventListener("submit",async e=>{
     e.preventDefault();
+    // Champs "à plat" recopiés depuis la 1ère prestation, pour compatibilité avec
+    // le reste de l'app (tableau de bord, fiche mission, certificat...) qui ne
+    // connaissait qu'un seul type de sol par devis avant l'ajout du multi-prestations.
+    const l0=f.lignes[0]||defaultLigneDevis();
+    const flatCompat={type_sol:l0.type_sol,travaux:l0.travaux,etat:l0.etat,surface:l0.surface,prix_m2:l0.prix_m2,finition:l0.finition,traitement:l0.traitement,fond_dur:l0.fond_dur,duree_jours:l0.duree_jours,grains:l0.grains,rebouchage_cavites:l0.rebouchage_cavites,rebouchage_joints:l0.rebouchage_joints,rebouchage_fissures:l0.rebouchage_fissures,nettoyage_joints:l0.nettoyage_joints,laitance:l0.laitance,preparation:l0.preparation,cristallisation:l0.cristallisation,mineralisation:l0.mineralisation,hydrofuge:l0.hydrofuge,oleofuge:l0.oleofuge,escalier:l0.escalier,nb_marches:l0.nb_marches,prix_marche:l0.prix_marche};
     if(isEdit&&S.selected){
       // Mode modification : PATCH le devis existant
-      const patch={...S.form,montant_ht:ht,updated_at:new Date().toISOString()};
+      const patch={...S.form,...flatCompat,montant_ht:ht,updated_at:new Date().toISOString()};
       await updateDevisSupabase(S.selected.numero,patch);
       S.devis=S.devis.map(d=>d.numero===S.selected.numero?{...d,...patch}:d);
     }else{
@@ -2292,18 +2362,18 @@ function renderFormDevis(){
       if(lead){
         // Convertir le lead en devis : PATCH l'enregistrement existant
         const newNum=genNumeroDevis();
-        const patch={...S.form,numero:newNum,montant_ht:ht,statut:"Nouveau",source:null,updated_at:new Date().toISOString()};
+        const patch={...S.form,...flatCompat,numero:newNum,montant_ht:ht,statut:"Nouveau",source:null,updated_at:new Date().toISOString()};
         await updateDevisSupabase(lead.numero,patch);
         S.devis=S.devis.map(d=>d.numero===lead.numero?{...d,...patch}:d);
       }else{
         // Aucun lead existant : créer un nouveau devis
         const num=genNumeroDevis();
-        const payload={...S.form,numero:num,montant_ht:ht,statut:"Nouveau",created_at:new Date().toISOString()};
+        const payload={...S.form,...flatCompat,numero:num,montant_ht:ht,statut:"Nouveau",created_at:new Date().toISOString()};
         await saveDevisToSupabase(payload);
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",type_sol:"marbre",travaux:"Marbre",surface:"",etat:"moyen",description:"",finition:"brillant",traitement:"vitrifié",fond_dur:false,prix_m2:0,duree_jours:1,grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,escalier:false,nb_marches:"",prix_marche:"",tva_taux:20,cerfa:false};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,lignes:[defaultLigneDevis()]};
     set({modal:null,selected:null});
   });
   return form;
@@ -2376,18 +2446,25 @@ function renderAccordAcompte(d){
 }
 
 function renderMissionBlock(d){
-  const taches=buildDescription(d);
-  if(!taches.length&&!d.description)return null;
+  const lignesMB=devisLignes(d);
+  const multiMB=lignesMB.length>1;
+  const groupes=lignesMB.map(function(l){return {label:(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol,taches:buildDescription(l)};});
+  const totalTaches=groupes.reduce((s,g)=>s+g.taches.length,0);
+  if(!totalTaches&&!d.description)return null;
   const mission=el("div",{style:{background:"#faf9f6",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"12px 14px",margin:"1rem 0"}});
   mission.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"📋 Fiche de mission"));
-  if(taches.length){
+  if(totalTaches){
     mission.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"600",color:"#1a1611",marginBottom:"4px"}},"Tâches à faire"));
-    taches.forEach(t=>{
-      mission.appendChild(el("div",{style:{fontSize:"13px",color:"#3a342c",padding:"2px 0 2px 14px",textIndent:"-14px"}},"• "+t));
+    groupes.forEach(function(g){
+      if(!g.taches.length)return;
+      if(multiMB)mission.appendChild(el("div",{style:{fontSize:"11px",color:"#9a6a10",fontWeight:"700",marginTop:"6px",marginBottom:"2px"}},g.label));
+      g.taches.forEach(t=>{
+        mission.appendChild(el("div",{style:{fontSize:"13px",color:"#3a342c",padding:"2px 0 2px 14px",textIndent:"-14px"}},"• "+t));
+      });
     });
   }
   if(d.description){
-    mission.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"600",color:"#1a1611",marginTop:taches.length?"10px":"0",marginBottom:"4px"}},"Notes"));
+    mission.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"600",color:"#1a1611",marginTop:totalTaches?"10px":"0",marginBottom:"4px"}},"Notes"));
     mission.appendChild(el("div",{style:{fontSize:"13px",color:"#3a342c",fontStyle:"italic"}},d.description));
   }
   return mission;
@@ -2405,7 +2482,15 @@ function formatIntervention(d){
 
 function renderFicheMission(d){
   const wrap=el("div",{});
-  [["Client",d.client_nom],["Téléphone",d.client_tel],["Ville",d.ville],["Type de sol",TARIFS[d.type_sol]?.label],["Surface",d.surface+" m²"],["Escalier",d.escalier?(d.nb_marches||0)+" marche(s)":null]].forEach(([k,v])=>{
+  const lignesFM=devisLignes(d);
+  const rowsFM=[["Client",d.client_nom],["Téléphone",d.client_tel],["Ville",d.ville]];
+  lignesFM.forEach((l,i)=>{
+    const suf=lignesFM.length>1?" — Prestation "+(i+1):"";
+    rowsFM.push(["Type de sol"+suf,(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol]);
+    rowsFM.push(["Surface"+suf,l.surface+" m²"]);
+    if(l.escalier)rowsFM.push(["Escalier"+suf,(l.nb_marches||0)+" marche(s)"]);
+  });
+  rowsFM.forEach(([k,v])=>{
     if(!v&&v!==0)return;
     const row=el("div",{className:"mob-detail-row"});
     row.appendChild(el("span",{className:"mob-detail-label"},k));
@@ -2430,7 +2515,16 @@ function renderFicheMission(d){
 function renderDetailDevis(d){
   const wrap=el("div",{});
   // Infos client
-  [["Client",d.client_nom],["Téléphone",d.client_tel],["Email",d.client_email],["Ville",d.ville],["Type de sol",TARIFS[d.type_sol]?.label],["Surface",d.surface+" m²"],["Prix/m²",d.prix_m2+" €"],["Escalier",d.escalier?(d.nb_marches||0)+" marche(s) × "+(d.prix_marche||0)+" €":null]].forEach(([k,v])=>{
+  const lignesDD=devisLignes(d);
+  const rowsDD=[["Client",d.client_nom],["Téléphone",d.client_tel],["Email",d.client_email],["Ville",d.ville]];
+  lignesDD.forEach((l,i)=>{
+    const suf=lignesDD.length>1?" — Prestation "+(i+1):"";
+    rowsDD.push(["Type de sol"+suf,(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol]);
+    rowsDD.push(["Surface"+suf,l.surface+" m²"]);
+    rowsDD.push(["Prix/m²"+suf,l.prix_m2+" €"]);
+    if(l.escalier)rowsDD.push(["Escalier"+suf,(l.nb_marches||0)+" marche(s) × "+(l.prix_marche||0)+" €"]);
+  });
+  rowsDD.forEach(([k,v])=>{
     if(!v&&v!==0)return;
     const row=el("div",{className:"mob-detail-row"});
     row.appendChild(el("span",{className:"mob-detail-label"},k));
@@ -2681,7 +2775,7 @@ function renderPlanning(){
     aplanifier.forEach(d=>{
       const row=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"0.9rem 1.2rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"0.5rem",marginBottom:"8px"}});
       row.appendChild(el("div",{},[el("span",{style:{color:"#2a2520",fontWeight:"500",fontSize:"14px"}},d.client_nom),el("span",{style:{color:"#8a8278",fontSize:"12px",marginLeft:"10px"}},d.ville||"")]));
-      row.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278"}},`${TARIFS[d.type_sol]?.label} · ${d.surface} m²`));
+      row.appendChild(el("div",{style:{fontSize:"12px",color:"#8a8278"}},`${devisSolLabel(d)} · ${devisLignes(d).reduce((s,l)=>s+(parseFloat(l.surface)||0),0)} m²`));
       row.appendChild(el("div",{style:{fontSize:"13px",color:"#c9a84c",fontWeight:"600"}},((d.montant_ht||0)*1.2).toFixed(0)+" € TTC"));
       const bPlan=el("button",{style:{...BS,fontSize:"11px",padding:"4px 10px",color:"#3B6D11",borderColor:"#3B6D1144"}},"📅 Planifier");
       bPlan.addEventListener("click",()=>set({planifierDevis:d}));
@@ -2752,21 +2846,18 @@ function renderClients(){
         const leadDevis=S.devis.find(d=>d.client_nom===c.nom&&isLead(d));
         const sol=leadDevis?.type_sol||"marbre";
         const etatInit="moyen";
-        S.form={
-          client_nom:c.nom,client_tel:c.tel||"",client_email:c.email||"",ville:c.ville||"",
+        const l0={...defaultLigneDevis(),
           type_sol:sol,
           travaux:TARIFS[sol]?.label||"Marbre",
           prix_m2:Math.round((TARIFS[sol]?.prix[0]||30)*COEFF[etatInit]),
           surface:(leadDevis?.surface&&leadDevis.surface!=="0")?leadDevis.surface:"",
-          etat:etatInit,
+          etat:etatInit
+        };
+        S.form={
+          client_nom:c.nom,client_tel:c.tel||"",client_email:c.email||"",ville:c.ville||"",
           description:leadDevis?.description||"",
-          finition:"brillant",
-          traitement:"vitrifié",
-          fond_dur:false,
-          duree_jours:1,
-          grains:[],rebouchage:false,rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,
-          escalier:false,nb_marches:"",prix_marche:"",
           tva_taux:20,cerfa:false,
+          lignes:[l0],
           _leadPrefilled:true
         };
         set({onglet:"devis",modal:"nouveau"});
