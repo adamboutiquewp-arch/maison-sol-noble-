@@ -270,7 +270,7 @@ function isLead(d){return d.source==="site_vitrine";}
 // ── DEVIS MULTI-PRESTATIONS : un devis peut regrouper plusieurs sols ──
 // (ex : parquet dans une pièce + marbre dans une autre, sur le même document).
 function defaultLigneDevis(){
-  return {type_sol:"marbre",travaux:"Marbre",etat:"moyen",surface:"",prix_m2:30,finition:"brillant",traitement:"vitrifié",fond_dur:false,duree_jours:1,grains:[],rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,plinthes:false,seuil_fenetre:false,escalier:false,nb_marches:"",prix_marche:""};
+  return {type_sol:"marbre",travaux:"Marbre",etat:"moyen",support:"sol",surface:"",prix_m2:30,finition:"brillant",traitement:"vitrifié",fond_dur:false,duree_jours:1,grains:[],rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,plinthes:false,seuil_fenetre:false,escalier:false,nb_marches:"",prix_marche:""};
 }
 function ligneMontantHt(l){
   const escalierCout=l.escalier?Math.round((parseFloat(l.nb_marches)||0)*(parseFloat(l.prix_marche)||0)):0;
@@ -281,7 +281,7 @@ function ligneMontantHt(l){
 // (PDF, tableau de bord, fiches) fonctionne quel que soit le format d'origine.
 function devisLignes(d){
   if(d.lignes&&d.lignes.length)return d.lignes;
-  return [{type_sol:d.type_sol||"marbre",travaux:d.travaux||"",etat:d.etat||"moyen",surface:d.surface||"",prix_m2:d.prix_m2||0,finition:d.finition||"brillant",traitement:d.traitement||"vitrifié",fond_dur:d.fond_dur||false,duree_jours:d.duree_jours||1,grains:d.grains||[],rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,rebouchage_fissures:d.rebouchage_fissures||false,nettoyage_joints:d.nettoyage_joints||false,laitance:d.laitance||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,plinthes:d.plinthes||false,seuil_fenetre:d.seuil_fenetre||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||""}];
+  return [{type_sol:d.type_sol||"marbre",travaux:d.travaux||"",etat:d.etat||"moyen",support:d.support||"sol",surface:d.surface||"",prix_m2:d.prix_m2||0,finition:d.finition||"brillant",traitement:d.traitement||"vitrifié",fond_dur:d.fond_dur||false,duree_jours:d.duree_jours||1,grains:d.grains||[],rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,rebouchage_fissures:d.rebouchage_fissures||false,nettoyage_joints:d.nettoyage_joints||false,laitance:d.laitance||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,plinthes:d.plinthes||false,seuil_fenetre:d.seuil_fenetre||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||""}];
 }
 function devisSolLabel(d){
   const lignes=devisLignes(d);
@@ -346,7 +346,7 @@ async function api(path,opts={},token=null){
 // via la table "parametres" (une ligne par devis, cle="devis_extra_<numero>"),
 // exactement comme le stock/les tarifs/les comptes. Aucune modification de
 // schéma Supabase requise.
-const DEVIS_EXTRA_FIELDS=["lignes","grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","plinthes","seuil_fenetre","escalier","nb_marches","prix_marche","date_intervention","duree_jours","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
+const DEVIS_EXTRA_FIELDS=["lignes","support","grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","plinthes","seuil_fenetre","escalier","nb_marches","prix_marche","date_intervention","duree_jours","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
 function devisExtraKey(numero){return "devis_extra_"+numero;}
 function extractDevisExtra(obj){
   const extra={};
@@ -404,6 +404,7 @@ function mergeDevisLocal(remote,extraMap={}){
       mineralisation:pick("mineralisation",false),
       hydrofuge:pick("hydrofuge",false),
       oleofuge:pick("oleofuge",false),
+      support:pick("support","sol"),
       plinthes:pick("plinthes",false),
       seuil_fenetre:pick("seuil_fenetre",false),
       escalier:pick("escalier",false),
@@ -443,7 +444,7 @@ async function loadDevisFromSupabase(){
 // Champs sans colonne sur "devis" (voir DEVIS_EXTRA_FIELDS, synchronisés via "parametres")
 // + champs d'état d'interface jamais persistés
 function toSupabase(obj){
-  const {lignes,grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,plinthes,seuil_fenetre,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
+  const {lignes,support,grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,plinthes,seuil_fenetre,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
   return rest;
 }
 
@@ -940,7 +941,7 @@ function ouvrirApercu(dv){
   const workRowsHTML=devisLignes(dv).map(function(l){
     const descLines=buildDescription(l);
     const descHTML=descLines.length?descLines.map(function(ln){return "<div style=\"padding:2px 0 2px 14px;text-indent:-14px;font-size:10.5px;color:#333333;line-height:1.7;\">&bull; "+ln+"</div>";}).join(""):"";
-    const solLabel=(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol||"—";
+    const solLabel=((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol||"—")+(l.support==="mur"?" (Mur)":"");
     const finLabel=l.finition?(l.finition==="mat"?"Mat":l.finition==="satiné"?"Satiné":l.finition==="ciré"?"Ciré":"Brillant"):"—";
     const traitementLabel=l.traitement==="ciré"?"Ciré":"Vitrifié";
     const surfaceStr=l.surface?l.surface+" m²":"—";
@@ -2169,6 +2170,9 @@ function renderFormDevis(){
       const trav=TARIFS[l.type_sol];
       if(trav)l.prix_m2=Math.round((trav.prix[0]||0)*COEFF[v]);
     }),0)));
+    if(["marbre","travertin","granito"].includes(l.type_sol)){
+      card.appendChild(row(grp("Application",radioGroup("support",[["sol","Sol"],["mur","Mur"]]),0)));
+    }
     card.appendChild(row(grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
     if(l.type_sol==="parquet"){
       card.appendChild(row(grp("Traitement",radioGroup("traitement",[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]),0),grp("Finition",radioGroup("finition",[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"]]),0)));
@@ -2357,7 +2361,7 @@ function renderFormDevis(){
     // le reste de l'app (tableau de bord, fiche mission, certificat...) qui ne
     // connaissait qu'un seul type de sol par devis avant l'ajout du multi-prestations.
     const l0=f.lignes[0]||defaultLigneDevis();
-    const flatCompat={type_sol:l0.type_sol,travaux:l0.travaux,etat:l0.etat,surface:l0.surface,prix_m2:l0.prix_m2,finition:l0.finition,traitement:l0.traitement,fond_dur:l0.fond_dur,duree_jours:l0.duree_jours,grains:l0.grains,rebouchage_cavites:l0.rebouchage_cavites,rebouchage_joints:l0.rebouchage_joints,rebouchage_fissures:l0.rebouchage_fissures,nettoyage_joints:l0.nettoyage_joints,laitance:l0.laitance,preparation:l0.preparation,cristallisation:l0.cristallisation,mineralisation:l0.mineralisation,hydrofuge:l0.hydrofuge,oleofuge:l0.oleofuge,plinthes:l0.plinthes,seuil_fenetre:l0.seuil_fenetre,escalier:l0.escalier,nb_marches:l0.nb_marches,prix_marche:l0.prix_marche};
+    const flatCompat={type_sol:l0.type_sol,travaux:l0.travaux,etat:l0.etat,support:l0.support,surface:l0.surface,prix_m2:l0.prix_m2,finition:l0.finition,traitement:l0.traitement,fond_dur:l0.fond_dur,duree_jours:l0.duree_jours,grains:l0.grains,rebouchage_cavites:l0.rebouchage_cavites,rebouchage_joints:l0.rebouchage_joints,rebouchage_fissures:l0.rebouchage_fissures,nettoyage_joints:l0.nettoyage_joints,laitance:l0.laitance,preparation:l0.preparation,cristallisation:l0.cristallisation,mineralisation:l0.mineralisation,hydrofuge:l0.hydrofuge,oleofuge:l0.oleofuge,plinthes:l0.plinthes,seuil_fenetre:l0.seuil_fenetre,escalier:l0.escalier,nb_marches:l0.nb_marches,prix_marche:l0.prix_marche};
     if(isEdit&&S.selected){
       // Mode modification : PATCH le devis existant
       const patch={...S.form,...flatCompat,montant_ht:ht,updated_at:new Date().toISOString()};
@@ -2492,7 +2496,7 @@ function renderFicheMission(d){
   const rowsFM=[["Client",d.client_nom],["Téléphone",d.client_tel],["Ville",d.ville]];
   lignesFM.forEach((l,i)=>{
     const suf=lignesFM.length>1?" — Prestation "+(i+1):"";
-    rowsFM.push(["Type de sol"+suf,(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol]);
+    rowsFM.push(["Type de sol"+suf,((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol)+(l.support==="mur"?" (Mur)":"")]);
     rowsFM.push(["Surface"+suf,l.surface+" m²"]);
     if(l.escalier)rowsFM.push(["Escalier"+suf,(l.nb_marches||0)+" marche(s)"]);
   });
@@ -2525,7 +2529,7 @@ function renderDetailDevis(d){
   const rowsDD=[["Client",d.client_nom],["Téléphone",d.client_tel],["Email",d.client_email],["Ville",d.ville]];
   lignesDD.forEach((l,i)=>{
     const suf=lignesDD.length>1?" — Prestation "+(i+1):"";
-    rowsDD.push(["Type de sol"+suf,(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol]);
+    rowsDD.push(["Type de sol"+suf,((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol)+(l.support==="mur"?" (Mur)":"")]);
     rowsDD.push(["Surface"+suf,l.surface+" m²"]);
     rowsDD.push(["Prix/m²"+suf,l.prix_m2+" €"]);
     if(l.escalier)rowsDD.push(["Escalier"+suf,(l.nb_marches||0)+" marche(s) × "+(l.prix_marche||0)+" €"]);
