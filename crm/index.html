@@ -666,7 +666,7 @@ function defaultRemboursementForm(existing){
     fonction:(ROLES[S.role]&&ROLES[S.role].label)||"",
     periode_debut:"",
     periode_fin:"",
-    date_demande:new Date().toISOString().split("T")[0],
+    date_demande:localDateStr(new Date()),
     iban:"",
     lignes:[defaultLigneFrais()],
     justificatifs:[],
@@ -1197,7 +1197,7 @@ function defaultRapportForm(d){
   if(d.date_intervention&&(d.duree_jours||1)>1){
     const fin=new Date(d.date_intervention+"T12:00:00");
     fin.setDate(fin.getDate()+(d.duree_jours-1));
-    dateFinDefaut=fin.toISOString().split("T")[0];
+    dateFinDefaut=localDateStr(fin);
   }
   return {
     _devis:d,
@@ -2524,7 +2524,7 @@ function renderPlanifier(){
   wrap.appendChild(info);
   wrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"6px"}},"Date d'intervention"));
   const dateInp=el("input",{type:"date",style:{fontSize:"16px",width:"100%",marginBottom:"1.2rem",padding:"0.6rem 0.8rem",border:"1px solid #dddad2",borderRadius:"8px",background:"#fff",color:"#1a1611"}});
-  dateInp.min=new Date().toISOString().split("T")[0];
+  dateInp.min=localDateStr(new Date());
   if(d.date_intervention)dateInp.value=d.date_intervention;
   wrap.appendChild(dateInp);
   const bConfirm=el("button",{style:{...BP,width:"100%",marginBottom:"8px"}},"📅 Confirmer la date");
@@ -2613,6 +2613,13 @@ function dureeLabel(n){
   if(n===0.5)return "½ journée";
   if(n<1)return n+" jour";
   return n+" jour"+(n>1?"s":"");
+}
+// Date locale (jour du calendrier de l'appareil) au format YYYY-MM-DD.
+// NE JAMAIS utiliser .toISOString().split("T")[0] pour ça : toISOString() convertit
+// en UTC, ce qui décale la date d'un jour selon l'heure et le fuseau (bug déjà vu :
+// un rendez-vous au 9 s'affichait sous la case du 10 dans la vue Mois du planning).
+function localDateStr(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
 function formatIntervention(d){
   if(!d.date_intervention)return null;
@@ -2861,7 +2868,7 @@ function renderPlanning(){
     const grid=el("div",{style:{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:isMobile()?"2px":"4px",marginBottom:"1.5rem"}});
     jours.forEach((jour,i)=>{
       const date=new Date(debut);date.setDate(debut.getDate()+i);
-      const dateStr=date.toISOString().split("T")[0];
+      const dateStr=localDateStr(date);
       const isToday=date.toDateString()===today.toDateString();
       const isSun=date.getDay()===0;
       const dayChantiers=gagnes.filter(d=>dateInChantier(d,dateStr));
@@ -2922,7 +2929,7 @@ function renderPlanning(){
     const startDow=(firstOfMonth.getDay()+6)%7;
     const cur=new Date(firstOfMonth);cur.setDate(1-startDow);
     for(let i=0;i<42;i++){
-      const dateStr=cur.toISOString().split("T")[0];
+      const dateStr=localDateStr(cur);
       const isToday=cur.toDateString()===today.toDateString();
       const isThisMonth=cur.getMonth()===moisRef.getMonth();
       const isSun=cur.getDay()===0;
@@ -2987,7 +2994,7 @@ function renderPlanning(){
 
   // Rendez-vous à venir (hors mode sélection)
   if(!selMode){
-    const todayStr=today.toISOString().split("T")[0];
+    const todayStr=localDateStr(today);
     const aVenir=rdvs.filter(r=>r.date>=todayStr).sort((a,b)=>(a.date+(a.heure||"")).localeCompare(b.date+(b.heure||"")));
     wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"18px",fontWeight:"400",marginBottom:"1rem",marginTop:"1.5rem"}},"Rendez-vous à venir"));
     if(!aVenir.length){wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucun rendez-vous à venir."));}
@@ -3818,7 +3825,7 @@ function renderRemboursements(){
     const sel=el("select",{style:{fontSize:"11px",padding:"3px 6px",borderRadius:"6px"}});
     ["En attente","Validé","Remboursé","Refusé"].forEach(s=>{const o=el("option",{value:s},s);if((r.statut||"En attente")===s)o.selected=true;sel.appendChild(o);});
     sel.addEventListener("change",e=>{
-      const upd=getRemboursements().map(x=>x.numero===r.numero?{...x,statut:e.target.value,validateur_nom:S.session?.nom||"",date_validation:new Date().toISOString().split("T")[0]}:x);
+      const upd=getRemboursements().map(x=>x.numero===r.numero?{...x,statut:e.target.value,validateur_nom:S.session?.nom||"",date_validation:localDateStr(new Date())}:x);
       saveRemboursements(upd);render();
     });
     return sel;
