@@ -2928,7 +2928,9 @@ function renderClients(){
         aa.style.marginTop="0.5rem";
         card.appendChild(aa);
       }
-    } else {
+    }
+    if(!c.devisFait){
+      // Premier devis du client : on reprend les infos du lead (type de sol, surface pressentie...)
       const bnd=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Créer le devis");
       bnd.addEventListener("click",()=>{
         const leadDevis=S.devis.find(d=>d.client_nom===c.nom&&isLead(d));
@@ -2951,6 +2953,19 @@ function renderClients(){
         set({onglet:"devis",modal:"nouveau"});
       });
       card.appendChild(bnd);
+    }else{
+      // Client déjà connu : on relance un devis vierge sans retaper ses coordonnées
+      const bndNew=el("button",{style:{...BS,width:"100%",marginTop:"0.5rem",fontSize:"11px"}},"+ Nouveau devis pour ce client");
+      bndNew.addEventListener("click",()=>{
+        S.form={
+          client_nom:c.nom,client_tel:c.tel||"",client_email:c.email||"",ville:c.ville||"",
+          description:"",
+          tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",
+          lignes:[defaultLigneDevis()]
+        };
+        set({onglet:"devis",modal:"nouveau"});
+      });
+      card.appendChild(bndNew);
     }
     if(!isMobile()){
       const bDel=el("button",{style:{...BS,width:"100%",marginTop:"4px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑 Supprimer client");
