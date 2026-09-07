@@ -338,7 +338,7 @@ function genNumeroFacture(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,rdvForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",lignes:[defaultLigneDevis()]}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,rdvForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",duree_mode:"prestation",duree_globale:"1",lignes:[defaultLigneDevis()]}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -354,7 +354,7 @@ async function api(path,opts={},token=null){
 // via la table "parametres" (une ligne par devis, cle="devis_extra_<numero>"),
 // exactement comme le stock/les tarifs/les comptes. Aucune modification de
 // schéma Supabase requise.
-const DEVIS_EXTRA_FIELDS=["lignes","support","objet","dimensions","prix_forfait","paiement_mode","nb_mensualites","date_intervention_prevue","grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","traitement_calcaire","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","plinthes","seuil_fenetre","escalier","nb_marches","prix_marche","date_intervention","duree_jours","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
+const DEVIS_EXTRA_FIELDS=["lignes","support","objet","dimensions","prix_forfait","paiement_mode","nb_mensualites","date_intervention_prevue","grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","traitement_calcaire","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","plinthes","seuil_fenetre","escalier","nb_marches","prix_marche","date_intervention","duree_jours","duree_mode","duree_globale","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
 function devisExtraKey(numero){return "devis_extra_"+numero;}
 function extractDevisExtra(obj){
   const extra={};
@@ -453,7 +453,7 @@ async function loadDevisFromSupabase(){
 // Champs sans colonne sur "devis" (voir DEVIS_EXTRA_FIELDS, synchronisés via "parametres")
 // + champs d'état d'interface jamais persistés
 function toSupabase(obj){
-  const {lignes,support,objet,dimensions,prix_forfait,paiement_mode,nb_mensualites,date_intervention_prevue,grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,traitement_calcaire,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,plinthes,seuil_fenetre,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
+  const {lignes,support,objet,dimensions,prix_forfait,paiement_mode,nb_mensualites,date_intervention_prevue,grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,traitement_calcaire,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,plinthes,seuil_fenetre,escalier,nb_marches,prix_marche,date_intervention,duree_jours,duree_mode,duree_globale,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
   return rest;
 }
 
@@ -992,7 +992,7 @@ function ouvrirApercu(dv){
     const surfaceStr=estForfait(l)?(l.dimensions||"—"):(l.surface?l.surface+" m²":"—");
     const prixStr=estForfait(l)?"Forfait":(l.prix_m2?l.prix_m2+" €/m²":"—");
     const designation=estForfait(l)?objetLabel(l)+" — "+(l.travaux||solLabel):(l.travaux||"—");
-    const dureeStr=l.duree_jours?l.duree_jours+" jour"+(l.duree_jours>1?"s":""):"";
+    const dureeStr=(dv.duree_mode!=="global"&&l.duree_jours)?dureeLabel(l.duree_jours):"";
     const dureeBlock=dureeStr?"<div style=\"font-size:9px;color:#7a5a10;margin-top:2px;font-weight:500;\">Durée d'intervention estimée : "+dureeStr+"</div>":"";
     const traitementBlock=l.type_sol==="parquet"?"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
     const ligneHt=ligneMontantHt(l);
@@ -1029,6 +1029,7 @@ function ouvrirApercu(dv){
     ?"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;margin-top:12px;\"><strong style=\"color:#111111;\">TVA au taux réduit de "+tvaPct+"% — Article 279-0 bis du CGI :</strong> « Je certifie que les travaux mentionnés sur ce devis se rapportent à un local d’habitation achevé depuis plus de 2 ans et qu’ils sont éligibles au taux intermédiaire de TVA de 10 % en application de l’article 279-0 bis du Code général des impôts. Je reconnais être solidairement tenu au paiement du complément de taxe si les mentions portées sur ce document sont inexactes. » Cette mention remplace l’attestation Cerfa n°1301-SD papier et vaut engagement du client par sa signature ci-dessous.</div>"
     :"";
   const notesBlock=dv.description?"<div style=\"font-size:9.5px;color:#444444;font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid #f0ece4;\">Notes : "+dv.description+"</div>":"";
+  const dureeGlobaleBlock=(dv.duree_mode==="global"&&dv.duree_jours)?"<div style=\"font-size:10px;color:#7a5a10;font-weight:600;margin-bottom:12px;\">⏱ Durée d'intervention estimée pour l'ensemble du devis : "+dureeLabel(dv.duree_jours)+"</div>":"";
   const telBlock=dv.client_tel?"<div>"+fTel(dv.client_tel)+"</div>":"";
   const mailBlock=dv.client_email?"<div>"+fMail(dv.client_email)+"</div>":"";
   const villeBlock=dv.ville?"<div>"+dv.ville+"</div>":"";
@@ -1065,6 +1066,7 @@ function ouvrirApercu(dv){
     +"</tr></thead><tbody>"
     +workRowsHTML
     +"</tbody></table></div>"
+    +dureeGlobaleBlock
     +(notesBlock?"<div style=\"margin-bottom:20px;\">"+notesBlock+"</div>":"")
     // Totals
     +"<div style=\"display:flex;justify-content:flex-end;margin-bottom:22px;\"><table style=\"width:260px;border:1px solid #e0ddd5;\">"
@@ -2088,7 +2090,7 @@ function renderDevis(){
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",description:d.description||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false,paiement_mode:d.paiement_mode||"comptant",nb_mensualites:d.nb_mensualites||"",date_intervention_prevue:d.date_intervention_prevue||"",lignes:devisLignes(d).map(l=>({...defaultLigneDevis(),...l}))};set({modal:"modifier",selected:d});});acts.appendChild(bm);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",description:d.description||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false,paiement_mode:d.paiement_mode||"comptant",nb_mensualites:d.nb_mensualites||"",date_intervention_prevue:d.date_intervention_prevue||"",duree_mode:d.duree_mode||"prestation",duree_globale:d.duree_globale||String(d.duree_jours||1),lignes:devisLignes(d).map(l=>({...defaultLigneDevis(),...l}))};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bap=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#7a5a10",borderColor:"#c9a84c44"}},"📄 Aperçu");bap.addEventListener("click",()=>ouvrirApercu(d));acts.appendChild(bap);
 
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
@@ -2242,12 +2244,14 @@ function renderFormDevis(){
     }else{
       card.appendChild(row(grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
     }
+    const dureeParPrestation=(f.duree_mode||"prestation")==="prestation";
     if(l.type_sol==="parquet"){
       card.appendChild(row(grp("Traitement",radioGroup("traitement",[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]),0),grp("Finition",radioGroup("finition",[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"]]),0)));
-      card.appendChild(row(grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
+      if(dureeParPrestation)card.appendChild(row(grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
     }else{
       const finOpts=[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"],["ciré","Ciré"]];
-      card.appendChild(row(grp("Finition",sel("finition",finOpts),0),grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
+      if(dureeParPrestation)card.appendChild(row(grp("Finition",sel("finition",finOpts),0),grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
+      else card.appendChild(row(grp("Finition",sel("finition",finOpts),0)));
     }
     // ── PRESTATIONS COMPLÉMENTAIRES (ordre de travail) ──
     {
@@ -2364,6 +2368,27 @@ function renderFormDevis(){
     }
     return card;
   }
+  // ── DURÉE D'INTERVENTION : par prestation (chaque ligne a la sienne) ou une seule pour tout le devis ──
+  // (ex : marbre + parquet chez le même client, faits en 1 jour ou une demi-journée, pas en 2 jours cumulés)
+  if(f.lignes.length>1){
+    const dureeModeWrap=el("div",{style:{marginBottom:"1rem"}});
+    dureeModeWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Durée d'intervention"));
+    const dmRow=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"10px"}});
+    [["prestation","Par prestation"],["global","Une seule durée pour tout le devis"]].forEach(function(pair){
+      const val=pair[0],label=pair[1];
+      const active=(f.duree_mode||"prestation")===val;
+      const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",fontFamily:"Inter,sans-serif"}},label);
+      b.addEventListener("click",function(){S.form.duree_mode=val;render();});
+      dmRow.appendChild(b);
+    });
+    dureeModeWrap.appendChild(dmRow);
+    if((f.duree_mode||"prestation")==="global"){
+      const gi=el("input",{type:"number",min:"0.5",step:"0.5",value:f.duree_globale||"1",style:{fontSize:"16px"}});
+      gi.addEventListener("input",e=>{S.form.duree_globale=e.target.value;});
+      dureeModeWrap.appendChild(grp("Durée totale (jours — ex : 0.5 pour une demi-journée)",gi,0));
+    }
+    form.appendChild(dureeModeWrap);
+  }
   const lignesWrap=el("div",{});
   lignesWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"10px"}},"Prestations du devis"));
   f.lignes.forEach((l,idx)=>lignesWrap.appendChild(renderLigneCard(l,idx)));
@@ -2463,7 +2488,7 @@ function renderFormDevis(){
     // le reste de l'app (tableau de bord, fiche mission, certificat...) qui ne
     // connaissait qu'un seul type de sol par devis avant l'ajout du multi-prestations.
     const l0=f.lignes[0]||defaultLigneDevis();
-    const flatCompat={type_sol:l0.type_sol,travaux:l0.travaux,etat:l0.etat,support:l0.support,objet:l0.objet,dimensions:l0.dimensions,prix_forfait:l0.prix_forfait,surface:l0.surface,prix_m2:l0.prix_m2,finition:l0.finition,traitement:l0.traitement,fond_dur:l0.fond_dur,duree_jours:l0.duree_jours,grains:l0.grains,rebouchage_cavites:l0.rebouchage_cavites,rebouchage_joints:l0.rebouchage_joints,rebouchage_fissures:l0.rebouchage_fissures,nettoyage_joints:l0.nettoyage_joints,laitance:l0.laitance,traitement_calcaire:l0.traitement_calcaire,preparation:l0.preparation,cristallisation:l0.cristallisation,mineralisation:l0.mineralisation,hydrofuge:l0.hydrofuge,oleofuge:l0.oleofuge,plinthes:l0.plinthes,seuil_fenetre:l0.seuil_fenetre,escalier:l0.escalier,nb_marches:l0.nb_marches,prix_marche:l0.prix_marche};
+    const flatCompat={type_sol:l0.type_sol,travaux:l0.travaux,etat:l0.etat,support:l0.support,objet:l0.objet,dimensions:l0.dimensions,prix_forfait:l0.prix_forfait,surface:l0.surface,prix_m2:l0.prix_m2,finition:l0.finition,traitement:l0.traitement,fond_dur:l0.fond_dur,duree_jours:(f.duree_mode==="global")?(parseFloat(f.duree_globale)||1):(l0.duree_jours||1),grains:l0.grains,rebouchage_cavites:l0.rebouchage_cavites,rebouchage_joints:l0.rebouchage_joints,rebouchage_fissures:l0.rebouchage_fissures,nettoyage_joints:l0.nettoyage_joints,laitance:l0.laitance,traitement_calcaire:l0.traitement_calcaire,preparation:l0.preparation,cristallisation:l0.cristallisation,mineralisation:l0.mineralisation,hydrofuge:l0.hydrofuge,oleofuge:l0.oleofuge,plinthes:l0.plinthes,seuil_fenetre:l0.seuil_fenetre,escalier:l0.escalier,nb_marches:l0.nb_marches,prix_marche:l0.prix_marche};
     if(isEdit&&S.selected){
       // Mode modification : PATCH le devis existant
       const patch={...S.form,...flatCompat,montant_ht:ht,updated_at:new Date().toISOString()};
@@ -2485,7 +2510,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",lignes:[defaultLigneDevis()]};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",duree_mode:"prestation",duree_globale:"1",lignes:[defaultLigneDevis()]};
     set({modal:null,selected:null});
   });
   return form;
@@ -2582,14 +2607,21 @@ function renderMissionBlock(d){
   return mission;
 }
 
+// Libellé lisible d'une durée en jours, avec prise en charge de la demi-journée
+function dureeLabel(n){
+  n=parseFloat(n)||1;
+  if(n===0.5)return "½ journée";
+  if(n<1)return n+" jour";
+  return n+" jour"+(n>1?"s":"");
+}
 function formatIntervention(d){
   if(!d.date_intervention)return null;
   const dureeD=d.duree_jours||1;
   if(dureeD>1){
-    const finD=new Date(d.date_intervention+"T12:00:00");finD.setDate(finD.getDate()+dureeD-1);
-    return "📅 Intervention : du "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" au "+finD.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" ("+dureeD+" jours)";
+    const finD=new Date(d.date_intervention+"T12:00:00");finD.setDate(finD.getDate()+Math.round(dureeD)-1);
+    return "📅 Intervention : du "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" au "+finD.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" ("+dureeLabel(dureeD)+")";
   }
-  return "📅 Intervention : "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  return "📅 Intervention : "+new Date(d.date_intervention+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+(dureeD<1?" ("+dureeLabel(dureeD)+")":"");
 }
 
 function renderFicheMission(d){
@@ -2696,11 +2728,11 @@ function renderDetailDevis(d){
     wrap.appendChild(di);
     const dureeRow=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"0.6rem"}});
     dureeRow.appendChild(el("span",{style:{fontSize:"12px",color:"#3B6D11",fontWeight:"600",whiteSpace:"nowrap"}},"Durée réelle (jours)"));
-    const dureeInp=el("input",{type:"number",min:"1",value:String(d.duree_jours||1),style:{width:"64px",padding:"6px 8px",border:"1px solid #dddad2",borderRadius:"6px",fontSize:"14px"}});
+    const dureeInp=el("input",{type:"number",min:"0.5",step:"0.5",value:String(d.duree_jours||1),style:{width:"64px",padding:"6px 8px",border:"1px solid #dddad2",borderRadius:"6px",fontSize:"14px"}});
     dureeRow.appendChild(dureeInp);
     const bDuree=el("button",{className:"mob-btn-outline",style:{fontSize:"12px",padding:"6px 12px",marginBottom:"0"}},"Mettre à jour");
     bDuree.addEventListener("click",()=>{
-      const nv=parseInt(dureeInp.value)||1;
+      const nv=parseFloat(dureeInp.value)||1;
       const patch={duree_jours:nv,updated_at:new Date().toISOString()};
       S.devis=S.devis.map(x=>x.numero===d.numero?{...x,...patch}:x);
       if(S.selected&&S.selected.numero===d.numero)S.selected={...S.selected,...patch};
@@ -2742,7 +2774,7 @@ function renderDetailDevis(d){
 function dateInChantier(d,dateStr){
   if(!d.date_intervention)return false;
   const start=new Date(d.date_intervention+"T00:00:00");
-  const end=new Date(start);end.setDate(start.getDate()+((d.duree_jours||1)-1));
+  const end=new Date(start);end.setDate(start.getDate()+(Math.max(1,Math.round(d.duree_jours||1))-1));
   const cur=new Date(dateStr+"T00:00:00");
   return cur>=start&&cur<=end;
 }
@@ -2772,9 +2804,9 @@ function renderPlanning(){
     ]));
     const dureeWrap=el("div",{style:{display:"flex",alignItems:"center",gap:"6px"}});
     dureeWrap.appendChild(el("span",{style:{fontSize:"12px",color:"#3B6D11",fontWeight:"600",whiteSpace:"nowrap"}},"Durée (jours)"));
-    const dureeInp=el("input",{type:"number",min:"1",style:{width:"56px",padding:"5px 8px",border:"1px solid rgba(59,109,17,0.35)",borderRadius:"6px",fontSize:"13px",background:"#fff"}});
+    const dureeInp=el("input",{type:"number",min:"0.5",step:"0.5",style:{width:"56px",padding:"5px 8px",border:"1px solid rgba(59,109,17,0.35)",borderRadius:"6px",fontSize:"13px",background:"#fff"}});
     dureeInp.value=dureeJours;
-    dureeInp.addEventListener("input",e=>{dureeJours=parseInt(e.target.value)||1;});
+    dureeInp.addEventListener("input",e=>{dureeJours=parseFloat(e.target.value)||1;});
     dureeWrap.appendChild(dureeInp);
     banner.appendChild(dureeWrap);
     const bSkip=el("button",{style:{...BS,fontSize:"12px",padding:"6px 12px"}},"Passer sans date");
@@ -3048,7 +3080,7 @@ function renderClients(){
         S.form={
           client_nom:c.nom,client_tel:c.tel||"",client_email:c.email||"",ville:c.ville||"",
           description:leadDevis?.description||"",
-          tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",
+          tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",duree_mode:"prestation",duree_globale:"1",
           lignes:[l0],
           _leadPrefilled:true
         };
@@ -3062,7 +3094,7 @@ function renderClients(){
         S.form={
           client_nom:c.nom,client_tel:c.tel||"",client_email:c.email||"",ville:c.ville||"",
           description:"",
-          tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",
+          tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",duree_mode:"prestation",duree_globale:"1",
           lignes:[defaultLigneDevis()]
         };
         set({onglet:"devis",modal:"nouveau"});
