@@ -338,7 +338,7 @@ function genNumeroFacture(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,lignes:[defaultLigneDevis()]}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",lignes:[defaultLigneDevis()]}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -354,7 +354,7 @@ async function api(path,opts={},token=null){
 // via la table "parametres" (une ligne par devis, cle="devis_extra_<numero>"),
 // exactement comme le stock/les tarifs/les comptes. Aucune modification de
 // schéma Supabase requise.
-const DEVIS_EXTRA_FIELDS=["lignes","support","objet","dimensions","prix_forfait","grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","traitement_calcaire","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","plinthes","seuil_fenetre","escalier","nb_marches","prix_marche","date_intervention","duree_jours","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
+const DEVIS_EXTRA_FIELDS=["lignes","support","objet","dimensions","prix_forfait","paiement_mode","nb_mensualites","date_intervention_prevue","grains","finition","traitement","fond_dur","rebouchage","rebouchage_cavites","rebouchage_joints","rebouchage_fissures","nettoyage_joints","laitance","traitement_calcaire","preparation","cristallisation","mineralisation","hydrofuge","oleofuge","plinthes","seuil_fenetre","escalier","nb_marches","prix_marche","date_intervention","duree_jours","tva_taux","cerfa","bon_pour_accord","acompte_recu","facture_acompte_numero","facture_acompte_date","facture_solde_numero","facture_solde_date","rapport_data"];
 function devisExtraKey(numero){return "devis_extra_"+numero;}
 function extractDevisExtra(obj){
   const extra={};
@@ -453,7 +453,7 @@ async function loadDevisFromSupabase(){
 // Champs sans colonne sur "devis" (voir DEVIS_EXTRA_FIELDS, synchronisés via "parametres")
 // + champs d'état d'interface jamais persistés
 function toSupabase(obj){
-  const {lignes,support,objet,dimensions,prix_forfait,grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,traitement_calcaire,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,plinthes,seuil_fenetre,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
+  const {lignes,support,objet,dimensions,prix_forfait,paiement_mode,nb_mensualites,date_intervention_prevue,grains,finition,traitement,fond_dur,rebouchage,rebouchage_cavites,rebouchage_joints,rebouchage_fissures,nettoyage_joints,laitance,traitement_calcaire,preparation,cristallisation,mineralisation,hydrofuge,oleofuge,plinthes,seuil_fenetre,escalier,nb_marches,prix_marche,date_intervention,duree_jours,tva_taux,cerfa,bon_pour_accord,acompte_recu,facture_acompte_numero,facture_acompte_date,facture_solde_numero,facture_solde_date,rapport_data,_leadPrefilled,_genFacture,_pendingSync,...rest}=obj;
   return rest;
 }
 
@@ -973,6 +973,23 @@ function ouvrirApercu(dv){
   const logoHTML=LOGO_B64
     ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin-bottom:8px;\">"
     :"<div style=\"font-size:18px;font-weight:700;color:#111111;\">"+INFO.nom+"</div>";
+  var paiementHTML;
+  if(dv.paiement_mode==="mensualites"&&(parseInt(dv.nb_mensualites)||0)>0){
+    var nbM=parseInt(dv.nb_mensualites)||1;
+    var mensualite=(ttc/nbM).toFixed(2);
+    var dateTxtPay=dv.date_intervention_prevue?new Date(dv.date_intervention_prevue+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"à convenir";
+    paiementHTML="<div style='margin-bottom:18px;'><div style='font-size:7.5px;font-weight:700;color:#c9a84c;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;'>MODALITÉS DE RÈGLEMENT</div>"
+      +"<div style='display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;'><span style='font-size:10.5px;font-weight:700;color:#111111;'>Paiement en "+nbM+" mensualités</span><span style='font-size:10.5px;font-weight:700;color:#111111;'>"+mensualite+" € TTC / mois</span></div>"
+      +"<div style='font-size:9px;color:#333333;padding-bottom:10px;margin-bottom:10px;border-bottom:1px dashed rgba(201,168,76,0.3);'>Intervention prévue le "+dateTxtPay+"</div>"
+      +"<div style='font-size:9px;color:#333333;padding-top:10px;margin-top:10px;border-top:1px dashed rgba(201,168,76,0.3);'>IBAN : <strong style='color:#111111;'>"+INFO.iban+"</strong></div></div>";
+  }else{
+    paiementHTML="<div style='margin-bottom:18px;'><div style='font-size:7.5px;font-weight:700;color:#c9a84c;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;'>MODALITÉS DE RÈGLEMENT</div>"
+      +"<div style='display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;'><span style='font-size:10.5px;font-weight:700;color:#111111;'>Acompte à la commande — 30 %</span><span style='font-size:10.5px;font-weight:700;color:#111111;'>"+acompte+" € TTC</span></div>"
+      +"<div style='font-size:9px;color:#333333;padding-bottom:10px;margin-bottom:10px;border-bottom:1px dashed rgba(201,168,76,0.3);'>Dû à la signature du présent devis</div>"
+      +"<div style='display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;'><span style='font-size:10.5px;font-weight:700;color:#111111;'>Solde à la livraison du chantier — 70 %</span><span style='font-size:10.5px;font-weight:700;color:#111111;'>"+solde+" € TTC</span></div>"
+      +"<div style='font-size:9px;color:#333333;padding-top:3px;'>Dû à la réception et validation des travaux par le client</div>"
+      +"<div style='font-size:9px;color:#333333;padding-top:10px;margin-top:10px;border-top:1px dashed rgba(201,168,76,0.3);'>IBAN : <strong style='color:#111111;'>"+INFO.iban+"</strong></div></div>";
+  }
   const cerfaBlock=dv.cerfa
     ?"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;margin-top:12px;\"><strong style=\"color:#111111;\">TVA au taux réduit de "+tvaPct+"% — Article 279-0 bis du CGI :</strong> « Je certifie que les travaux mentionnés sur ce devis se rapportent à un local d’habitation achevé depuis plus de 2 ans et qu’ils sont éligibles au taux intermédiaire de TVA de 10 % en application de l’article 279-0 bis du Code général des impôts. Je reconnais être solidairement tenu au paiement du complément de taxe si les mentions portées sur ce document sont inexactes. » Cette mention remplace l’attestation Cerfa n°1301-SD papier et vaut engagement du client par sa signature ci-dessous.</div>"
     :"";
@@ -1021,12 +1038,7 @@ function ouvrirApercu(dv){
     +"<tr><td style=\"padding:9px 10px;font-size:11px;font-weight:700;color:#fff;background:#111111;\">TOTAL TTC</td><td style=\"padding:9px 10px;font-size:14px;font-weight:700;color:#c9a84c;background:#111111;text-align:right;\">"+ttc.toFixed(2)+" €</td></tr>"
     +"</table></div>"
     // Payment
-    +"<div style=\"margin-bottom:18px;\"><div style=\"font-size:7.5px;font-weight:700;color:#c9a84c;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;\">MODALITÉS DE RÈGLEMENT</div>"
-    +"<div style=\"display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;\"><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">Acompte à la commande — 30 %</span><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">"+acompte+" € TTC</span></div>"
-    +"<div style=\"font-size:9px;color:#333333;padding-bottom:10px;margin-bottom:10px;border-bottom:1px dashed rgba(201,168,76,0.3);\">Dû à la signature du présent devis</div>"
-    +"<div style=\"display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;\"><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">Solde à la livraison du chantier — 70 %</span><span style=\"font-size:10.5px;font-weight:700;color:#111111;\">"+solde+" € TTC</span></div>"
-    +"<div style=\"font-size:9px;color:#333333;padding-top:3px;\">Dû à la réception et validation des travaux par le client</div>"
-    +"<div style=\"font-size:9px;color:#333333;padding-top:10px;margin-top:10px;border-top:1px dashed rgba(201,168,76,0.3);\">IBAN : <strong style=\"color:#111111;\">"+INFO.iban+"</strong></div></div>"
+    +paiementHTML
     // Conditions
     +"<div style=\"border-left:3px solid #c9a84c;padding:10px 14px;background:#faf9f6;font-size:9px;color:#333333;line-height:1.8;\"><strong style=\"font-size:9.5px;color:#111111;display:block;margin-bottom:4px;\">Conditions générales :</strong>Devis valable 30 jours à compter de la date d’émission. Déplacement inclus dans la zone d’intervention. Validité sous réserve de disponibilité des créneaux. Ce devis est établi sur la base des informations communiquées et d’une visite préalable si nécessaire. Tout travaux supplémentaire fera l’objet d’un avenant.</div>"
     +cerfaBlock
@@ -2040,7 +2052,7 @@ function renderDevis(){
     const tda=el("td",{style:{padding:"0.8rem 1rem"}});
     const acts=el("div",{style:{display:"flex",gap:"6px"}});
     const bv=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px"}},"Voir");bv.addEventListener("click",()=>set({modal:"detail",selected:d}));acts.appendChild(bv);
-    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",description:d.description||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false,lignes:devisLignes(d).map(l=>({...defaultLigneDevis(),...l}))};set({modal:"modifier",selected:d});});acts.appendChild(bm);
+    const bm=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#3B6D11",borderColor:"#3B6D1144"}},"✏ Modifier");bm.addEventListener("click",()=>{S.form={client_nom:d.client_nom||"",client_tel:d.client_tel||"",client_email:d.client_email||"",ville:d.ville||"",description:d.description||"",tva_taux:d.tva_taux||20,cerfa:d.cerfa||false,paiement_mode:d.paiement_mode||"comptant",nb_mensualites:d.nb_mensualites||"",date_intervention_prevue:d.date_intervention_prevue||"",lignes:devisLignes(d).map(l=>({...defaultLigneDevis(),...l}))};set({modal:"modifier",selected:d});});acts.appendChild(bm);
     const bap=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#7a5a10",borderColor:"#c9a84c44"}},"📄 Aperçu");bap.addEventListener("click",()=>ouvrirApercu(d));acts.appendChild(bap);
 
     const bDel=el("button",{style:{...BS,padding:"3px 8px",fontSize:"11px",color:"#A32D2D",borderColor:"#A32D2D44"}},"🗑");
@@ -2347,6 +2359,33 @@ function renderFormDevis(){
     }
     form.appendChild(tvaWrap);
   }
+  // ── MODALITÉS DE PAIEMENT : comptant (acompte/solde) ou mensualités pour une intervention à date ──
+  {
+    const payWrap=el("div",{style:{marginBottom:"1rem"}});
+    payWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"8px"}},"Modalités de paiement"));
+    const payRow=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"10px"}});
+    [["comptant","Comptant (acompte 30 % / solde 70 %)"],["mensualites","Mensualités — intervention à date"]].forEach(function(pair){
+      const val=pair[0],label=pair[1];
+      const active=(f.paiement_mode||"comptant")===val;
+      const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",fontFamily:"Inter,sans-serif"}},label);
+      b.addEventListener("click",function(){S.form.paiement_mode=val;render();});
+      payRow.appendChild(b);
+    });
+    payWrap.appendChild(payRow);
+    if((f.paiement_mode||"comptant")==="mensualites"){
+      payWrap.appendChild(row(grp("Nombre de mensualités *",top.inp("nb_mensualites","6","number"),0),grp("Date de l'intervention prévue",top.inp("date_intervention_prevue","","date"),0)));
+      const nbM=parseInt(f.nb_mensualites)||0;
+      if(nbM>0&&ht>0){
+        const fTvaM=f.tva_taux||20;
+        const mensualite=(ht*(1+fTvaM/100))/nbM;
+        const dateTxt=f.date_intervention_prevue?" — Intervention prévue le "+new Date(f.date_intervention_prevue+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"";
+        const infoBox=el("div",{style:{background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.3)",borderRadius:"8px",padding:"10px 14px",fontSize:"13px",color:"#8a6a20",fontWeight:"600"}});
+        infoBox.textContent="≈ "+mensualite.toFixed(2)+" € / mois pendant "+nbM+" mois"+dateTxt;
+        payWrap.appendChild(infoBox);
+      }
+    }
+    form.appendChild(payWrap);
+  }
   if(ht>0){
     const fTva=f.tva_taux||20;
     const rc=el("div",{style:{background:"#f0eeea",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"1rem",marginBottom:"1.2rem"}});
@@ -2356,6 +2395,12 @@ function renderFormDevis(){
     });
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px",marginTop:"6px",paddingTop:"6px",borderTop:"1px dashed #dddad2"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#1a1611",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},`TTC (TVA ${fTva}%)`),el("span",{style:{color:"#c9a84c",fontSize:"17px",fontWeight:"700"}},(ht*(1+fTva/100)).toFixed(2)+" €")]));
+    if((f.paiement_mode||"comptant")==="mensualites"){
+      const nbM2=parseInt(f.nb_mensualites)||0;
+      if(nbM2>0){
+        rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginTop:"6px",paddingTop:"6px",borderTop:"1px dashed #dddad2"}},[el("span",{style:{color:"#8a6a20",fontSize:"12px",fontWeight:"600"}},"Soit "+nbM2+" mensualités de"),el("span",{style:{color:"#8a6a20",fontSize:"13px",fontWeight:"700"}},((ht*(1+fTva/100))/nbM2).toFixed(2)+" €")]));
+      }
+    }
     form.appendChild(rc);
   }
   const isEdit=S.modal==="modifier";
@@ -2402,7 +2447,7 @@ function renderFormDevis(){
         S.devis=[payload,...S.devis];
       }
     }
-    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,lignes:[defaultLigneDevis()]};
+    S.form={client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",lignes:[defaultLigneDevis()]};
     set({modal:null,selected:null});
   });
   return form;
@@ -2577,6 +2622,14 @@ function renderDetailDevis(d){
   ttc.appendChild(el("div",{},[el("span",{style:{color:"#706a62",fontSize:"13px",display:"block"}},"Montant TTC"),el("span",{style:{color:"#aaa",fontSize:"10px"}},`TVA ${dTva}%`+(d.cerfa?" — CERFA":""))]));
   ttc.appendChild(el("span",{style:{color:"#c9a84c",fontSize:"24px",fontFamily:"'Cormorant Garamond',serif"}},((d.montant_ht||0)*(1+dTva/100)).toFixed(2)+" €"));
   wrap.appendChild(ttc);
+  if(d.paiement_mode==="mensualites"&&(parseInt(d.nb_mensualites)||0)>0){
+    const nbM3=parseInt(d.nb_mensualites)||1;
+    const mensu=((d.montant_ht||0)*(1+dTva/100))/nbM3;
+    const dateTxt3=d.date_intervention_prevue?new Date(d.date_intervention_prevue+"T12:00:00").toLocaleDateString("fr-FR"):"à convenir";
+    const payInfo=el("div",{style:{background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.25)",borderRadius:"8px",padding:"10px 14px",marginBottom:"1rem",fontSize:"12px",color:"#8a6a20",fontWeight:"600"}});
+    payInfo.textContent="💳 "+nbM3+" mensualités de "+mensu.toFixed(2)+" € — Intervention prévue le "+dateTxt3;
+    wrap.appendChild(payInfo);
+  }
   // Bon pour accord / Acompte reçu
   wrap.appendChild(renderAccordAcompte(d));
   // Statut
@@ -2891,7 +2944,7 @@ function renderClients(){
         S.form={
           client_nom:c.nom,client_tel:c.tel||"",client_email:c.email||"",ville:c.ville||"",
           description:leadDevis?.description||"",
-          tva_taux:20,cerfa:false,
+          tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",
           lignes:[l0],
           _leadPrefilled:true
         };
