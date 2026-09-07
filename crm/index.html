@@ -1091,6 +1091,68 @@ function ouvrirApercu(dv){
   if(w){w.document.write(html);w.document.close();}
 }
 
+// ── EXPORT PDF DU PLANNING (semaine ou mois affiché à l'écran) ──
+function ouvrirApercuPlanning(){
+  const today=new Date();
+  const gagnes=S.devis.filter(d=>d.statut==="Gagné");
+  const rdvs=getRdvs();
+  let jours=[],periodeLabel="";
+  if(S.planningVue==="semaine"){
+    const debut=new Date(today);
+    const dow=(today.getDay()+6)%7;
+    debut.setDate(today.getDate()-dow+S.semaine*7);
+    for(let i=0;i<7;i++){const d=new Date(debut);d.setDate(debut.getDate()+i);jours.push(d);}
+    const fin=jours[6];
+    periodeLabel="Semaine du "+debut.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" au "+fin.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+  }else{
+    const moisRef=new Date(today.getFullYear(),today.getMonth()+S.moisOffset,1);
+    const nbJours=new Date(moisRef.getFullYear(),moisRef.getMonth()+1,0).getDate();
+    for(let i=1;i<=nbJours;i++)jours.push(new Date(moisRef.getFullYear(),moisRef.getMonth(),i));
+    periodeLabel=moisRef.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+    periodeLabel=periodeLabel.charAt(0).toUpperCase()+periodeLabel.slice(1);
+  }
+  const joursHTML=jours.map(function(d){
+    const dateStr=localDateStr(d);
+    const dayChantiers=gagnes.filter(c=>dateInChantier(c,dateStr));
+    const dayRdvs=rdvs.filter(r=>r.date===dateStr);
+    const isSun=d.getDay()===0;
+    const isToday=d.toDateString()===today.toDateString();
+    const entriesHTML=[
+      ...dayChantiers.map(function(c){
+        return "<div style=\"display:flex;align-items:baseline;gap:6px;padding:4px 0;\"><span style=\"color:#3B6D11;font-size:11px;\">🏗</span><span style=\"font-size:11px;color:#111111;\"><strong>"+(c.client_nom||"—")+"</strong>"+(c.ville?" — "+c.ville:"")+" · "+devisSolLabel(c)+chantierJourLabel(c,dateStr)+"</span></div>";
+      }),
+      ...dayRdvs.map(function(r){
+        const t=RDV_TYPES[r.type]||RDV_TYPES.autre;
+        return "<div style=\"display:flex;align-items:baseline;gap:6px;padding:4px 0;\"><span style=\"font-size:11px;\">"+t.icon+"</span><span style=\"font-size:11px;color:#111111;\"><strong>"+(r.client_nom||"—")+"</strong>"+(r.heure?" — "+r.heure:"")+" · "+t.label+(r.devis_numero?" (devis "+r.devis_numero+")":"")+"</span></div>";
+      })
+    ].join("");
+    return "<div style=\"break-inside:avoid;border:1px solid #e8e4dc;border-radius:6px;padding:10px 14px;margin-bottom:8px;background:"+(isToday?"#faf6ea":"#fff")+";\">"
+      +"<div style=\"font-size:11px;font-weight:700;color:"+(isSun?"#a07060":"#1a1611")+";text-transform:capitalize;margin-bottom:"+(entriesHTML?"6px":"0")+";\">"+d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+"</div>"
+      +(entriesHTML||"<div style=\"font-size:10.5px;color:#b0a898;font-style:italic;\">Rien de prévu</div>")
+      +"</div>";
+  }).join("");
+  const logoHTML=LOGO_B64
+    ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:90px;display:block;margin-bottom:8px;\">"
+    :"<div style=\"font-size:18px;font-weight:700;color:#111111;\">"+INFO.nom+"</div>";
+  const html="<!DOCTYPE html>"
+    +"<html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+    +"<title>Planning — "+periodeLabel+"</title>"
+    +"<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;600&display=swap\" rel=\"stylesheet\">"
+    +"<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Inter,Arial,sans-serif;font-size:11px;color:#111111;background:#f0ece4;}.page{max-width:794px;margin:20px auto;background:#fff;padding:44px 50px;box-shadow:0 4px 24px rgba(0,0,0,0.10);}.topbar{max-width:794px;margin:20px auto 0;display:flex;gap:10px;justify-content:flex-end;padding:0 4px;}@media print{body{background:#fff;}.page{margin:0;box-shadow:none;padding:36px 44px;}.topbar{display:none;}}@media screen and (max-width:640px){body{background:#fff!important;}.topbar{padding:12px 14px;max-width:100%;margin:0;}.topbar button{font-size:13px!important;padding:11px 16px!important;width:100%;border-radius:8px!important;}.page{padding:18px 14px!important;margin:0!important;box-shadow:none!important;max-width:100%!important;}}</style>"
+    +"</head><body>"
+    +"<div class=\"topbar\"><button onclick=\"window.print()\" style=\"display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#ffffff;color:#111111;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;border:1px solid #cccccc;border-radius:6px;cursor:pointer;\">&#128438; Imprimer / Enregistrer en PDF</button></div>"
+    +"<div class=\"page\">"
+    +"<div style=\"display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;\">"
+    +"<div>"+logoHTML+"</div>"
+    +"<div style=\"text-align:right;\"><div style=\"font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:#111111;letter-spacing:4px;\">PLANNING</div><div style=\"font-size:11px;color:#444444;margin-top:6px;\">"+periodeLabel+"</div></div>"
+    +"</div>"
+    +"<div style=\"height:2px;background:#c9a84c;margin-bottom:20px;\"></div>"
+    +joursHTML
+    +"</div></body></html>";
+  const w=window.open("","_blank");
+  if(w){w.document.write(html);w.document.close();}
+}
+
 // ── FACTURES (acompte / solde fin de chantier) générées depuis un devis ──
 function genererEtOuvrirFacture(dv,type){
   const isAcompte=type==="acompte";
@@ -2838,7 +2900,10 @@ function renderPlanning(){
     topRow.appendChild(b);
   });
   if(!selMode){
-    const bRdv=el("button",{style:{...BS,fontSize:"12px",padding:"4px 16px",color:"#3B8BD4",borderColor:"#3B8BD444",marginLeft:"auto"}},"📅 + Rendez-vous");
+    const bPdf=el("button",{style:{...BS,fontSize:"12px",padding:"4px 16px",marginLeft:"auto"}},"📄 Export PDF");
+    bPdf.addEventListener("click",()=>ouvrirApercuPlanning());
+    topRow.appendChild(bPdf);
+    const bRdv=el("button",{style:{...BS,fontSize:"12px",padding:"4px 16px",color:"#3B8BD4",borderColor:"#3B8BD444"}},"📅 + Rendez-vous");
     bRdv.addEventListener("click",()=>set({modal:"rdv_form",rdvForm:defaultRdv()}));
     topRow.appendChild(bRdv);
   }
