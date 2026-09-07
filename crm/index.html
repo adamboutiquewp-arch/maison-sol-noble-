@@ -338,7 +338,7 @@ function genNumeroFacture(){
   return prefix+String(next).padStart(4,"0");
 }
 
-let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",lignes:[defaultLigneDevis()]}};
+let S={page:"login",onglet:"devis",session:null,role:"employe",devis:[],loading:true,modal:null,selected:null,planifierDevis:null,rapportForm:null,remboursementForm:null,rdvForm:null,stockForm:null,stockSearch:"",stockFilter:"Toutes les catégories",stockSort:{key:"nom",dir:"asc"},search:"",filterStatut:"Tous",sortBy:"date",semaine:0,planningVue:"semaine",moisOffset:0,loginEmail:"",loginPin:"",loginError:"",loginLoading:false,setupMode:false,setupToken:null,setupEmail:"",ficheTab:"marbre",paramTab:"infos",form:{client_nom:"",client_tel:"",client_email:"",ville:"",description:"",tva_taux:20,cerfa:false,paiement_mode:"comptant",nb_mensualites:"",date_intervention_prevue:"",lignes:[defaultLigneDevis()]}};
 
 function set(patch){S={...S,...patch};render();}
 
@@ -573,6 +573,40 @@ async function saveStockToSupabase(){
     });
   }catch(e){console.error("saveStockToSupabase:",e);}
 }
+
+// ── RENDEZ-VOUS (visite pour devis, rencontre client...) — même principe que le stock : ──
+// une seule ligne dans "parametres", aucune modification de schéma Supabase requise.
+function defaultRdv(){
+  return {id:"rdv_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),client_nom:"",tel:"",ville:"",type:"devis",date:"",heure:"",notes:""};
+}
+function getRdvs(){
+  try{return JSON.parse(localStorage.getItem("msn_rdvs")||"[]");}catch{return[];}
+}
+function saveRdvs(list){
+  localStorage.setItem("msn_rdvs",JSON.stringify(list));
+  saveRdvsToSupabase(list);
+}
+async function loadRdvsFromSupabase(){
+  try{
+    const rows=await api("parametres?cle=eq.rendez_vous");
+    if(rows&&Array.isArray(rows)&&rows.length&&rows[0].valeur){
+      localStorage.setItem("msn_rdvs",JSON.stringify(rows[0].valeur));
+      render();
+    }
+  }catch{}
+}
+async function saveRdvsToSupabase(list){
+  try{
+    const authToken=await getAppAuthToken()||SUPA_KEY;
+    await fetch(`${SUPA_URL}/rest/v1/parametres`,{
+      method:"POST",
+      headers:{apikey:SUPA_KEY,Authorization:`Bearer ${authToken}`,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates"},
+      body:JSON.stringify({cle:"rendez_vous",valeur:list||getRdvs(),updated_at:new Date().toISOString()})
+    });
+  }catch(e){console.error("saveRdvsToSupabase:",e);}
+}
+const RDV_TYPES={devis:{label:"Rendez-vous devis",icon:"📐",color:"#3B8BD4"},rencontre:{label:"Rencontre client",icon:"🤝",color:"#8B3A8B"},autre:{label:"Autre",icon:"📌",color:"#8a8278"}};
+
 function addMouvementStock(item,delta,motif){
   const stock=getStock();
   const auteur=S.session?.nom||S.session?.email||"—";
@@ -746,6 +780,7 @@ document.addEventListener("visibilitychange",()=>{
     loadComptesFromSupabase();
     loadStockFromSupabase();
     loadRemboursementsFromSupabase();
+    loadRdvsFromSupabase();
   }
 });
 
@@ -1568,6 +1603,7 @@ function renderLogin(){
       loadTarifsFromSupabase();
       loadStockFromSupabase();
       loadRemboursementsFromSupabase();
+      loadRdvsFromSupabase();
       startPolling();
       loadDevisFromSupabase().then(devis=>{
         set({devis:devis.length?devis:DEMO_DEVIS,loading:false});
@@ -1657,7 +1693,7 @@ function renderSetup(){
               setTimeout(()=>{
                 loginPin(compte.email,pin1);
                 set({page:"crm",session:getSession(),role:compte.role,devis:[],loading:true});
-              loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();loadRemboursementsFromSupabase();startPolling();
+              loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();loadRemboursementsFromSupabase();loadRdvsFromSupabase();startPolling();
               loadDevisFromSupabase().then(devis=>{set({devis:devis.length?devis:DEMO_DEVIS,loading:false});});
               },1000);
             }catch(e){errDiv.textContent="Erreur: "+e.message;}
@@ -2071,7 +2107,7 @@ function renderModal(){
     ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
     const sheet=el("div",{className:"mob-sheet"});
     sheet.appendChild(el("div",{className:"mob-sheet-handle"}));
-    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte",planifier:"Planifier l'intervention",remboursement_form:S.remboursementForm?.numero?`Remboursement ${S.remboursementForm.numero}`:"Nouvelle demande de remboursement"};
+    const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte",planifier:"Planifier l'intervention",remboursement_form:S.remboursementForm?.numero?`Remboursement ${S.remboursementForm.numero}`:"Nouvelle demande de remboursement",rdv_form:S.rdvForm&&getRdvs().some(r=>r.id===S.rdvForm.id)?"Modifier le rendez-vous":"Nouveau rendez-vous"};
     const hdr=el("div",{className:"mob-sheet-header"});
     hdr.appendChild(el("div",{className:"mob-sheet-title"},titles[S.modal]||""));
     const bx=el("button",{style:{background:"rgba(0,0,0,0.06)",border:"none",color:"#9a9488",fontSize:"22px",lineHeight:"1",padding:"4px 10px",borderRadius:"8px",cursor:"pointer"}},"×");
@@ -2086,6 +2122,7 @@ function renderModal(){
     else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
     else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
     else if(S.modal==="remboursement_form"&&S.remboursementForm)body.appendChild(renderFormRemboursement());
+    else if(S.modal==="rdv_form"&&S.rdvForm)body.appendChild(renderFormRdv());
     sheet.appendChild(body);ov.appendChild(sheet);return ov;
   }
   // ── MODAL DESKTOP ──
@@ -2093,7 +2130,7 @@ function renderModal(){
   ov.addEventListener("click",e=>{if(e.target===ov)set({modal:null,selected:null});});
   const box=el("div",{style:{background:"#f8f7f3",border:"1px solid #dddad2",borderRadius:"8px",width:"100%",maxWidth:"640px",marginBottom:"1.5rem"}});
   const hdr=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"1.2rem 1.5rem",borderBottom:"1px solid #e8e4dc"}});
-  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention",remboursement_form:S.remboursementForm?.numero?`Remboursement ${S.remboursementForm.numero}`:"Nouvelle demande de remboursement"};
+  const titles={nouveau:"Nouveau devis",modifier:`Modifier ${S.selected?.numero||""}`,detail:`Devis ${S.selected?.numero||""}`,mission:"Fiche de mission",rapport:"Certificat d'intervention",stock_form:"Article de stock",employe_new:"Nouveau compte employé",planifier:"Planifier l'intervention",remboursement_form:S.remboursementForm?.numero?`Remboursement ${S.remboursementForm.numero}`:"Nouvelle demande de remboursement",rdv_form:S.rdvForm&&getRdvs().some(r=>r.id===S.rdvForm.id)?"Modifier le rendez-vous":"Nouveau rendez-vous"};
   hdr.appendChild(el("h2",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"#1a1611",fontWeight:"400"}},titles[S.modal]||""));
   const bx=el("button",{style:{background:"none",border:"none",color:"#666",fontSize:"22px",lineHeight:"1"}},"×");bx.addEventListener("click",()=>set({modal:null,selected:null,planifierDevis:null,remboursementForm:null}));hdr.appendChild(bx);box.appendChild(hdr);
   const body=el("div",{style:{padding:"1.5rem"}});
@@ -2105,6 +2142,7 @@ function renderModal(){
   else if(S.modal==="employe_new")body.appendChild(renderFormEmploye());
   else if(S.modal==="planifier"&&S.planifierDevis)body.appendChild(renderPlanifier());
   else if(S.modal==="remboursement_form"&&S.remboursementForm)body.appendChild(renderFormRemboursement());
+  else if(S.modal==="rdv_form"&&S.rdvForm)body.appendChild(renderFormRdv());
   box.appendChild(body);ov.appendChild(box);return ov;
 }
 
@@ -2611,6 +2649,14 @@ function renderDetailDevis(d){
     row.appendChild(el("span",{className:"mob-detail-val"},String(v)));
     wrap.appendChild(row);
   });
+  // Rendez-vous lié à ce devis (visite pour en discuter, signer, etc.)
+  {
+    const bRdv=el("button",{className:"mob-btn-outline",style:{color:"#3B8BD4",borderColor:"#3B8BD444",marginBottom:"0.8rem"}},"📅 Prendre rendez-vous pour ce devis");
+    bRdv.addEventListener("click",()=>{
+      set({modal:"rdv_form",rdvForm:{...defaultRdv(),client_nom:d.client_nom||"",tel:d.client_tel||"",ville:d.ville||"",devis_numero:d.numero,type:"devis"}});
+    });
+    wrap.appendChild(bRdv);
+  }
   // Fiche de mission : tâches à faire + description
   {
     const mb=renderMissionBlock(d);
@@ -2742,14 +2788,21 @@ function renderPlanning(){
     wrap.appendChild(banner);
   }
 
-  // Toggle Semaine / Mois
-  const topRow=el("div",{style:{display:"flex",gap:"6px",alignItems:"center",marginBottom:"1rem"}});
+  const rdvs=getRdvs();
+
+  // Toggle Semaine / Mois + bouton Rendez-vous
+  const topRow=el("div",{style:{display:"flex",gap:"6px",alignItems:"center",marginBottom:"1rem",flexWrap:"wrap"}});
   ["semaine","mois"].forEach(vue=>{
     const active=S.planningVue===vue;
     const b=el("button",{style:{...(active?BP:BS),fontSize:"12px",padding:"4px 16px"}},vue==="semaine"?"Semaine":"Mois");
     if(!active)b.addEventListener("click",()=>set({planningVue:vue}));
     topRow.appendChild(b);
   });
+  if(!selMode){
+    const bRdv=el("button",{style:{...BS,fontSize:"12px",padding:"4px 16px",color:"#3B8BD4",borderColor:"#3B8BD444",marginLeft:"auto"}},"📅 + Rendez-vous");
+    bRdv.addEventListener("click",()=>set({modal:"rdv_form",rdvForm:defaultRdv()}));
+    topRow.appendChild(bRdv);
+  }
   wrap.appendChild(topRow);
 
   const clickDay=async(dateStr)=>{
@@ -2780,6 +2833,7 @@ function renderPlanning(){
       const isToday=date.toDateString()===today.toDateString();
       const isSun=date.getDay()===0;
       const dayChantiers=gagnes.filter(d=>dateInChantier(d,dateStr));
+      const dayRdvs=rdvs.filter(r=>r.date===dateStr);
       const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"8px",padding:isMobile()?"4px 3px":"0.75rem",minHeight:isMobile()?"52px":"110px",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",cursor:selMode?"pointer":"default",transition:"background 0.12s,border-color 0.12s"}});
       if(selMode){
         cell.addEventListener("mouseenter",()=>{cell.style.background="rgba(59,109,17,0.07)";cell.style.borderColor="rgba(59,109,17,0.35)";});
@@ -2800,6 +2854,19 @@ function renderPlanning(){
           const bEd=el("button",{style:{background:"none",border:"none",color:"#b0a898",fontSize:"11px",cursor:"pointer",padding:"0 2px",lineHeight:"1",flexShrink:"0"},title:"Modifier la date"},"✎");
           bEd.addEventListener("click",(e)=>{e.stopPropagation();set({planifierDevis:c});});
           row.appendChild(chip);row.appendChild(bEd);cell.appendChild(row);
+        }
+      });
+      dayRdvs.forEach(r=>{
+        const t=RDV_TYPES[r.type]||RDV_TYPES.autre;
+        if(isMobile()){
+          const dot=el("div",{style:{width:"5px",height:"5px",background:t.color,borderRadius:"50%",margin:"2px auto",cursor:"pointer"}});
+          dot.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"rdv_form",rdvForm:{...r}});});
+          cell.appendChild(dot);
+        }else{
+          const row=el("div",{style:{display:"flex",gap:"2px",alignItems:"center",marginBottom:"3px"}});
+          const chip=el("div",{style:{background:t.color+"22",border:"1px solid "+t.color+"55",borderRadius:"4px",padding:"2px 5px",fontSize:"10px",color:t.color,flex:"1",cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},t.icon+" "+r.client_nom+(r.heure?" · "+r.heure:""));
+          chip.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"rdv_form",rdvForm:{...r}});});
+          row.appendChild(chip);cell.appendChild(row);
         }
       });
       grid.appendChild(cell);
@@ -2828,6 +2895,7 @@ function renderPlanning(){
       const isThisMonth=cur.getMonth()===moisRef.getMonth();
       const isSun=cur.getDay()===0;
       const dayChantiers=gagnes.filter(d=>dateInChantier(d,dateStr));
+      const dayRdvs=rdvs.filter(r=>r.date===dateStr);
       const cell=el("div",{style:{background:isToday?"rgba(201,168,76,0.08)":!isThisMonth?"rgba(0,0,0,0.015)":"#ffffff",border:`1px solid ${isToday?"rgba(201,168,76,0.3)":"#e8e4dc"}`,borderRadius:"6px",padding:isMobile()?"3px":"5px 6px",minHeight:isMobile()?"38px":"72px",cursor:selMode?"pointer":"default",transition:"background 0.12s",opacity:isThisMonth?"1":"0.45"}});
       if(selMode){
         cell.addEventListener("mouseenter",()=>{cell.style.background="rgba(59,109,17,0.07)";cell.style.borderColor="rgba(59,109,17,0.35)";});
@@ -2849,6 +2917,19 @@ function renderPlanning(){
           row.appendChild(chip);row.appendChild(bEd);cell.appendChild(row);
         }
       });
+      dayRdvs.forEach(r=>{
+        const t=RDV_TYPES[r.type]||RDV_TYPES.autre;
+        if(isMobile()){
+          const dot=el("div",{style:{width:"5px",height:"5px",background:t.color,borderRadius:"50%",margin:"1px auto",cursor:"pointer"}});
+          dot.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"rdv_form",rdvForm:{...r}});});
+          cell.appendChild(dot);
+        }else{
+          const row=el("div",{style:{display:"flex",gap:"2px",alignItems:"center",marginBottom:"2px"}});
+          const chip=el("div",{style:{background:t.color+"22",border:"1px solid "+t.color+"55",borderRadius:"3px",padding:"2px 4px",fontSize:"9px",color:t.color,flex:"1",cursor:"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},t.icon+" "+r.client_nom);
+          chip.addEventListener("click",(e)=>{e.stopPropagation();set({modal:"rdv_form",rdvForm:{...r}});});
+          row.appendChild(chip);cell.appendChild(row);
+        }
+      });
       grid.appendChild(cell);
       cur.setDate(cur.getDate()+1);
     }
@@ -2868,6 +2949,27 @@ function renderPlanning(){
       const bPlan=el("button",{style:{...BS,fontSize:"11px",padding:"4px 10px",color:"#3B6D11",borderColor:"#3B6D1144"}},"📅 Planifier");
       bPlan.addEventListener("click",()=>set({planifierDevis:d}));
       row.appendChild(bPlan);
+      wrap.appendChild(row);
+    });
+  }
+
+  // Rendez-vous à venir (hors mode sélection)
+  if(!selMode){
+    const todayStr=today.toISOString().split("T")[0];
+    const aVenir=rdvs.filter(r=>r.date>=todayStr).sort((a,b)=>(a.date+(a.heure||"")).localeCompare(b.date+(b.heure||"")));
+    wrap.appendChild(el("h3",{style:{fontFamily:"'Cormorant Garamond',serif",color:"#1a1611",fontSize:"18px",fontWeight:"400",marginBottom:"1rem",marginTop:"1.5rem"}},"Rendez-vous à venir"));
+    if(!aVenir.length){wrap.appendChild(el("p",{style:{color:"#9a9488",fontSize:"13px"}},"Aucun rendez-vous à venir."));}
+    aVenir.forEach(r=>{
+      const t=RDV_TYPES[r.type]||RDV_TYPES.autre;
+      const row=el("div",{style:{background:"#ffffff",border:"1px solid #e8e4dc",borderRadius:"8px",padding:"0.9rem 1.2rem",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"0.5rem",marginBottom:"8px",cursor:"pointer"}});
+      row.addEventListener("click",()=>set({modal:"rdv_form",rdvForm:{...r}}));
+      row.appendChild(el("div",{},[
+        el("span",{style:{color:"#2a2520",fontWeight:"500",fontSize:"14px"}},r.client_nom),
+        el("span",{style:{color:"#8a8278",fontSize:"12px",marginLeft:"10px"}},r.ville||""),
+        r.devis_numero?el("span",{style:{color:"#c9a84c",fontSize:"11px",marginLeft:"10px",fontWeight:"600"}},"📄 "+r.devis_numero):null
+      ]));
+      row.appendChild(el("div",{style:{fontSize:"13px",color:t.color,fontWeight:"600"}},new Date(r.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+(r.heure?" · "+r.heure:"")));
+      row.appendChild(el("span",{style:{background:t.color+"22",color:t.color,border:"1px solid "+t.color+"44",padding:"2px 10px",borderRadius:"20px",fontSize:"11px",fontWeight:"500",whiteSpace:"nowrap"}},t.icon+" "+t.label));
       wrap.appendChild(row);
     });
   }
@@ -3306,6 +3408,79 @@ function renderFormStock(){
   wrap.appendChild(bSave);
   const bc=el("button",{className:"mob-btn-outline"},"Annuler");
   bc.addEventListener("click",()=>set({modal:null,stockForm:null}));
+  wrap.appendChild(bc);
+  return wrap;
+}
+
+function renderFormRdv(){
+  const rf=S.rdvForm;
+  const isEdit=getRdvs().some(r=>r.id===rf.id);
+  const wrap=el("div",{});
+  function textField(label,key,type,placeholder){
+    const i=el("input",{type:type||"text",value:rf[key]??"",placeholder:placeholder||""});
+    if(key==="client_nom")i.setAttribute("list","rdv-clients-list");
+    i.addEventListener("input",e=>{rf[key]=e.target.value;});
+    return grp(label,i);
+  }
+  wrap.appendChild(textField("Client *","client_nom","text","Nom du client"));
+  // Suggestions de clients déjà connus, pour ne pas retaper leurs coordonnées
+  const clientsConnus=[...new Set(S.devis.map(d=>d.client_nom).filter(Boolean))];
+  const datalist=el("datalist",{id:"rdv-clients-list"});
+  clientsConnus.forEach(nom=>datalist.appendChild(el("option",{value:nom})));
+  wrap.appendChild(datalist);
+  const bAutoFill=el("button",{type:"button",style:{...BS,fontSize:"11px",padding:"4px 10px",marginTop:"-10px",marginBottom:"14px"}},"↳ Reprendre les coordonnées de ce client");
+  bAutoFill.addEventListener("click",()=>{
+    const dc=S.devis.find(d=>d.client_nom===rf.client_nom);
+    if(dc){rf.tel=dc.client_tel||rf.tel;rf.ville=dc.ville||rf.ville;render();}
+  });
+  wrap.appendChild(bAutoFill);
+  wrap.appendChild(textField("Téléphone","tel","tel"));
+  wrap.appendChild(textField("Ville","ville"));
+  // Devis concerné (facultatif) — pour retrouver en un clic le devis dont on va parler
+  const devisSel=el("select",{});
+  devisSel.appendChild(el("option",{value:""},"— Aucun devis lié —"));
+  S.devis.forEach(d=>{
+    const o=el("option",{value:d.numero},d.numero+" — "+d.client_nom+(d.montant_ht?" ("+((d.montant_ht*1.2).toFixed(0))+" € TTC)":""));
+    if(rf.devis_numero===d.numero)o.selected=true;
+    devisSel.appendChild(o);
+  });
+  devisSel.addEventListener("change",e=>{rf.devis_numero=e.target.value||null;});
+  wrap.appendChild(grp("Devis concerné (facultatif)",devisSel));
+  // Type de rendez-vous
+  const typeWrap=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+  Object.entries(RDV_TYPES).forEach(([val,t])=>{
+    const active=(rf.type||"devis")===val;
+    const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?t.color:"#dddad2"),background:active?t.color+"22":"#fff",color:active?t.color:"#706a62",borderRadius:"20px",cursor:"pointer",fontFamily:"Inter,sans-serif"}},t.icon+" "+t.label);
+    b.addEventListener("click",()=>{rf.type=val;render();});
+    typeWrap.appendChild(b);
+  });
+  wrap.appendChild(grp("Type de rendez-vous",typeWrap));
+  wrap.appendChild(textField("Date *","date","date"));
+  wrap.appendChild(textField("Heure / créneau","heure","text","ex : 14h30 ou Après-midi"));
+  const notesArea=el("textarea",{style:{minHeight:"50px",resize:"vertical"}});
+  notesArea.textContent=rf.notes||"";
+  notesArea.addEventListener("input",e=>{rf.notes=e.target.value;});
+  wrap.appendChild(grp("Notes",notesArea));
+
+  const bSave=el("button",{className:"mob-btn-full",style:{background:"#3B6D11",color:"#fff",marginBottom:"0.5rem"}},isEdit?"Enregistrer":"+ Ajouter le rendez-vous");
+  bSave.addEventListener("click",()=>{
+    if(!rf.client_nom||!rf.client_nom.trim()||!rf.date)return;
+    const list=getRdvs();
+    const updated=isEdit?list.map(r=>r.id===rf.id?{...r,...rf}:r):[...list,rf];
+    saveRdvs(updated);
+    set({modal:null,rdvForm:null});
+  });
+  wrap.appendChild(bSave);
+  if(isEdit){
+    const bDel=el("button",{className:"mob-btn-outline",style:{color:"#A32D2D",borderColor:"#A32D2D44",marginBottom:"0.5rem"}},"🗑 Supprimer le rendez-vous");
+    bDel.addEventListener("click",()=>{
+      saveRdvs(getRdvs().filter(r=>r.id!==rf.id));
+      set({modal:null,rdvForm:null});
+    });
+    wrap.appendChild(bDel);
+  }
+  const bc=el("button",{className:"mob-btn-outline"},"Annuler");
+  bc.addEventListener("click",()=>set({modal:null,rdvForm:null}));
   wrap.appendChild(bc);
   return wrap;
 }
@@ -4104,7 +4279,7 @@ function render(){
   const session=getSession();
   if(session){
     S={...S,page:"crm",session,role:session.role,devis:[],loading:true};
-    loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();loadRemboursementsFromSupabase();startPolling();
+    loadTarifsFromSupabase();loadComptesFromSupabase();loadStockFromSupabase();loadRemboursementsFromSupabase();loadRdvsFromSupabase();startPolling();
     loadDevisFromSupabase().then(devis=>{S.devis=devis.length?devis:DEMO_DEVIS;S.loading=false;render();});
   }else{
     // Vérifier si le directeur n'a pas encore de PIN
