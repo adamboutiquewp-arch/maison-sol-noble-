@@ -2890,7 +2890,7 @@ function renderClients(){
       map[d.client_nom].dateIntervention=d.date_intervention;
     }
   });
-  const clients=Object.values(map);
+  const clients=Object.values(map).sort((a,b)=>a.nom.localeCompare(b.nom,"fr",{sensitivity:"base"}));
   const wrap2=el("div",{});
   if(!isMobile()){
     const pageHdr=el("div",{style:{marginBottom:"1.5rem",display:"flex",justifyContent:"space-between",alignItems:"center"}});
