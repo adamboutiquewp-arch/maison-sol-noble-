@@ -278,11 +278,18 @@ function objetLabel(l){return OBJETS[(l&&l.objet)||"sol"]||"Sol";}
 function defaultLigneDevis(){
   return {type_sol:"marbre",travaux:"Marbre",etat:"moyen",support:"sol",objet:"sol",dimensions:"",prix_forfait:"",surface:"",prix_m2:30,finition:"brillant",traitement:"vitrifié",fond_dur:false,duree_jours:1,grains:[],rebouchage_cavites:false,rebouchage_joints:false,rebouchage_fissures:false,nettoyage_joints:false,laitance:false,traitement_calcaire:false,preparation:false,cristallisation:false,mineralisation:false,hydrofuge:false,oleofuge:false,plinthes:false,seuil_fenetre:false,escalier:false,nb_marches:"",prix_marche:""};
 }
-function ligneMontantHt(l){
-  const escalierCout=l.escalier?Math.round((parseFloat(l.nb_marches)||0)*(parseFloat(l.prix_marche)||0)):0;
+// Prix HT de l'escalier (marche contre marche), à part du prix du sol/table lui-même.
+function ligneEscalierHt(l){
+  return l.escalier?Math.round((parseFloat(l.nb_marches)||0)*(parseFloat(l.prix_marche)||0)):0;
+}
+// Prix HT du sol (ou de la table / plan de travail au forfait), sans l'escalier.
+function ligneSolHt(l){
   // Table / plan de travail : le prix est saisi directement, pas de calcul au m²
   if(estForfait(l))return Math.round((parseFloat(l.prix_forfait)||0)*100)/100;
-  return (l.surface?Math.round((parseFloat(l.prix_m2)||0)*parseFloat(l.surface)):0)+escalierCout;
+  return l.surface?Math.round((parseFloat(l.prix_m2)||0)*parseFloat(l.surface)):0;
+}
+function ligneMontantHt(l){
+  return ligneSolHt(l)+ligneEscalierHt(l);
 }
 // Normalise un devis (nouveau format `lignes:[]` ou ancien format à plat, créé avant
 // cette fonctionnalité) en tableau de lignes, pour que tout le code d'affichage
@@ -984,7 +991,9 @@ function ouvrirApercu(dv){
   function fSite(s){return String(s).replace(/\./g,"&#46;");}
   // Une ligne du tableau des travaux par prestation (parquet, marbre, ...)
   const workRowsHTML=devisLignes(dv).map(function(l){
-    const descLines=buildDescription(l);
+    // L'escalier a sa propre ligne avec son propre prix HT (voir plus bas) : on évite
+    // de le répéter dans la description de la ligne du sol.
+    const descLines=buildDescription(l).filter(t=>!t.startsWith("Escalier"));
     const descHTML=descLines.length?descLines.map(function(ln){return "<div style=\"padding:2px 0 2px 14px;text-indent:-14px;font-size:10.5px;color:#333333;line-height:1.7;\">&bull; "+ln+"</div>";}).join(""):"";
     const solLabel=((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol||"—")+(!estForfait(l)&&l.support==="mur"?" (Mur)":"");
     const finLabel=l.finition?(l.finition==="mat"?"Mat":l.finition==="satiné"?"Satiné":l.finition==="ciré"?"Ciré":"Brillant"):"—";
@@ -995,14 +1004,26 @@ function ouvrirApercu(dv){
     const dureeStr=(dv.duree_mode!=="global"&&l.duree_jours)?dureeLabel(l.duree_jours):"";
     const dureeBlock=dureeStr?"<div style=\"font-size:9px;color:#7a5a10;margin-top:2px;font-weight:500;\">Durée d'intervention estimée : "+dureeStr+"</div>":"";
     const traitementBlock=l.type_sol==="parquet"?"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
-    const ligneHt=ligneMontantHt(l);
-    return "<tr>"
+    const ligneHt=ligneSolHt(l);
+    let rowHTML="<tr>"
       +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:8px;\">"+designation+"</div>"+descHTML+traitementBlock+"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Finition : "+finLabel+"</div>"+dureeBlock+"</td>"
       +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+solLabel+"</td>"
       +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+surfaceStr+"</td>"
       +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+prixStr+"</td>"
       +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;font-weight:700;color:#111111;text-align:right;vertical-align:top;white-space:nowrap;\">"+ligneHt.toFixed(2)+" €</td>"
       +"</tr>";
+    // Escalier facturé à part, sur sa propre ligne (marche contre marche, prix distinct du sol)
+    const escalierHt=ligneEscalierHt(l);
+    if(escalierHt>0){
+      rowHTML+="<tr>"
+        +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:12px;font-weight:700;color:#111111;\">Escalier — marche contre marche</div></td>"
+        +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">—</td>"
+        +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+(l.nb_marches||0)+" marche(s)</td>"
+        +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+(l.prix_marche||0)+" €/marche</td>"
+        +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;font-weight:700;color:#111111;text-align:right;vertical-align:top;white-space:nowrap;\">"+escalierHt.toFixed(2)+" €</td>"
+        +"</tr>";
+    }
+    return rowHTML;
   }).join("");
   const anyForfait=devisLignes(dv).some(estForfait);
   const logoHTML=LOGO_B64
@@ -2454,9 +2475,13 @@ function renderFormDevis(){
       }
       card.appendChild(optWrap);
     }
-    const sousTotal=ligneMontantHt(l);
-    if(sousTotal>0){
-      card.appendChild(el("div",{style:{textAlign:"right",fontSize:"12px",color:"#7a5a10",fontWeight:"600",marginTop:"6px"}},"Sous-total : "+sousTotal.toFixed(2)+" €"));
+    const sousTotalSol=ligneSolHt(l);
+    const sousTotalEsc=ligneEscalierHt(l);
+    if(sousTotalSol>0||sousTotalEsc>0){
+      const sousTotalWrap=el("div",{style:{textAlign:"right",marginTop:"6px"}});
+      if(sousTotalSol>0)sousTotalWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#7a5a10",fontWeight:"600"}},"Sous-total sol : "+sousTotalSol.toFixed(2)+" €"));
+      if(sousTotalEsc>0)sousTotalWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#7a5a10",fontWeight:"600"}},"Sous-total escalier : "+sousTotalEsc.toFixed(2)+" €"));
+      card.appendChild(sousTotalWrap);
     }
     return card;
   }
@@ -2545,8 +2570,10 @@ function renderFormDevis(){
     const fTva=f.tva_taux||20;
     const rc=el("div",{style:{background:"#f0eeea",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"6px",padding:"1rem",marginBottom:"1.2rem"}});
     f.lignes.forEach((l,idx)=>{
-      const st=lignesHt[idx];
-      if(st>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},(TARIFS[l.type_sol]?.label||l.type_sol)+" — "+(estForfait(l)?objetLabel(l)+(l.dimensions?" "+l.dimensions:"")+" (forfait)":l.surface+" m² × "+l.prix_m2+" €/m²")),el("span",{style:{color:"#8a8278",fontSize:"13px"}},st.toFixed(2)+" €")]));
+      const solSt=ligneSolHt(l);
+      const escSt=ligneEscalierHt(l);
+      if(solSt>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},(TARIFS[l.type_sol]?.label||l.type_sol)+" — "+(estForfait(l)?objetLabel(l)+(l.dimensions?" "+l.dimensions:"")+" (forfait)":l.surface+" m² × "+l.prix_m2+" €/m²")),el("span",{style:{color:"#8a8278",fontSize:"13px"}},solSt.toFixed(2)+" €")]));
+      if(escSt>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},"Escalier — "+(l.nb_marches||0)+" marche(s) × "+l.prix_marche+" €"),el("span",{style:{color:"#8a8278",fontSize:"13px"}},escSt.toFixed(2)+" €")]));
     });
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px",marginTop:"6px",paddingTop:"6px",borderTop:"1px dashed #dddad2"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#1a1611",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},`TTC (TVA ${fTva}%)`),el("span",{style:{color:"#c9a84c",fontSize:"17px",fontWeight:"700"}},(ht*(1+fTva/100)).toFixed(2)+" €")]));
