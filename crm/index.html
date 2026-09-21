@@ -2286,16 +2286,46 @@ function renderFormDevis(){
       head.appendChild(bDel);
     }
     card.appendChild(head);
-    card.appendChild(row(grp("Type de sol *",sel("type_sol",Object.entries(TARIFS).map(([k,v])=>[k,v.label]),v=>{
-      l.travaux=TARIFS[v].label;
-      l.prix_m2=Math.round((TARIFS[v].prix[0]||0)*COEFF[l.etat]);
-      l.finition="brillant";
-      l.traitement="vitrifié";
-      l.grains=[];
-    }),0),grp("État du sol",sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]],v=>{
+    // "Autre" : le type de sol n'est plus forcément une clé TARIFS mais un texte libre.
+    // l.type_sol_manuel garde le mode actif ; sans cette info (vieux devis), on le déduit
+    // du fait que type_sol ne correspond à aucun tarif connu.
+    const manuel=typeof l.type_sol_manuel==="boolean"?l.type_sol_manuel:(!!l.type_sol&&!TARIFS[l.type_sol]);
+    const etatSelect=sel("etat",[["bon","Bon état"],["moyen","État moyen"],["mauvais","Mauvais état"]],v=>{
       const trav=TARIFS[l.type_sol];
       if(trav)l.prix_m2=Math.round((trav.prix[0]||0)*COEFF[v]);
-    }),0)));
+    });
+    if(!manuel){
+      card.appendChild(row(grp("Type de sol *",sel("type_sol",[...Object.entries(TARIFS).map(([k,v])=>[k,v.label]),["autre","Autre (préciser)..."]],v=>{
+        if(v==="autre"){
+          l.type_sol_manuel=true;
+          l.type_sol="";
+          l.travaux="";
+          l.prix_m2=0;
+        }else{
+          l.travaux=TARIFS[v].label;
+          l.prix_m2=Math.round((TARIFS[v].prix[0]||0)*COEFF[l.etat]);
+        }
+        l.finition="brillant";
+        l.traitement="vitrifié";
+        l.grains=[];
+      }),0),grp("État du sol",etatSelect,0)));
+    }else{
+      const typeInp=inp("type_sol","Ex : béton ciré, résine, pierre naturelle...");
+      const back=el("button",{type:"button",style:{background:"none",border:"none",color:"#8a6a20",fontSize:"11px",cursor:"pointer",fontWeight:"600",padding:"6px 0 0",textAlign:"left"}},"↩ Choisir un type de sol courant");
+      back.addEventListener("click",()=>{
+        l.type_sol_manuel=false;
+        l.type_sol="marbre";
+        l.travaux=TARIFS.marbre.label;
+        l.prix_m2=Math.round((TARIFS.marbre.prix[0]||0)*COEFF[l.etat]);
+        l.finition="brillant";
+        l.traitement="vitrifié";
+        l.grains=[];
+        render();
+      });
+      const typeSolGrp=grp("Type de sol * (personnalisé)",typeInp,0);
+      typeSolGrp.appendChild(back);
+      card.appendChild(row(typeSolGrp,grp("État du sol",etatSelect,0)));
+    }
     // Élément à rénover : sol (au m²) ou table / plan de travail (taille + prix au forfait)
     card.appendChild(row(grp("Élément à rénover",radioGroup("objet",[["sol","🏠 Sol"],["table","🪑 Table"],["plan_travail","🍽 Plan de travail"]]),0)));
     if(!estForfait(l)&&["marbre","travertin","granito"].includes(l.type_sol)){
