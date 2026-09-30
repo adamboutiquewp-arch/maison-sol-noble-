@@ -977,19 +977,7 @@ function buildDescription(dv){
   return lines;
 }
 
-function ouvrirApercu(dv){
-  const tvaPct=dv.tva_taux||20;
-  const ht=dv.montant_ht||0;
-  const tvaM=+(ht*(tvaPct/100)).toFixed(2);
-  const ttc=+(ht*(1+tvaPct/100)).toFixed(2);
-  const acompte=(ttc*0.3).toFixed(2);
-  const solde=(ttc*0.7).toFixed(2);
-  const num=dv.numero||"—";
-  const dateDoc=new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR");
-  function fTel(t){return String(t).replace(/ /g," ");}
-  function fMail(e){return String(e).replace("@","&#64;").replace(/\./g,"&#46;");}
-  function fSite(s){return String(s).replace(/\./g,"&#46;");}
-  // Une ligne du tableau des travaux par prestation (parquet, marbre, ...)
+function buildWorkRows(dv){
   const workRowsHTML=devisLignes(dv).map(function(l){
     // L'escalier a sa propre ligne avec son propre prix HT (voir plus bas) : on évite
     // de le répéter dans la description de la ligne du sol.
@@ -1028,6 +1016,23 @@ function ouvrirApercu(dv){
     return rowHTML;
   }).join("");
   const anyForfait=devisLignes(dv).some(estForfait);
+  return {html:workRowsHTML,anyForfait};
+}
+
+function ouvrirApercu(dv){
+  const tvaPct=dv.tva_taux||20;
+  const ht=dv.montant_ht||0;
+  const tvaM=+(ht*(tvaPct/100)).toFixed(2);
+  const ttc=+(ht*(1+tvaPct/100)).toFixed(2);
+  const acompte=(ttc*0.3).toFixed(2);
+  const solde=(ttc*0.7).toFixed(2);
+  const num=dv.numero||"—";
+  const dateDoc=new Date(dv.created_at||Date.now()).toLocaleDateString("fr-FR");
+  function fTel(t){return String(t).replace(/ /g," ");}
+  function fMail(e){return String(e).replace("@","&#64;").replace(/\./g,"&#46;");}
+  function fSite(s){return String(s).replace(/\./g,"&#46;");}
+  // Une ligne du tableau des travaux par prestation (parquet, marbre, ...)
+  const {html:workRowsHTML,anyForfait}=buildWorkRows(dv);
   const logoHTML=LOGO_B64
     ?"<img src=\"data:image/png;base64,"+LOGO_B64+"\" alt=\"Maison Sol Noble\" style=\"height:110px;display:block;margin-bottom:8px;\">"
     :"<div style=\"font-size:18px;font-weight:700;color:#111111;\">"+INFO.nom+"</div>";
@@ -1212,21 +1217,35 @@ function ouvrirFacture(dv,type){
   const mailBlock=dv.client_email?"<div>"+fMail(dv.client_email)+"</div>":"";
   const villeBlock=dv.ville?"<div>"+dv.ville+"</div>":"";
 
-  let titre,ligneLabel,ligneHT,ligneTVA,ligneTTC,totalsRows,noteBlock;
+  let titre,ligneHT,ligneTTC,totalsRows,noteBlock,tableHeadHTML,tableBodyHTML;
+  const refBlock="<div style=\"font-size:9px;color:#7a7268;margin:0 0 16px;\">Réf. devis n&deg; "+devisNum+" du "+devisDate+"</div>";
   if(isAcompte){
     titre="FACTURE D&rsquo;ACOMPTE";
-    ligneLabel="Acompte de 30 % à la commande — "+(dv.travaux||"Travaux")+"<div style=\"font-size:9px;color:#7a7268;margin-top:4px;\">Réf. devis n&deg; "+devisNum+" du "+devisDate+"</div>";
+    const ligneLabel="Acompte de 30 % à la commande — "+(dv.travaux||"Travaux");
     ligneHT=+(htTotal*0.3).toFixed(2);
-    ligneTVA=+(ligneHT*(tvaPct/100)).toFixed(2);
+    const ligneTVA=+(ligneHT*(tvaPct/100)).toFixed(2);
     ligneTTC=+(ligneHT+ligneTVA).toFixed(2);
     const soldeRestant=+(ttcTotal-ligneTTC).toFixed(2);
+    tableHeadHTML="<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;\">DÉSIGNATION</th>"
+      +"<th style=\"padding:8px 10px;text-align:right;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">MONTANT HT</th>";
+    tableBodyHTML="<tr><td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:11.5px;color:#111111;vertical-align:top;\">"+ligneLabel+"</td>"
+      +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;font-weight:700;color:#111111;text-align:right;vertical-align:top;white-space:nowrap;\">"+ligneHT.toFixed(2)+" €</td></tr>";
     totalsRows="<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">Montant HT</td><td style=\"padding:7px 10px;font-size:10.5px;font-weight:600;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+ligneHT.toFixed(2)+" €</td></tr>"
       +"<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">TVA "+tvaPct+"%</td><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+ligneTVA.toFixed(2)+" €</td></tr>"
       +"<tr><td style=\"padding:9px 10px;font-size:11px;font-weight:700;color:#fff;background:#111111;\">NET À PAYER TTC</td><td style=\"padding:9px 10px;font-size:14px;font-weight:700;color:#c9a84c;background:#111111;text-align:right;\">"+ligneTTC.toFixed(2)+" €</td></tr>";
     noteBlock="<div style=\"font-size:9px;color:#333333;margin-top:10px;\">Solde restant dû en fin de chantier : <strong style=\"color:#111111;\">"+soldeRestant.toFixed(2)+" € TTC</strong> (facture de solde à émettre à la réception des travaux).</div>";
   }else{
     titre="FACTURE DE SOLDE — FIN DE CHANTIER";
-    ligneLabel="Solde des travaux — "+(dv.travaux||"Travaux")+"<div style=\"font-size:9px;color:#7a7268;margin-top:4px;\">Réf. devis n&deg; "+devisNum+" du "+devisDate+"</div>";
+    // Même détail des prestations (sol, escalier, supplément...) que sur le devis :
+    // avant, la facture de fin de chantier n'affichait qu'une seule ligne générique
+    // ("Solde des travaux — Travertin"), sans le détail que voit le client sur son devis.
+    const {html:workRowsHTML,anyForfait}=buildWorkRows(dv);
+    tableHeadHTML="<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;\">DÉSIGNATION ET DESCRIPTION DES TRAVAUX</th>"
+      +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">SOL</th>"
+      +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">"+(anyForfait?"SURFACE / TAILLE":"SURFACE")+"</th>"
+      +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">"+(anyForfait?"PRIX UNITAIRE":"PRIX/M²")+"</th>"
+      +"<th style=\"padding:8px 10px;text-align:right;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">TOTAL HT</th>";
+    tableBodyHTML=workRowsHTML;
     const acompteTTC=dv.facture_acompte_numero?+(htTotal*0.3*(1+tvaPct/100)).toFixed(2):0;
     ligneTTC=+(ttcTotal-acompteTTC).toFixed(2);
     let rows="<tr><td style=\"padding:7px 10px;font-size:10.5px;color:#111111;border-bottom:1px solid #e0ddd5;\">Total travaux HT</td><td style=\"padding:7px 10px;font-size:10.5px;font-weight:600;color:#111111;text-align:right;border-bottom:1px solid #e0ddd5;\">"+htTotal.toFixed(2)+" €</td></tr>"
@@ -1260,13 +1279,12 @@ function ouvrirFacture(dv,type){
     +"<td style=\"width:50%;padding:12px 14px;background:#faf9f6;border:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:7px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;\">PRESTATAIRE</div><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:4px;\">"+INFO.nom+"</div><div style=\"font-size:10px;color:#333333;line-height:1.7;\"><div>"+INFO.forme+"</div><div>SIRET : "+fTel(INFO.siret)+"</div><div>N&deg; TVA : "+INFO.tva+"</div><div>Capital social : "+INFO.capital+"</div></div></td>"
     +"<td style=\"width:50%;padding:12px 14px;background:#faf9f6;border:1px solid #e8e4dc;border-left:none;vertical-align:top;\"><div style=\"font-size:7px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;\">CLIENT</div><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:4px;\">"+(dv.client_nom||"—")+"</div><div style=\"font-size:10px;color:#333333;line-height:1.7;\">"+telBlock+mailBlock+villeBlock+"</div></td>"
     +"</tr></table>"
-    +"<div style=\"overflow-x:auto;\"><table style=\"margin-bottom:20px;border:1px solid #e8e4dc;\"><thead><tr>"
-    +"<th style=\"padding:8px 10px;text-align:left;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;\">DÉSIGNATION</th>"
-    +"<th style=\"padding:8px 10px;text-align:right;font-size:8px;font-weight:700;color:#fff;background:#111111;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;\">MONTANT HT</th>"
-    +"</tr></thead><tbody><tr>"
-    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:11.5px;color:#111111;vertical-align:top;\">"+ligneLabel+"</td>"
-    +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;font-weight:700;color:#111111;text-align:right;vertical-align:top;white-space:nowrap;\">"+(isAcompte?ligneHT.toFixed(2):htTotal.toFixed(2))+" €</td>"
-    +"</tr></tbody></table></div>"
+    +"<div style=\"overflow-x:auto;\"><table style=\"margin-bottom:8px;border:1px solid #e8e4dc;\"><thead><tr>"
+    +tableHeadHTML
+    +"</tr></thead><tbody>"
+    +tableBodyHTML
+    +"</tbody></table></div>"
+    +refBlock
     +"<div style=\"display:flex;justify-content:flex-end;margin-bottom:10px;\"><table style=\"width:280px;border:1px solid #e0ddd5;\">"+totalsRows+"</table></div>"
     +(noteBlock?"<div style=\"display:flex;justify-content:flex-end;margin-bottom:18px;\"><div style=\"width:280px;\">"+noteBlock+"</div></div>":"<div style=\"height:8px;\"></div>")
     +"<div style=\"margin-bottom:18px;\"><div style=\"font-size:9px;color:#333333;\">IBAN : <strong style=\"color:#111111;\">"+INFO.iban+"</strong></div></div>"
@@ -2779,9 +2797,12 @@ function renderFicheMission(d){
   });
   rowsFM.forEach(([k,v])=>{
     if(!v&&v!==0)return;
-    const row=el("div",{className:"mob-detail-row"});
-    row.appendChild(el("span",{className:"mob-detail-label"},k));
-    row.appendChild(el("span",{className:"mob-detail-val"},String(v)));
+    // Styles inline (et pas juste la classe .mob-detail-row) : cette classe n'est définie
+    // que sous @media(max-width:768px), donc sur un écran plus large le libellé et la
+    // valeur se retrouvaient collés sans espace (ex : "11" lu comme "111").
+    const row=el("div",{className:"mob-detail-row",style:{display:"flex",justifyContent:"space-between",alignItems:"center",gap:"12px",padding:"12px 0",borderBottom:"1px solid #eceae4"}});
+    row.appendChild(el("span",{className:"mob-detail-label",style:{fontSize:"12px",color:"#9a9488",textTransform:"uppercase",letterSpacing:"0.08em",flexShrink:"0"}},k));
+    row.appendChild(el("span",{className:"mob-detail-val",style:{fontSize:"14px",color:"#2a2520",fontWeight:"400",textAlign:"right"}},String(v)));
     wrap.appendChild(row);
   });
   const interTxt=formatIntervention(d);
@@ -2823,9 +2844,11 @@ function renderDetailDevis(d){
   });
   rowsDD.forEach(([k,v])=>{
     if(!v&&v!==0)return;
-    const row=el("div",{className:"mob-detail-row"});
-    row.appendChild(el("span",{className:"mob-detail-label"},k));
-    row.appendChild(el("span",{className:"mob-detail-val"},String(v)));
+    // Styles inline : voir la note dans renderFicheMission (la classe .mob-detail-row
+    // ne s'applique qu'en dessous de 768px, sinon libellé et valeur se collent).
+    const row=el("div",{className:"mob-detail-row",style:{display:"flex",justifyContent:"space-between",alignItems:"center",gap:"12px",padding:"12px 0",borderBottom:"1px solid #eceae4"}});
+    row.appendChild(el("span",{className:"mob-detail-label",style:{fontSize:"12px",color:"#9a9488",textTransform:"uppercase",letterSpacing:"0.08em",flexShrink:"0"}},k));
+    row.appendChild(el("span",{className:"mob-detail-val",style:{fontSize:"14px",color:"#2a2520",fontWeight:"400",textAlign:"right"}},String(v)));
     wrap.appendChild(row);
   });
   // Rendez-vous lié à ce devis (visite pour en discuter, signer, etc.)
