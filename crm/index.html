@@ -2298,12 +2298,17 @@ function renderFormDevis(){
       });
       return s;
     }
-    function radioGroup(name,options){
+    function radioGroup(name,options,onSelect){
       const wrap=el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
       options.forEach(([v,l])=>{
         const active=obj[name]===v;
         const b=el("button",{type:"button",style:{padding:"6px 14px",fontSize:"12px",fontWeight:"500",border:"1px solid "+(active?"#c9a84c":"#dddad2"),background:active?"rgba(201,168,76,0.12)":"#fff",color:active?"#8a6a20":"#706a62",borderRadius:"20px",cursor:"pointer",transition:"all 0.15s",fontFamily:"Inter,sans-serif"}},l);
-        b.addEventListener("click",()=>{obj[name]=v;render();});
+        b.addEventListener("click",()=>{
+          const prev=obj[name];
+          obj[name]=v;
+          if(onSelect)onSelect(v,prev);
+          render();
+        });
         wrap.appendChild(b);
       });
       return wrap;
@@ -2330,7 +2335,17 @@ function renderFormDevis(){
     // Élément à rénover : sol (au m²), table / plan de travail (taille + prix au forfait),
     // ou un simple supplément forfaitaire (ex : traitement ajouté en cours de chantier,
     // sans rapport avec un type de sol ou une surface).
-    card.appendChild(row(grp("Élément à rénover",radioGroup("objet",[["sol","🏠 Sol"],["table","🪑 Table"],["plan_travail","🍽 Plan de travail"],["supplement","➕ Supplément"]]),0)));
+    card.appendChild(row(grp("Élément à rénover",radioGroup("objet",[["sol","🏠 Sol"],["table","🪑 Table"],["plan_travail","🍽 Plan de travail"],["supplement","➕ Supplément"]],(v,prev)=>{
+      // Un supplément part d'une description et d'un prix vides — pas du "Marbre" laissé
+      // par la prestation par défaut ou par le type de sol choisi juste avant.
+      if(v==="supplement"){
+        l.travaux="";
+        l.prix_forfait="";
+      }else if(prev==="supplement"){
+        l.travaux=(v==="sol"&&TARIFS[l.type_sol])?TARIFS[l.type_sol].label:"";
+        l.prix_forfait="";
+      }
+    }),0)));
     const estSupplement=l.objet==="supplement";
     // "Autre" : le type de sol n'est plus forcément une clé TARIFS mais un texte libre.
     // l.type_sol_manuel garde le mode actif ; sans cette info (vieux devis), on le déduit
