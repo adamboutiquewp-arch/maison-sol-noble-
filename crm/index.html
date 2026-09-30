@@ -269,7 +269,7 @@ function isLead(d){return d.source==="site_vitrine";}
 
 // ── ÉLÉMENT À RÉNOVER : un sol (facturé au m²) ou une table / un plan de travail ──
 // (facturés au forfait : on saisit la taille en clair et le prix directement).
-const OBJETS={sol:"Sol",table:"Table",plan_travail:"Plan de travail"};
+const OBJETS={sol:"Sol",table:"Table",plan_travail:"Plan de travail",supplement:"Supplément"};
 function estForfait(l){return !!(l&&l.objet&&l.objet!=="sol");}
 function objetLabel(l){return OBJETS[(l&&l.objet)||"sol"]||"Sol";}
 
@@ -299,7 +299,7 @@ function devisLignes(d){
   return [{type_sol:d.type_sol||"marbre",travaux:d.travaux||"",etat:d.etat||"moyen",support:d.support||"sol",objet:d.objet||"sol",dimensions:d.dimensions||"",prix_forfait:d.prix_forfait||"",surface:d.surface||"",prix_m2:d.prix_m2||0,finition:d.finition||"brillant",traitement:d.traitement||"vitrifié",fond_dur:d.fond_dur||false,duree_jours:d.duree_jours||1,grains:d.grains||[],rebouchage_cavites:d.rebouchage_cavites||false,rebouchage_joints:d.rebouchage_joints||false,rebouchage_fissures:d.rebouchage_fissures||false,nettoyage_joints:d.nettoyage_joints||false,laitance:d.laitance||false,traitement_calcaire:d.traitement_calcaire||false,preparation:d.preparation||false,cristallisation:d.cristallisation||false,mineralisation:d.mineralisation||false,hydrofuge:d.hydrofuge||false,oleofuge:d.oleofuge||false,plinthes:d.plinthes||false,seuil_fenetre:d.seuil_fenetre||false,escalier:d.escalier||false,nb_marches:d.nb_marches||"",prix_marche:d.prix_marche||""}];
 }
 function devisSolLabel(d){
-  const lignes=devisLignes(d);
+  const lignes=devisLignes(d).filter(l=>l.objet!=="supplement");
   const labels=[...new Set(lignes.map(l=>(TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol))];
   return labels.join(" + ");
 }
@@ -1001,12 +1001,14 @@ function ouvrirApercu(dv){
     const surfaceStr=estForfait(l)?(l.dimensions||"—"):(l.surface?l.surface+" m²":"—");
     const prixStr=estForfait(l)?"Forfait":(l.prix_m2?l.prix_m2+" €/m²":"—");
     const designation=estForfait(l)?objetLabel(l)+" — "+(l.travaux||solLabel):(l.travaux||"—");
-    const dureeStr=(dv.duree_mode!=="global"&&l.duree_jours)?dureeLabel(l.duree_jours):"";
+    const dureeStr=(dv.duree_mode!=="global"&&l.duree_jours&&l.objet!=="supplement")?dureeLabel(l.duree_jours):"";
     const dureeBlock=dureeStr?"<div style=\"font-size:9px;color:#7a5a10;margin-top:2px;font-weight:500;\">Durée d'intervention estimée : "+dureeStr+"</div>":"";
     const traitementBlock=l.type_sol==="parquet"?"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
+    // Un supplément est une simple ligne forfaitaire : pas de mention "Finition" (non pertinente).
+    const finitionBlock=l.objet==="supplement"?"":"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Finition : "+finLabel+"</div>";
     const ligneHt=ligneSolHt(l);
     let rowHTML="<tr>"
-      +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:8px;\">"+designation+"</div>"+descHTML+traitementBlock+"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Finition : "+finLabel+"</div>"+dureeBlock+"</td>"
+      +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;vertical-align:top;\"><div style=\"font-size:12px;font-weight:700;color:#111111;margin-bottom:8px;\">"+designation+"</div>"+descHTML+traitementBlock+finitionBlock+dureeBlock+"</td>"
       +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+solLabel+"</td>"
       +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+surfaceStr+"</td>"
       +"<td style=\"padding:10px;border-top:1px solid #e8e4dc;font-size:10.5px;color:#111111;vertical-align:top;white-space:nowrap;\">"+prixStr+"</td>"
@@ -2307,6 +2309,11 @@ function renderFormDevis(){
       head.appendChild(bDel);
     }
     card.appendChild(head);
+    // Élément à rénover : sol (au m²), table / plan de travail (taille + prix au forfait),
+    // ou un simple supplément forfaitaire (ex : traitement ajouté en cours de chantier,
+    // sans rapport avec un type de sol ou une surface).
+    card.appendChild(row(grp("Élément à rénover",radioGroup("objet",[["sol","🏠 Sol"],["table","🪑 Table"],["plan_travail","🍽 Plan de travail"],["supplement","➕ Supplément"]]),0)));
+    const estSupplement=l.objet==="supplement";
     // "Autre" : le type de sol n'est plus forcément une clé TARIFS mais un texte libre.
     // l.type_sol_manuel garde le mode actif ; sans cette info (vieux devis), on le déduit
     // du fait que type_sol ne correspond à aucun tarif connu.
@@ -2315,7 +2322,9 @@ function renderFormDevis(){
       const trav=TARIFS[l.type_sol];
       if(trav)l.prix_m2=Math.round((trav.prix[0]||0)*COEFF[v]);
     });
-    if(!manuel){
+    if(estSupplement){
+      // Un supplément n'a pas de type de sol : juste une description libre et un prix HT.
+    }else if(!manuel){
       card.appendChild(row(grp("Type de sol *",sel("type_sol",[...Object.entries(TARIFS).map(([k,v])=>[k,v.label]),["autre","Autre (préciser)..."]],v=>{
         if(v==="autre"){
           l.type_sol_manuel=true;
@@ -2347,18 +2356,20 @@ function renderFormDevis(){
       typeSolGrp.appendChild(back);
       card.appendChild(row(typeSolGrp,grp("État du sol",etatSelect,0)));
     }
-    // Élément à rénover : sol (au m²) ou table / plan de travail (taille + prix au forfait)
-    card.appendChild(row(grp("Élément à rénover",radioGroup("objet",[["sol","🏠 Sol"],["table","🪑 Table"],["plan_travail","🍽 Plan de travail"]]),0)));
-    if(!estForfait(l)&&["marbre","travertin","granito"].includes(l.type_sol)){
+    if(!estSupplement&&!estForfait(l)&&["marbre","travertin","granito"].includes(l.type_sol)){
       card.appendChild(row(grp("Application",radioGroup("support",[["sol","Sol"],["mur","Mur"]]),0)));
     }
-    if(estForfait(l)){
+    if(estSupplement){
+      card.appendChild(row(grp("Description *",inp("travaux","Ex : Traitement hydrofuge/oléofuge complémentaire"),0),grp("Prix HT (€) *",inp("prix_forfait","150","number"),0)));
+    }else if(estForfait(l)){
       card.appendChild(row(grp("Taille / dimensions *",inp("dimensions","ex : 180 × 90 cm"),0),grp("Prix total (€) *",inp("prix_forfait","450","number"),0)));
     }else{
       card.appendChild(row(grp("Surface (m²) *",inp("surface","50","number"),0),grp("Prix/m²",inp("prix_m2","","number"),0)));
     }
     const dureeParPrestation=(f.duree_mode||"prestation")==="prestation";
-    if(l.type_sol==="parquet"){
+    if(estSupplement){
+      // Ni finition, ni traitement, ni prestations complémentaires pour un simple supplément.
+    }else if(l.type_sol==="parquet"){
       card.appendChild(row(grp("Traitement",radioGroup("traitement",[["vitrifié","Vitrifié — vernis polyuréthane"],["ciré","Ciré — cire naturelle"]]),0),grp("Finition",radioGroup("finition",[["brillant","Brillant"],["mat","Mat"],["satiné","Satiné"]]),0)));
       if(dureeParPrestation)card.appendChild(row(grp("Durée d'intervention (jours)",inp("duree_jours","1","number"),0)));
     }else{
@@ -2367,7 +2378,7 @@ function renderFormDevis(){
       else card.appendChild(row(grp("Finition",sel("finition",finOpts),0)));
     }
     // ── PRESTATIONS COMPLÉMENTAIRES (ordre de travail) ──
-    {
+    if(!estSupplement){
       const optWrap=el("div",{style:{marginBottom:"0.5rem"}});
       optWrap.appendChild(el("div",{style:{fontSize:"11px",letterSpacing:"0.08em",textTransform:"uppercase",color:"#9a9488",fontWeight:"600",marginBottom:"10px"}},"Prestations complémentaires"));
       // Met à jour le style d'un bouton toggle sans render()
@@ -2479,7 +2490,7 @@ function renderFormDevis(){
     const sousTotalEsc=ligneEscalierHt(l);
     if(sousTotalSol>0||sousTotalEsc>0){
       const sousTotalWrap=el("div",{style:{textAlign:"right",marginTop:"6px"}});
-      if(sousTotalSol>0)sousTotalWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#7a5a10",fontWeight:"600"}},"Sous-total sol : "+sousTotalSol.toFixed(2)+" €"));
+      if(sousTotalSol>0)sousTotalWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#7a5a10",fontWeight:"600"}},(estSupplement?"Sous-total : ":"Sous-total sol : ")+sousTotalSol.toFixed(2)+" €"));
       if(sousTotalEsc>0)sousTotalWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#7a5a10",fontWeight:"600"}},"Sous-total escalier : "+sousTotalEsc.toFixed(2)+" €"));
       card.appendChild(sousTotalWrap);
     }
@@ -2572,7 +2583,8 @@ function renderFormDevis(){
     f.lignes.forEach((l,idx)=>{
       const solSt=ligneSolHt(l);
       const escSt=ligneEscalierHt(l);
-      if(solSt>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},(TARIFS[l.type_sol]?.label||l.type_sol)+" — "+(estForfait(l)?objetLabel(l)+(l.dimensions?" "+l.dimensions:"")+" (forfait)":l.surface+" m² × "+l.prix_m2+" €/m²")),el("span",{style:{color:"#8a8278",fontSize:"13px"}},solSt.toFixed(2)+" €")]));
+      const solLabelPreview=l.objet==="supplement"?"Supplément — "+(l.travaux||"—"):(TARIFS[l.type_sol]?.label||l.type_sol)+" — "+(estForfait(l)?objetLabel(l)+(l.dimensions?" "+l.dimensions:"")+" (forfait)":l.surface+" m² × "+l.prix_m2+" €/m²");
+      if(solSt>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},solLabelPreview),el("span",{style:{color:"#8a8278",fontSize:"13px"}},solSt.toFixed(2)+" €")]));
       if(escSt>0)rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px"}},[el("span",{style:{color:"#8a8278",fontSize:"13px"}},"Escalier — "+(l.nb_marches||0)+" marche(s) × "+l.prix_marche+" €"),el("span",{style:{color:"#8a8278",fontSize:"13px"}},escSt.toFixed(2)+" €")]));
     });
     rc.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"4px",marginTop:"6px",paddingTop:"6px",borderTop:"1px dashed #dddad2"}},[el("span",{style:{color:"#706a62",fontSize:"13px"}},"Montant HT"),el("span",{style:{color:"#1a1611",fontSize:"15px",fontWeight:"600"}},ht.toFixed(2)+" €")]));
@@ -2756,9 +2768,13 @@ function renderFicheMission(d){
   const rowsFM=[["Client",d.client_nom],["Téléphone",d.client_tel],["Ville",d.ville]];
   lignesFM.forEach((l,i)=>{
     const suf=lignesFM.length>1?" — Prestation "+(i+1):"";
-    rowsFM.push(["Type de sol"+suf,((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol)+(estForfait(l)?" — "+objetLabel(l):(l.support==="mur"?" (Mur)":""))]);
-    if(estForfait(l))rowsFM.push(["Taille"+suf,l.dimensions||"—"]);
-    else rowsFM.push(["Surface"+suf,l.surface+" m²"]);
+    if(l.objet==="supplement"){
+      rowsFM.push(["Prestation"+suf,"Supplément — "+(l.travaux||"—")]);
+    }else{
+      rowsFM.push(["Type de sol"+suf,((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol)+(estForfait(l)?" — "+objetLabel(l):(l.support==="mur"?" (Mur)":""))]);
+      if(estForfait(l))rowsFM.push(["Taille"+suf,l.dimensions||"—"]);
+      else rowsFM.push(["Surface"+suf,l.surface+" m²"]);
+    }
     if(l.escalier)rowsFM.push(["Escalier"+suf,(l.nb_marches||0)+" marche(s)"]);
   });
   rowsFM.forEach(([k,v])=>{
@@ -2790,13 +2806,18 @@ function renderDetailDevis(d){
   const rowsDD=[["Client",d.client_nom],["Téléphone",d.client_tel],["Email",d.client_email],["Ville",d.ville]];
   lignesDD.forEach((l,i)=>{
     const suf=lignesDD.length>1?" — Prestation "+(i+1):"";
-    rowsDD.push(["Type de sol"+suf,((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol)+(estForfait(l)?" — "+objetLabel(l):(l.support==="mur"?" (Mur)":""))]);
-    if(estForfait(l)){
-      rowsDD.push(["Taille"+suf,l.dimensions||"—"]);
-      rowsDD.push(["Prix (forfait)"+suf,(l.prix_forfait||0)+" €"]);
+    if(l.objet==="supplement"){
+      rowsDD.push(["Prestation"+suf,"Supplément — "+(l.travaux||"—")]);
+      rowsDD.push(["Prix HT"+suf,(l.prix_forfait||0)+" €"]);
     }else{
-      rowsDD.push(["Surface"+suf,l.surface+" m²"]);
-      rowsDD.push(["Prix/m²"+suf,l.prix_m2+" €"]);
+      rowsDD.push(["Type de sol"+suf,((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol)+(estForfait(l)?" — "+objetLabel(l):(l.support==="mur"?" (Mur)":""))]);
+      if(estForfait(l)){
+        rowsDD.push(["Taille"+suf,l.dimensions||"—"]);
+        rowsDD.push(["Prix (forfait)"+suf,(l.prix_forfait||0)+" €"]);
+      }else{
+        rowsDD.push(["Surface"+suf,l.surface+" m²"]);
+        rowsDD.push(["Prix/m²"+suf,l.prix_m2+" €"]);
+      }
     }
     if(l.escalier)rowsDD.push(["Escalier"+suf,(l.nb_marches||0)+" marche(s) × "+(l.prix_marche||0)+" €"]);
   });
