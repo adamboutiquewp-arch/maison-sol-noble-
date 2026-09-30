@@ -983,7 +983,9 @@ function buildWorkRows(dv){
     // de le répéter dans la description de la ligne du sol.
     const descLines=buildDescription(l).filter(t=>!t.startsWith("Escalier"));
     const descHTML=descLines.length?descLines.map(function(ln){return "<div style=\"padding:2px 0 2px 14px;text-indent:-14px;font-size:10.5px;color:#333333;line-height:1.7;\">&bull; "+ln+"</div>";}).join(""):"";
-    const solLabel=((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol||"—")+(!estForfait(l)&&l.support==="mur"?" (Mur)":"");
+    // Un supplément n'a pas de type de sol : on ignore l.type_sol même s'il traîne encore
+    // une ancienne valeur (ex : "marbre" laissé par la prestation par défaut).
+    const solLabel=l.objet==="supplement"?"—":((TARIFS[l.type_sol]&&TARIFS[l.type_sol].label)||l.type_sol||"—")+(!estForfait(l)&&l.support==="mur"?" (Mur)":"");
     const finLabel=l.finition?(l.finition==="mat"?"Mat":l.finition==="satiné"?"Satiné":l.finition==="ciré"?"Ciré":"Brillant"):"—";
     const traitementLabel=l.traitement==="ciré"?"Ciré":"Vitrifié";
     const surfaceStr=estForfait(l)?(l.dimensions||"—"):(l.surface?l.surface+" m²":"—");
@@ -991,7 +993,7 @@ function buildWorkRows(dv){
     const designation=estForfait(l)?objetLabel(l)+" — "+(l.travaux||solLabel):(l.travaux||"—");
     const dureeStr=(dv.duree_mode!=="global"&&l.duree_jours&&l.objet!=="supplement")?dureeLabel(l.duree_jours):"";
     const dureeBlock=dureeStr?"<div style=\"font-size:9px;color:#7a5a10;margin-top:2px;font-weight:500;\">Durée d'intervention estimée : "+dureeStr+"</div>":"";
-    const traitementBlock=l.type_sol==="parquet"?"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
+    const traitementBlock=(l.objet!=="supplement"&&l.type_sol==="parquet")?"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Traitement : "+traitementLabel+"</div>":"";
     // Un supplément est une simple ligne forfaitaire : pas de mention "Finition" (non pertinente).
     const finitionBlock=l.objet==="supplement"?"":"<div style=\"font-size:9px;color:#7a5a10;margin-top:8px;font-weight:500;\">Finition : "+finLabel+"</div>";
     const ligneHt=ligneSolHt(l);
@@ -2336,12 +2338,17 @@ function renderFormDevis(){
     // ou un simple supplément forfaitaire (ex : traitement ajouté en cours de chantier,
     // sans rapport avec un type de sol ou une surface).
     card.appendChild(row(grp("Élément à rénover",radioGroup("objet",[["sol","🏠 Sol"],["table","🪑 Table"],["plan_travail","🍽 Plan de travail"],["supplement","➕ Supplément"]],(v,prev)=>{
-      // Un supplément part d'une description et d'un prix vides — pas du "Marbre" laissé
-      // par la prestation par défaut ou par le type de sol choisi juste avant.
+      // Un supplément part d'une description et d'un prix vides, et sans type de sol —
+      // pas du "Marbre" laissé par la prestation par défaut ou choisi juste avant (ce
+      // "Marbre" fantôme réapparaissait ensuite tout seul dans la colonne SOL du devis
+      // et de la facture, même une fois la description corrigée).
       if(v==="supplement"){
         l.travaux="";
         l.prix_forfait="";
+        l.type_sol="";
+        l.type_sol_manuel=false;
       }else if(prev==="supplement"){
+        l.type_sol=l.type_sol||"marbre";
         l.travaux=(v==="sol"&&TARIFS[l.type_sol])?TARIFS[l.type_sol].label:"";
         l.prix_forfait="";
       }
