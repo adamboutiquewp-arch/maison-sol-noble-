@@ -83,6 +83,39 @@ if (floatBtns) {
 const HS_PORTAL_ID = '148913514';
 const HS_FORM_ID = '360e24b5-f2f9-40e4-b5fe-0b9a358ab44e';
 
+// ===== PRÉ-REMPLISSAGE depuis le petit formulaire des pages villes / blog =====
+// Ces pages enregistrent la saisie dans sessionStorage (pas dans l'URL, pour ne pas
+// envoyer nom et téléphone aux outils de statistiques) puis renvoient vers /#contact.
+(function prefillFromSidebar() {
+  let data;
+  try {
+    data = JSON.parse(sessionStorage.getItem('msnDevis') || 'null');
+    sessionStorage.removeItem('msnDevis');
+  } catch (_) { return; }
+  if (!data) return;
+
+  const parts = (data.nom || '').trim().split(/\s+/);
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v && !el.value) el.value = v; };
+  set('firstname', parts.shift());
+  set('lastname', parts.join(' '));
+  set('city', data.ville);
+
+  let tel = (data.tel || '').replace(/[\s.-]/g, '');
+  const codeSelect = document.getElementById('phoneCode');
+  const code = codeSelect && Array.from(codeSelect.options).map(o => o.value).find(c => tel.startsWith(c));
+  if (code) { codeSelect.value = code; tel = tel.slice(code.length); }
+  else if (tel.startsWith('0')) tel = tel.slice(1);
+  set('phone', tel);
+
+  set('message', (data.details || []).join('\n'));
+
+  const email = document.getElementById('email');
+  if (email) {
+    email.placeholder = 'Dernière étape : votre email';
+    setTimeout(() => email.focus({ preventScroll: true }), 600);
+  }
+})();
+
 function getHubspotUtk() {
   const match = document.cookie.match(/(?:^|;\s*)hubspotutk=([^;]+)/);
   return match ? match[1] : undefined;

@@ -158,7 +158,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
 
       <h2>Tarifs rénovation de sol à Bordeaux</h2>
-      <p>Nos prix sont transparents et fixes. Voici les fourchettes indicatives pour une intervention à Bordeaux :</p>
+      <p>Nos prix sont transparents. Voici les fourchettes indicatives pour une intervention à Bordeaux :</p>
       <table class="price-table">
         <thead>
           <tr><th>Prestation</th><th>Prix indicatif / m²</th></tr>
@@ -204,7 +204,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <option>Parquet massif</option>
           </select>
           <textarea placeholder="Décrivez votre projet..."></textarea>
-          <button type="submit" class="btn-submit">Envoyer →</button>
+          <button type="submit" class="btn-submit">Continuer ma demande →</button>
         </form>
       </div>
       <div class="sidebar-card">
@@ -218,11 +218,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="sidebar-card">
         <h3>Autres villes</h3>
         <div class="sidebar-links">
+          <a href="/villes/renovation-sol-toulouse.html">Rénovation sol Toulouse</a>
+          <a href="/villes/renovation-sol-nantes.html">Rénovation sol Nantes</a>
+          <a href="/villes/renovation-sol-biarritz.html">Rénovation sol Biarritz</a>
+          <a href="/villes/renovation-sol-bayonne.html">Rénovation sol Bayonne</a>
           <a href="/villes/renovation-sol-paris.html">Rénovation sol Paris</a>
-          <a href="/villes/renovation-sol-lyon.html">Rénovation sol Lyon</a>
-          <a href="/villes/renovation-sol-marseille.html">Rénovation sol Marseille</a>
-          <a href="/villes/renovation-sol-nice.html">Rénovation sol Nice</a>
-          <a href="/villes/renovation-sol-versailles.html">Rénovation sol Versailles</a>
+          <a href="/villes/">Toutes nos villes →</a>
         </div>
       </div>
       <div class="sidebar-card">
@@ -267,10 +268,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <script>
-function submitSidebar(e) {
-  e.preventDefault();
-  window.location.href = '/#contact';
-}
+function submitSidebar(e){e.preventDefault();var f=e.target,i=f.querySelectorAll('input'),d={nom:i[0].value,tel:i[1].value,ville:i[2].value,details:[]};for(var k=3;k<i.length;k++)if(i[k].value)d.details.push(i[k].placeholder+' : '+i[k].value);f.querySelectorAll('select').forEach(function(s){if(s.value)d.details.push(s.options[0].text+' : '+s.value);});var t=f.querySelector('textarea');if(t&&t.value)d.details.push(t.value);try{sessionStorage.setItem('msnDevis',JSON.stringify(d));}catch(_){}window.location.href='/#contact';}
 </script>
 </body>
 </html>
