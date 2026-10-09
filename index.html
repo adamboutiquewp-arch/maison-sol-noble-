@@ -967,13 +967,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
-<!-- BANDEAU PLANNING SEPTEMBRE/OCTOBRE -->
+<!-- BANDEAU PLANNING OCTOBRE/NOVEMBRE/DÉCEMBRE -->
 <div class="planning-bar" id="planningBar">
   <div class="planning-bar-text">
-    <strong>Planning septembre / octobre — places limitées.</strong>
-    <span>Nous limitons le nombre de chantiers par semaine pour garantir la qualité de chaque intervention.</span>
+    <strong>Réservez votre intervention — octobre / novembre / décembre.</strong>
+    <span>Places limitées : nous limitons le nombre de chantiers par semaine pour garantir la qualité de chaque intervention.</span>
   </div>
-  <a href="#contact" class="planning-bar-btn">Demander mon devis</a>
+  <a href="#contact" class="planning-bar-btn">Réserver mon intervention</a>
   <button type="button" class="planning-bar-close" id="planningBarClose" aria-label="Fermer">&times;</button>
 </div>
 
@@ -998,10 +998,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var bar=document.getElementById('planningBar');
   var closeBtn=document.getElementById('planningBarClose');
   if(!bar||!closeBtn)return;
-  if(sessionStorage.getItem('planningBarClosed')==='1'){bar.style.display='none';return;}
+  if(sessionStorage.getItem('planningBarClosedQ4')==='1'){bar.style.display='none';return;}
   closeBtn.addEventListener('click',function(){
     bar.style.display='none';
-    sessionStorage.setItem('planningBarClosed','1');
+    sessionStorage.setItem('planningBarClosedQ4','1');
   });
 })();
 </script>
